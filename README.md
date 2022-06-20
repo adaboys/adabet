@@ -1,2 +1,2 @@
-# adabet
+# ADABET
 ADABET | Cardano Betting Dapp
