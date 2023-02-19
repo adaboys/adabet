@@ -1,0 +1,38 @@
+@import "@assets/scss/global";
+
+.subscrible-form {
+    margin-top: 14px;
+    .group-input {
+        display: flex;
+        .email-input {
+            margin-bottom: 0;
+            flex: 1;
+            height: 40px;
+            input {
+                font-size: 18px;
+                border: 1px solid #4f4f4f;
+                border-right: none;
+                &::placeholder {
+                    color: #828282;
+                }
+            }
+        }
+        .btn-subscrible {
+            font-size: 20px;
+            height: 40px;
+            border-radius: 0;
+            border: 1px solid #4f4f4f;
+            border-left: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            &:disabled {
+                background-color: #4f4f4f;
+            }
+            @include smallLessDesktop {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+    }
+}

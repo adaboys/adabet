@@ -1,0 +1,57 @@
+@import "@assets/scss/global";
+
+.footer {
+    background: #1e1f23;
+    font-size: 20px;
+    .nav {
+        padding: 48px 0 36px 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        @include smallLessDesktop {
+            padding: 36px 16px;
+        }
+        .logo {
+            padding-left: 0;
+            flex: 1;
+            img {
+                width: auto;
+                height: 82px;
+                @include smallLessDesktop {
+                    height: 62px;
+                }
+            }
+        }
+        .menu {
+            column-count: 2;
+            margin: 0;
+            padding: 0;
+            flex: 1;
+            &-item {
+                &:not(:last-child) {
+                    margin-bottom: 24px;
+                }
+                a:hover {
+                    color: #137cb4;
+                }
+            }
+        }
+        .marketing {
+            flex: 1;
+            .social {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }
+        }
+    }
+    .copyright {
+        background: #4f4f4f;
+        padding: 16px 0;
+        font-size: 20px;
+        text-align: center;
+        @include smallLessDesktop {
+            font-size: 14px;
+        }
+    }
+}

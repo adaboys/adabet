@@ -1,0 +1,39 @@
+@import "@assets/scss/global";
+
+.sport-layout {
+    display: flex;
+    .side-left-menu {
+        width: 330px;
+        min-height: calc(100vh - 72px);
+        padding: 28px;
+        background: rgba(0, 0, 0, 0.4);
+        .header-menu {
+            display: flex;
+            justify-content: space-between;
+            padding: 0;
+            margin: 0;
+            .menu-item {
+                svg {
+                    path {
+                        fill: #fff;
+                    }
+                }
+                &.active {
+                    svg {
+                        path {
+                            fill: $primaryActiveColor;
+                        }
+                    }
+                }
+            }
+        }
+        .side-left-content {
+            
+        }
+    }
+    .main-content {
+        flex-grow: 1;
+        max-width: calc(100% - 330px);
+        padding: 28px;
+    }
+}

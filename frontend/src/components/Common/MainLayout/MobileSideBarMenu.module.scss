@@ -1,0 +1,61 @@
+@import "@assets/scss/global";
+
+@keyframes slideRighttOpen {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+.mobile-sidebar-menu {
+    &[class~="ReactModal__Overlay--after-open"] {
+        animation: slideRighttOpen 0.4s both;
+    }
+    .wrapper {
+        background: #2F3033 !important;
+        width: 60%;
+        height: 100vh;
+        top: 0 !important;
+        right: 0 !important;
+        left: auto !important;
+        margin-right: 0px !important;
+        transform: unset !important;
+        padding: 0 !important;
+        font-size: 20px;
+        .header {
+            padding: 16px;
+            .top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                .logged {
+                    display: flex;
+                    align-items: center;
+                    width: 88%;
+                    .username {
+                        padding-left: 16px;
+                        width: 72%;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        font-size: 16px;
+                        line-height: 16px;
+                        color: $secondaryTextColor;
+                    }
+                }
+            }
+            .bottom {
+                margin-top: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                .sign-out {
+                    color: #BDBDBD;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+@import "@assets/scss/global";
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #1B2028;
+    background-image: url('/images/bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    &.home {
+        background-image: url('/images/bg-home.png');
+    }
+    .content {
+        flex-grow: 1;
+        // background: #1B1C20;
+    }
+}

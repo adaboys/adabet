@@ -1,0 +1,54 @@
+@import "@assets/scss/global";
+
+.header {
+    background: rgba(0, 49, 146, 0.5);
+    backdrop-filter: blur(2px);
+    height: $headerHeight;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    [class~="container"] {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        @include smallLessDesktop {
+            justify-content: space-between;
+        }
+    }
+    .logo {
+        height: 30px;
+        width: auto;
+        display: flex;
+        align-items: center;
+        img {
+            cursor: pointer;
+            height: 100%;
+            width: auto;
+        }
+    }
+
+    .account {
+        display: flex;
+        align-items: center;
+        .btn-login {
+            color: #fff;
+            font-weight: 500;
+            margin-right: 32px;
+            font-size: 14px;
+        }
+        .btn-signup {
+            font-weight: 500;
+        }
+    }
+    .sidebar-menu {
+        display: flex;
+        align-items: center;
+        @include desktop {
+            display: none;
+        }
+        .hamburger {
+            display: flex;
+            margin-left: 26px;
+        }
+    }
+}

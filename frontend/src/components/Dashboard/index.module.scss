@@ -1,0 +1,17 @@
+@import "@assets/scss/global";
+
+.dashboard {
+    padding-top: 20px;
+    @include smallLessDesktop {
+        padding-top: 16px;
+    }
+    .nft {
+        margin-top: 36px;
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        @include smallLessDesktop {
+            flex-direction: column;
+        }
+    }
+}

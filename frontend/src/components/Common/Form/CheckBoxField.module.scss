@@ -1,0 +1,67 @@
+@import "../../../assets/scss/global.scss";
+
+.pc-checkbox-field {
+    display: block;
+    position: relative;
+    padding-left: 24px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-weight: normal;
+    font-size: $font-size-14;
+    line-height: 18px;
+
+    input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .checkmark {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 0;
+        height: 16px;
+        width: 16px;
+        border: 1px solid #8E9AAB;
+        border-radius: 4px;
+        transition: all .3s;
+
+        &::after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+    }
+
+    &:hover input ~ .checkmark {
+        border-color: #adadad;
+    }
+
+    & input:checked ~ .checkmark {
+        background-color: $blue-main;
+        border-color: $blue-main;
+    }
+
+    & input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    & .checkmark::after {
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        width: 5px;
+        height: 9px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        -webkit-transform: translate(-50%, -50%) rotate(45deg);
+        -ms-transform: translate(-50%, -50%) rotate(45deg);
+        transform: translate(-50%, -50%) rotate(45deg);
+    }
+}

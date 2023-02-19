@@ -1,0 +1,37 @@
+@import "@assets/scss/global";
+
+.login-with-social {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    .divider {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        span {
+            color: $secondaryTextColor;
+            font-size: 14px;
+            margin: 0 24px;
+        }
+
+        .item {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+    }
+    .socials {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        .btn-login {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            border-radius: 50%;
+        }
+    }
+}

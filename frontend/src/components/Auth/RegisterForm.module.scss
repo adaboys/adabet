@@ -1,0 +1,21 @@
+@import "@assets/scss/global";
+
+.register-form {
+    .terms {
+        margin-bottom: 24px;
+
+        .terms-content {
+            font-size: 14px;
+            color: #fff;
+
+            a {
+                font-size: 14px;
+                color: #fff;
+            }
+        }
+    }
+
+    .btn-register {
+        width: 100%;
+    }
+}

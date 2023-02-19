@@ -1,0 +1,32 @@
+.ellipsis-wrapper {
+    position: relative;
+    max-width: 100%;
+    padding: 0 !important;
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: flex;
+    vertical-align: text-bottom !important;
+}
+.ellipsis-text {
+    position: absolute;
+    white-space: nowrap;
+    overflow-y: visible;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -ms-text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    max-width: 100%;
+    min-width: 0;
+    width:100%;
+    top: 0;
+    left: 0;
+    color: inherit;
+    font-size: inherit;
+}
+.ellipsis-wrapper:after,
+.ellipsis-text:after {
+    content: '-';
+    display: inline;
+    visibility: hidden;
+    width: 0;
+}

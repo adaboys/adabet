@@ -1,0 +1,39 @@
+@import "@assets/scss/global";
+.button {
+    font-family: $primaryFontFamily;
+    font-size: 14px;
+    color: #fff;
+    padding: 10px 16px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: 500;
+    &.primary {
+      background: linear-gradient(86.9deg, #225FED 0%, #712EFF 100%);
+    }
+    &.secondary {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    @include smallLessDesktop {
+        font-size: 20px;
+        padding: 9px 14px;
+        border-radius: 4px;
+    }
+
+    .icon {
+      margin-right: 7px;
+    }
+  
+    &.disabled {
+      background: rgb(125, 125, 125);
+      &,
+      &:hover {
+        cursor: not-allowed;
+      }
+    }
+  }
+  

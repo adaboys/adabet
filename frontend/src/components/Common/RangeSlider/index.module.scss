@@ -1,0 +1,87 @@
+.range-slider {
+    position: relative;
+
+    .slider-group {
+        .rs-range {
+            width: 100%;
+            position: relative;
+            -webkit-appearance: none;
+            &:focus {
+                outline: none;
+            }
+
+            &::-webkit-slider-runnable-track {
+                width: 100%;
+                height: 2px;
+                cursor: pointer;
+                box-shadow: none;
+                background: #828282;
+            }
+
+            &::-moz-range-track {
+                width: 100%;
+                height: 2px;
+                cursor: pointer;
+                box-shadow: none;
+                background: #828282;
+            }
+
+            &::-webkit-slider-thumb {
+                width: 16px;
+                height: 16px;
+                background: #BDBDBD;
+                border-radius: 50%;
+                cursor: pointer;
+                -webkit-appearance: none;
+                margin-top: -7px;
+            }
+
+            &::-moz-range-thumb {
+                width: 16px;
+                height: 16px;
+                background: #BDBDBD;
+                border-radius: 50%;
+                cursor: pointer;
+                -webkit-appearance: none;
+                margin-top: -7px;
+                margin-left: -7px;
+            }
+
+            &::-moz-focus-outer {
+                border: 0;
+            }
+        }
+
+        .rs-value {
+            position: absolute;
+            bottom: -10px;
+            left: 10px;
+            span {
+                font-size: 14px;
+                line-height: 14px;
+                text-align: center;
+                color: #B1B3BF;
+                display: block;
+                position: absolute;
+                left: 50%;
+                transform: translate(-50%, 0);
+                border-radius: 6px;
+            }
+        }
+    }
+
+    .box-minmax {
+        margin-bottom: 6px;
+        display: flex;
+        justify-content: space-between;
+
+        span {
+            font-size: 14px;
+            color: #B1B3BF;
+        }
+
+        // span:first-child {
+        //     margin-left: 10px;
+        // }
+    }
+}

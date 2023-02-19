@@ -1,0 +1,25 @@
+.basic-modal {
+    overflow: auto;
+    &.open {
+        overflow: hidden;
+    }
+    .overlay {
+        position: fixed;
+        inset: 0px;
+        background-color: rgba(0, 0, 0, 0.5);
+        .content {
+            top: 50%;
+            left: 50%;
+            right: auto;
+            bottom: auto;
+            margin-right: -50%;
+            transform: translate(-50%, -50%);
+            position: absolute;
+            background: #fff;
+            border: none;
+            outline: none;
+            padding: 20px;
+            max-width: calc(100% - 32px);
+        }
+    }
+}

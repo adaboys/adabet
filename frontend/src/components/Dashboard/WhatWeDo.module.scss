@@ -1,0 +1,38 @@
+@import "@assets/scss/global";
+
+.what-we-do {
+    margin-top: 160px;
+    min-height: 700px;
+    position: relative;
+    .description {
+        color: $secondaryTextColor;
+        font-size: 16px;
+        font-weight: 400;
+    }
+    .highlight {
+        max-width: 420px;
+        .menu {
+            padding: 0;
+            margin: 48px 0;
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            // justify-content: flex-end;
+            .item {
+                display: flex;
+                align-items: center;
+                gap: 32px;
+                color: rgba(255, 255, 255, 0.5);
+                font-weight: 500;
+                &.active {
+                    color: $primaryActiveColor;
+                }
+            }
+        }
+    }
+    .sport-banner {
+        position: absolute;
+        right: 0;
+        top: -76px;
+    }
+}

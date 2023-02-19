@@ -1,0 +1,44 @@
+/* Extra small devices (phones, 768px and down) */ 
+@mixin phone {
+    @media only screen and (max-width: 768px) {
+        @content;
+    }
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@mixin tablet {
+    @media only screen and (min-width: 768px) {
+        @content;
+    }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@mixin desktop {
+    @media only screen and (min-width: 1024px) {
+        @content;
+    }
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@mixin wideDesktop {
+    @media only screen and (min-width: 1200px) {
+        @content;
+    }
+}
+
+/* Extra small devices (phones, tablet 1200px and down) */ 
+@mixin smallLessDesktop {
+    @media only screen and (max-width: 1023px) {
+        @content;
+    }
+}
+
+// button
+
+@mixin button {
+    outline: none;
+    cursor: pointer;
+    &:hover {
+        outline: none;
+    }
+}

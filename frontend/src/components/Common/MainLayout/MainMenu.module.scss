@@ -1,0 +1,51 @@
+
+@import "@assets/scss/global";
+
+.main-menu {
+    display: flex;
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    margin-left: 140px;
+    .item {
+        margin-right: 34px;
+        @include desktop {
+            height: 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        svg {
+            margin-right: 18px;
+        }
+        a {
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.6);;
+            @include desktop {
+                padding-left: 10px;
+            }
+        }
+        &.active {
+            a {
+                color: $primaryActiveColor;
+                font-weight: 700;
+            }
+        }
+        @include smallLessDesktop {
+            margin-bottom: 52px;
+            width: 100%;
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+    @include smallLessDesktop {
+        flex-direction: column;
+        padding: 42px 16px;
+        margin-bottom: 32px;
+        border-top: 1px solid #4F4F4F;
+        border-bottom: 1px solid #4F4F4F;
+    }
+}

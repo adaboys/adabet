@@ -1,0 +1,17 @@
+@import "@assets/scss/global";
+
+.chip-button {
+    padding: 6px 16px;
+    color: $secondaryTextColor;
+    border: 1px solid #828282;
+    border-radius: 20px;
+    margin-right: 8px;
+    background: transparent;
+    font-size: 16px;
+
+    &.active {
+        color: $primaryActiveColor;
+        background: rgba(255, 255, 255, 0.3);
+        border: 1px solid $primaryActiveColor;
+    }
+}

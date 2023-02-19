@@ -1,0 +1,17 @@
+.full-screen-loading {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #54647ff0;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    > * {
+        display: block;
+        border-radius: 5px;
+    }
+}

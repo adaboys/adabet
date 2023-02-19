@@ -1,0 +1,30 @@
+@import "@assets/scss/global";
+
+.dashboard {
+    .tab-header {
+        display: flex;
+        gap: 30px;
+        .tab-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            svg {
+                path {
+                    fill-opacity: 0.5;
+                }
+            }
+            &.active {
+                color: $primaryActiveColor;
+                svg {
+                    path {
+                        fill-opacity: 1;
+                        fill: $primaryActiveColor;
+                    }
+                }
+            }
+        }
+    }
+    .tab-content {
+    }
+}

@@ -1,0 +1,122 @@
+@import "@assets/scss/global";
+
+.matches-list {
+    margin: 24px 0;
+    .matches-item {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px 0px 0px 4px;
+        margin-bottom: 20px;
+        .header {
+            // padding: 12px 24px;
+            border-bottom: 1px solid #FFFFFF;
+            display: flex;
+            .start-time {
+                color: $secondaryTextColor;
+                border-right: 1px solid $secondaryTextColor;
+                padding: 12px 24px;
+                width: 20%;
+                span {
+                    color: inherit;
+                }
+                .time {
+                    font-weight: 600;
+                }
+            }
+            .league {
+                width: 28%;
+                padding: 12px 24px;
+                .item {
+                    font-size: 12px;
+                    color: $secondaryTextColor;
+                    position: relative;
+                    svg {
+                        width: 13px;
+                        height: 13px;
+                        path {
+                            fill: $secondaryTextColor;
+                        }
+                    }
+                }
+                .last-item {
+                    width: 100%;
+                    font-size: 12px;
+                    color: $secondaryTextColor;
+                }
+            }
+            .teams {
+                flex-grow: 1;
+                // justify-content: center;
+                .team-item {
+                    &.team1 {
+                        max-width: 48%;
+                        .name {
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                    &.team2 {
+                        flex-grow: 1;
+                    }
+                    .name {
+                        
+                        width: 100%;
+                        font-weight: 500;
+                        color: $secondaryTextColor;
+                    }
+                    .divider {
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: $secondaryTextColor;
+                    }
+                    img {
+                        width: 24px;
+                        height: 24px;
+                    }
+                }
+            }
+            .actions {
+                margin-right: 24px;
+                svg {
+                    width: 18px;
+                    height: 18px;
+                }
+
+                .star-icon {
+                    path {
+                        fill: $secondaryTextColor;
+                    }
+                }
+            }
+        }
+        .markets {
+            padding: 8px 12px;
+            .name {
+                font-size: 14px;
+                text-align: center;
+                color: $secondaryTextColor;
+                font-weight: 500;
+            }
+            .odds {
+                .odds-item {
+                    background: rgba(0, 0, 0, 0.3);
+                    padding: 4px 12px;
+                    font-size: 12px;
+                    &:first-child, &:last-child {
+                        border-radius: 4px 0px 0px 4px;
+                    }
+                    &:last-child {
+                        border-radius: 0px 4px 4px 0px;
+                    }
+                    .label {
+                        font-weight: 500;
+                    }
+                    .value {
+                        color: $secondaryTextColor;
+                        font-weight: 600;
+                    }
+                }
+            }
+        }
+    }
+}

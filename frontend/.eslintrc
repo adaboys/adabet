@@ -1,0 +1,6 @@
+{
+  "extends": ["eslint:recommended", "next"],
+  "rules": {
+    "react/display-name": "off"
+  }
+}

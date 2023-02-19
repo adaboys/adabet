@@ -1,0 +1,20 @@
+.login-wallet {
+    position: absolute;
+    background-color: #1E1F23;
+    border-bottom: 1px solid #1E1F23;
+    top: 100%;
+    width: 100%;
+    padding-top: 4px;
+    .wallet-item {
+        display: flex;
+        padding: 8px 12px;
+        align-items: center;
+        font-size: 20px;
+        img {
+            margin-right: 8px;
+        }
+        &:hover {
+            background: #2F3033;
+        }
+    }
+}

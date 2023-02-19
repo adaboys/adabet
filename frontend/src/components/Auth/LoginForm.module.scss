@@ -1,0 +1,19 @@
+@import "@assets/scss/global";
+
+.login-form {
+    .btn-login {
+        width: 100%;
+    }
+    .actions {
+        margin: 16px 0;
+        display: flex;
+        justify-content: flex-end;
+        a {
+            font-size: 14px;
+            line-height: 20px;
+            color: #F2F2F2;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+    }
+}

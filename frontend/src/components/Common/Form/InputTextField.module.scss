@@ -1,0 +1,131 @@
+@import "@assets/scss/global.scss";
+
+$input-font-size: 14px;
+$input-line-hight: 20px;
+
+@keyframes shake {
+    0% {
+        margin-left: 0rem;
+    }
+    25% {
+        margin-left: 0.5rem;
+    }
+    75% {
+        margin-left: -0.5rem;
+    }
+    100% {
+        margin-left: 0rem;
+    }
+}
+
+.input-text-field {
+    margin-bottom: 24px;
+
+    label {
+        color: #E0E0E0;
+        line-height: 18px;
+        display: inherit;
+        margin-bottom: 10px;
+        font-size: 1rem;
+        span {
+            margin-left: 3px;
+            color: #f33060;
+        }
+    }
+
+    .input-group {
+        position: relative;
+        textarea,
+        input {
+            transition: box-shadow 0.5s;
+            // border: none;
+            outline: none;
+            box-sizing: border-box;
+            background-color: transparent;
+            color: $secondaryTextColor;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            font-size: $input-font-size;
+            line-height: $input-line-hight;
+            width: 100%;
+            font-family: inherit;
+            &.has-icon-left {
+                padding-left: 44px;
+            }
+            &.has-icon-right {
+                padding-right: 44px;
+            }
+
+            &::-webkit-input-placeholder {
+                /* Edge */
+                color: rgba(255, 255, 255, 0.5);
+                font-weight: normal;
+                font-size: $input-font-size;
+                line-height: $input-line-hight;
+                font-family: inherit;
+            }
+
+            :-ms-input-placeholder {
+                /* Internet Explorer 10-11 */
+               color: rgba(255, 255, 255, 0.5);
+                font-weight: normal;
+                font-size: $input-font-size;
+                line-height: $input-line-hight;
+                font-family: inherit;
+            }
+
+            &::placeholder {
+               color: rgba(255, 255, 255, 0.5);
+                font-weight: normal;
+                font-size: $input-font-size;
+                line-height: $input-line-hight;
+                font-family: inherit;
+            }
+            &:disabled {
+                background: #f8f8f8;
+            }
+        }
+        textarea {
+            resize: none;
+        }
+        .icon-left {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 10px;
+            width: 24px;
+            display: flex;
+        }
+        .icon-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 10px;
+            width: 24px;
+            display: flex;
+        }
+    }
+
+    &.error {
+        textarea,
+        input, svg {
+            border-color: $errorColor !important;
+            animation: shake 0.2s ease-in-out 0s 2;
+        }
+
+        // svg path {
+        //     stroke: $errorColor;
+        // }
+
+        .feedback {
+            color: $errorColor;
+            font-size: $input-font-size;
+            line-height: $input-line-hight;
+            margin-top: 8px;
+        }
+    }
+    .no-animation {
+        animation: unset !important;
+    }
+}

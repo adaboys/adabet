@@ -1,0 +1,24 @@
+.filter-tags {
+    margin-top: 24px;
+    .item {
+        padding: 4px 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        color: #fff;
+        font-size: 14px;
+        cursor: pointer;
+        opacity: 0.5;
+        svg {
+            fill: #fff;
+            fill-opacity: 0.5;
+        }
+        &.active {
+            font-family: 500;
+            opacity: 1;
+            background: linear-gradient(86.9deg, #225FED 0%, #712EFF 100%);
+            svg {
+                fill-opacity: 1;
+            }
+        }
+    }
+}

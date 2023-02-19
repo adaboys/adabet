@@ -1,0 +1,50 @@
+@import "@assets/scss/global.scss";
+
+$input-font-size: 14px;
+$input-line-hight: 22px;
+
+.select-field {
+    margin-bottom: 1rem;
+    label {
+        color: #7D7D7D;
+        line-height: 18px;
+        display: inherit;
+        margin-bottom: 10px;
+        font-size: 1rem;
+        span {
+            margin-left: 3px;
+            color: #f33060;
+        }
+    }
+
+    &.error {
+        label {
+            color: #f33060;
+        }
+
+        .feedback {
+            color: $primaryActiveColor;
+            font-size: $input-font-size;
+            line-height: $input-line-hight;
+            margin-top: 8px;
+        }
+    }
+
+    .clear-indicator-icon {
+        &:hover {
+            svg {
+                stroke: #999999;
+            }
+        }
+
+        svg {
+            width: 16px;
+            height: 16px;
+            transition: all .15s;
+
+            path {
+                stroke-width: 3;
+            }
+        }
+    }
+}

@@ -1,0 +1,48 @@
+@import "@assets/scss/global";
+
+.message-modal {
+    background: #2F3033 !important;
+    width: 570px;
+    text-align: center;
+    padding: 24px !important;
+    border-radius: 4px;
+    &.error {
+        .icon svg path {
+            stroke: $errorColor;
+        }
+    }
+    &.success {
+        .icon svg path {
+            stroke: #27AE60;
+        }
+    }
+    .icon {
+        margin-bottom: 20px;
+    }
+    .title {
+        font-size: 32px;
+        font-weight: $fontWeightNormal;
+        color: #E0E0E0;
+        margin-bottom: 24px;
+    }
+    .content {
+        color: #F2F2F2;
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    .actions {
+        display: flex;
+        gap: 24px;
+        .btn-cancel {
+            background: #2F3033;
+            border: 1px solid #F2F2F2;
+            color: #F2F2F2;
+            padding: 16px 0px;
+            flex: 1;
+        }
+        .btn-ok {
+            flex: 1;
+            padding: 16px 0px;
+        }
+    }
+}

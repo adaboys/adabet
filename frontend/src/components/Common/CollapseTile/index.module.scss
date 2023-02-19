@@ -1,0 +1,21 @@
+@import "@assets/scss/global.scss";
+.collapse-tile {
+    width: 100%;
+    .title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 1rem;
+        gap: 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        flex-shrink: 0;
+        .open {
+          transform: rotate(180deg);
+        }
+    }
+    [class="ReactCollapse--collapse"] {
+        transition: height 600ms;
+      }
+}

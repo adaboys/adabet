@@ -1,0 +1,16 @@
+@import "@assets/scss/global";
+.matches {
+    margin-top: 24px;
+    .tab-active {
+        color: white;
+        font-weight: 500;
+        a {
+            color: white;
+        }
+        svg {
+            path {
+                fill-opacity: 1;
+            }
+        }
+    }
+}

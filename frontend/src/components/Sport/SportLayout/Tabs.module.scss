@@ -1,0 +1,27 @@
+@import "@assets/scss/global";
+
+.tabs {
+    display: flex;
+    gap: 30px;
+    .tab {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        svg {
+            fill: white;
+            path {
+                fill-opacity: 0.5;
+            }
+        }
+        &.active {
+            color: $primaryActiveColor;
+            svg {
+                path {
+                    fill-opacity: 1;
+                    fill: $primaryActiveColor;
+                }
+            }
+        }
+    }
+}

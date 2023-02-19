@@ -1,0 +1,50 @@
+@import "@assets/scss/global";
+
+.dropdown-menu {
+    position: relative;
+    .selected-menu {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        border: 1px solid #4F4F4F;
+        padding: 12px;
+        &::before {
+            content: "\25B6";
+            color: #fff;
+            margin-right: 16px;
+        }
+    }
+
+    .dropdown {
+        position: absolute;
+        display: none;
+        top: 47px;
+        right: 0;
+        left: 0;
+        border: 1px solid #4F4F4F;
+        width: 100%;
+        height: fit-content;
+        // background-color: #1E1F23;
+        background-color:#1B1C20;
+        box-sizing: border-box;
+        z-index: 3;
+        flex-direction: column;
+        justify-content: center;
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            color: $secondaryTextColor;
+            &.active {
+                background: #36373D;
+                color: $primaryActiveColor;
+            }
+            svg {
+                margin-right: 10px;
+            }
+        }
+    }
+}
