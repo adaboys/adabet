@@ -5,8 +5,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
+/// User: bet with ADA -> reward as ABE
 [Table(DbConst.table_sport_predict_user)]
 [Index(nameof(user_id), nameof(sport_match_id), IsUnique = true)]
+[Index(nameof(predicted_at))]
 public class SportPredictUserModel : AutoGenerateUpdateTime {
 	[Key]
 	[Column("id")]
@@ -35,24 +37,41 @@ public class SportPredictUserModel : AutoGenerateUpdateTime {
 	[Column("reward_address", TypeName = "varchar(255)"), MaxLength(255)]
 	public string reward_address { get; set; }
 
-	/// We sent reward in this coin to user.
-	/// FK to mst_cardano_coin
-	[Column("rewarded_coin_id")]
-	public int rewarded_coin_id { get; set; }
+	/// When register new prediction, user must provide reward coin-id to receive if win.
+	[Required]
+	[ForeignKey(DbConst.table_mst_currency)]
+	[Column("reward_coin_id")]
+	public int reward_coin_id { get; set; }
 
-	/// We sent reward in this amount to user.
-	[Column("rewarded_coin_amount")]
-	[Precision(19, 6)]
-	public decimal rewarded_coin_amount { get; set; }
+	/// It is calculated before send to winners.
+	/// We use max 38 digits value to store `precision (at most 23 digits)` and `scale (at most 15 digits)` in sqlserver.
+	[Column("reward_coin_amount")]
+	[Precision(38, 15)]
+	public decimal reward_coin_amount { get; set; }
 
-	/// When match ended, we calculate prediction rank (Top from 1, 2, 3, ...), and set it here.
-	[Column("prediction_result_rank")]
-	public int prediction_result_rank { get; set; }
+	/// When user predicts, we schedule and try (some times) to submit it to blockchain.
+	/// This field holds status of that tx.
+	[Column("bet_submit_tx_status", TypeName = "tinyint")]
+	public SportPredictUserModelConst.BetSubmitTxStatus bet_submit_tx_status { get; set; }
+
+	[Column("bet_submit_tx_id", TypeName = "varchar(255)"), MaxLength(255)]
+	public string? bet_submit_tx_id { get; set; }
+
+	[Column("bet_submit_tx_result_message", TypeName = "varchar(255)"), MaxLength(255)]
+	public string? bet_submit_tx_result_message { get; set; }
+
+	/// When we submit the bet successful, we set prediction time to this.
+	[Column("predicted_at")]
+	public DateTime? predicted_at { get; set; }
+
+	/// When match ended, we calculate prediction-rank for top winners, and set it here.
+	[Column("prediction_rank")]
+	public int prediction_rank { get; set; }
 
 	/// When user won the prediction, we schedule and try (some times) to submit it to blockchain.
 	/// This field holds status of that tx.
 	[Column("reward_submit_tx_status", TypeName = "tinyint")]
-	public SportPredictUserModelConst.TxStatus reward_submit_tx_status { get; set; }
+	public SportPredictUserModelConst.RewardSubmitTxStatus reward_submit_tx_status { get; set; }
 
 	[Column("reward_submit_tx_id", TypeName = "varchar(255)"), MaxLength(255)]
 	public string? reward_submit_tx_id { get; set; }
@@ -70,6 +89,7 @@ public class SportPredictUserModel : AutoGenerateUpdateTime {
 	/// FK models (property name must be same with table name)
 	public UserModel user { get; set; }
 	public SportMatchModel sport_match { get; set; }
+	public MstCurrencyModel mst_currency { get; set; }
 }
 
 public class SportPredictUserModelBuilder {
@@ -80,10 +100,23 @@ public class SportPredictUserModelBuilder {
 }
 
 public class SportPredictUserModelConst {
-	public enum TxStatus {
+	public enum BetSubmitTxStatus {
 		Nothing = 0, // Null
 		SubmitSucceed = 1, // The tx was submitted to chain and still in verifying by other nodes
 		SubmitFailed = 2, // Could not submit tx to chain (since does not enough balance,...)
 		OnchainSucceed = 3, // Finally the tx was published on chain (other nodes got/verified our tx)
 	}
+
+	public enum RewardSubmitTxStatus {
+		Nothing = 0, // Null
+		RequestSubmitReward = 1, // Need submit the reward to winner
+		SubmitSucceed = 2, // The tx was submitted to chain and still in verifying by other nodes
+		SubmitFailed = 3, // Could not submit tx to chain (since does not enough balance,...)
+		OnchainSucceed = 4, // Finally the tx was published on chain (other nodes got/verified our tx)
+	}
+
+	public static readonly BetSubmitTxStatus[] SuccessBetSubmitStatusList = new BetSubmitTxStatus[] {
+		BetSubmitTxStatus.SubmitSucceed,
+		BetSubmitTxStatus.OnchainSucceed
+	};
 }

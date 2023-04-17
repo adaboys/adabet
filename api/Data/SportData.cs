@@ -131,56 +131,6 @@ public class Sport_UpcomingMatchesResponse : ApiSuccessResponse {
 	}
 }
 
-public class Sport_PlaceBetRequestBody {
-	[Required]
-	[MinLength(1)]
-	[JsonPropertyName(name: "bets")]
-	public Bet[] bets { get; set; }
-
-	[JsonPropertyName(name: "reward_address")]
-	public string? reward_address { get; set; } = null;
-
-	public class Bet {
-		[Required]
-		[JsonPropertyName(name: "match_id")]
-		public long match_id { get; set; }
-
-		[Required]
-		[MinLength(1)]
-		[JsonPropertyName(name: "markets")]
-		public Market[] markets { get; set; }
-	}
-
-	public class Market {
-		/// For eg,. result, handicap, home_total, away_total,...
-		[Required]
-		[JsonPropertyName(name: "name")]
-		public string name { get; set; }
-
-		[Required]
-		[MinLength(1)]
-		[JsonPropertyName(name: "odds")]
-		public Odd[] odds { get; set; }
-	}
-
-	public class Odd {
-		/// For eg,. home_win, over, yes,...
-		[Required]
-		[JsonPropertyName(name: "name")]
-		public string name { get; set; }
-
-		/// For eg,. 1.32, 2.01, 4.19,...
-		[Required]
-		[JsonPropertyName(name: "value")]
-		public decimal value { get; set; }
-
-		[Required]
-		[Range(2, 1000)]
-		[JsonPropertyName(name: "ada_amount")]
-		public decimal ada_amount { get; set; }
-	}
-}
-
 public class Sport_GetQuickLinksResponse : ApiSuccessResponse {
 	[JsonPropertyName(name: "data")]
 	public Data data { get; set; }

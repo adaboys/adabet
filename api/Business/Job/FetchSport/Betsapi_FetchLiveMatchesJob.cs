@@ -16,7 +16,7 @@ public class Betsapi_FetchLiveMatchesJob : BaseJob {
 		quartzConfig.ScheduleJob<Betsapi_FetchLiveMatchesJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /10 * * * ?") // Should run at each 30s
+			.WithCronSchedule("0 /3 * * * ?") // 1 api in 30s
 			.WithDescription(JOB_NAME)
 		);
 	}
@@ -36,38 +36,38 @@ public class Betsapi_FetchLiveMatchesJob : BaseJob {
 
 	/// Override
 	public override async Task Run(IJobExecutionContext context) {
-		// Focus on football
-		var sport_id = await this.dbContext.sports.Where(m => m.name == MstSportModelConst.Name_Football).Select(m => m.id).FirstAsync();
+		var sport_id = MstSportModelConst.Id_Football;
 
 		var apiResult = await this.betsapiRepo.FetchInplayMatches(sport_id);
-		if (apiResult is null) {
+		if (apiResult is null || apiResult.failed) {
 			return;
 		}
 
 		var apiMatches = apiResult.results;
 
 		foreach (var apiMatch in apiMatches) {
-			var sysMatch = await this.dbContext.sportMatches.FirstOrDefaultAsync(m =>
-				m.ref_betsapi_match_id == apiMatch.id
-			);
+			var sysMatches = await this.dbContext.sportMatches.Where(m => m.ref_betsapi_match_id == apiMatch.id).ToArrayAsync();
 
 			// Register new match with its info (league, team,...)
-			if (sysMatch is null) {
-				sysMatch = await this._RegisterNewMatch(sport_id, apiMatch);
+			if (sysMatches.Length == 0) {
+				sysMatches = new SportMatchModel[] { await this._RegisterNewMatch(sport_id, apiMatch) };
 			}
 
-			// Update match info:
-			// - Current play time
-			var timer = apiMatch.timer;
-			if (timer != null) {
-				sysMatch.cur_play_time = (short)(timer.tm * 60 + timer.ts);
-			}
-			// - Current scores
-			if (apiMatch.ss != null) {
-				var scores = apiMatch.ss.Split('-');
-				if (scores.Length == 2) {
-					sysMatch.home_score = scores[0].ParseShortDk();
-					sysMatch.away_score = scores[1].ParseShortDk();
+			// Update matches info
+			foreach (var sysMatch in sysMatches) {
+				// Current play time
+				var timer = apiMatch.timer;
+				if (timer != null) {
+					sysMatch.timer = (short)(timer.tm * 60 + timer.ts);
+				}
+
+				// Current scores
+				if (apiMatch.ss != null) {
+					var scores = apiMatch.ss.Split('-');
+					if (scores.Length == 2) {
+						sysMatch.home_score = scores[0].ParseShortDk();
+						sysMatch.away_score = scores[1].ParseShortDk();
+					}
 				}
 			}
 		}

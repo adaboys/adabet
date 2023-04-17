@@ -1,11 +1,15 @@
 namespace App;
 
 using System.Transactions;
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RedLockNet;
+using Tool.Compet.Core;
 
 /// Raw query with interpolated: https://docs.microsoft.com/en-us/ef/core/querying/raw-sql
 public class UserService : BaseService {
@@ -16,6 +20,7 @@ public class UserService : BaseService {
 	private readonly UserComponent userComponent;
 	private readonly RedisComponent redisComponent;
 	private readonly IDistributedLockFactory lockFactory;
+	private readonly IAmazonS3 awsS3Client;
 
 	public UserService(
 		AppDbContext dbContext,
@@ -35,6 +40,13 @@ public class UserService : BaseService {
 		this.userComponent = userComponent;
 		this.redisComponent = redisComponent;
 		this.lockFactory = lockFactory;
+
+		var s3 = this.appSetting.s3;
+		this.awsS3Client = new AmazonS3Client(
+			awsAccessKeyId: s3.accessKeyId,
+			awsSecretAccessKey: s3.secretAccessKey,
+			region: RegionEndpoint.GetBySystemName(s3.region)
+		);
 	}
 
 	public async Task<ApiResponse> GetUserProfile(Guid userId) {
@@ -45,21 +57,36 @@ public class UserService : BaseService {
 			where _user.id == userId && _wallet.wallet_type == UserWalletModelConst.WalletType.Internal
 
 			select new {
-				_email = _user.email,
-				_wallet_address = _wallet.wallet_address,
-				_has_password = _user.password != null
+				name = _user.name,
+				player_name = _user.player_name,
+				email = _user.email,
+				code = _user.code,
+				telno = _user.telno,
+				referral_code = _user.referral_code,
+				wallet_address = _wallet.wallet_address,
+				has_password = _user.password != null,
+				avatar_relative_path = _user.avatar_relative_path,
 			}
 		;
 		var result = await query.FirstOrDefaultAsync();
-		if (result == null) {
+		if (result is null) {
 			return new ApiBadRequestResponse("Not found user/wallet");
 		}
 
 		return new GetUserProfileResponse {
 			data = new() {
-				email = result._email,
-				wallet_address = result._wallet_address,
-				has_password = result._has_password,
+				name = result.name,
+				player_name = result.player_name,
+				email = result.email,
+				code = result.code,
+				telno = result.telno,
+				referral_code = result.referral_code,
+				wallet_address = result.wallet_address,
+				has_password = result.has_password,
+				avatar = result.avatar_relative_path is null ? null : $"{this.appSetting.s3.baseUrl}/{result.avatar_relative_path}",
+				vip_level = 1,
+				cur_vip_point = 100,
+				next_vip_point = 200,
 			}
 		};
 	}
@@ -239,6 +266,47 @@ public class UserService : BaseService {
 			}
 
 			return new ApiInternalServerErrorResponse();
+		}
+	}
+
+	public async Task<ApiResponse> UpdateAvatar(Guid userId, UpdateUserAvatarRequestBody requestBody) {
+		var user = await this.dbContext.users.FirstAsync(m => m.id == userId);
+
+		var file = requestBody.avatar;
+		var fileExt = file.FileName.SubstringDk(file.FileName.LastIndexOf('.'));
+		if (fileExt.Trim().Length == 0) {
+			return new ApiBadRequestResponse("Cannot get file ext");
+		}
+
+		try {
+			using (var memoryStream = new MemoryStream()) {
+				file.CopyTo(memoryStream);
+
+				var avatarRelativePath = S3Paths.ForUserAvatar(Guid.NewGuid().ToStringDk() + fileExt);
+				var uploadRequest = new TransferUtilityUploadRequest {
+					InputStream = memoryStream,
+					Key = avatarRelativePath,
+					BucketName = this.appSetting.s3.bucketName,
+					ContentType = file.ContentType
+				};
+
+				var fileTransferUtility = new TransferUtility(this.awsS3Client);
+
+				await fileTransferUtility.UploadAsync(uploadRequest);
+
+				// Update avatar path
+				user.avatar_relative_path = avatarRelativePath;
+				await this.dbContext.SaveChangesAsync();
+
+				return new UpdateUserAvatarResponse {
+					data = new() {
+						avatar = $"{this.appSetting.s3.baseUrl}/{user.avatar_relative_path}"
+					}
+				};
+			}
+		}
+		catch (Exception e) {
+			return new ApiInternalServerErrorResponse(e.Message);
 		}
 	}
 

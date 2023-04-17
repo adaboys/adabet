@@ -35,11 +35,11 @@ public class BootCommand : BaseService {
 			return res1;
 		}
 
-		// // Insert ABE coin
-		// var res2 = await this._InsertProjectCoinIfNotExist();
-		// if (res2.failed) {
-		// 	return res2;
-		// }
+		// Insert ABE, GEM coin
+		var res2 = await this._InsertProjectCoinIfNotExist();
+		if (res2.failed) {
+			return res2;
+		}
 
 		// // Upsert system wallets
 		var res3 = await this._UpsertSystemWalletsIfNotExist();
@@ -90,22 +90,47 @@ public class BootCommand : BaseService {
 	}
 
 	private async Task<ApiResponse> _InsertProjectCoinIfNotExist() {
-		var abeCoin = await this.dbContext.cardanoCoins.FirstOrDefaultAsync(m => m.coin_name == MstCardanoCoinModelConst.COIN_NAME_ABE);
-		if (abeCoin != null) {
-			this.logger.InfoDk(this, "Skip insert ABE coin since existed");
-			return new ApiSuccessResponse("Skipped");
+		var foundSomeCoinHasNameAsAbe = await this.dbContext.currencies.AnyAsync(m =>
+			m.name == MstCurrencyModelConst.NAME_ABE
+		);
+		if (!foundSomeCoinHasNameAsAbe) {
+			var asset_id = this.appSetting.environment == AppSetting.ENV_PRODUCTION ?
+				// For mainnet
+				"acc37b7ef2b3bb7855a7ba66ad3a242771092463e184d26f63217208.414245" :
+				// For testnet
+				"6c6807e4cfd9f1c0fd5322a6467b0e0f132a4b984d98d6d4a97abe5e.74414245"
+			;
+			this.dbContext.currencies.Attach(new() {
+				code = asset_id,
+				name = MstCurrencyModelConst.NAME_ABE,
+				network = MstCurrencyModelConst.Network.Cardano,
+				network_name = MstCurrencyModelConst.NetworkName_Cardano,
+				decimals = 6,
+			});
+
+			await this.dbContext.SaveChangesAsync();
 		}
 
-		this.dbContext.cardanoCoins.Attach(new() {
-			coin_name = MstCardanoCoinModelConst.COIN_NAME_ABE,
-			asset_id = this.appSetting.environment == AppSetting.ENV_PRODUCTION ?
+		var foundSomeCoinHasNameAsGem = await this.dbContext.currencies.AnyAsync(m =>
+			m.name == MstCurrencyModelConst.NAME_GEM
+		);
+		if (!foundSomeCoinHasNameAsGem) {
+			var asset_id = this.appSetting.environment == AppSetting.ENV_PRODUCTION ?
 				// For mainnet
-				"//todo" :
+				"4d0f8074126d4adf93bdcf13c88ea25e25eb002d681e4d0d9e554f12.47454d" :
 				// For testnet
-				"//todo"
-		});
+				"6c6807e4cfd9f1c0fd5322a6467b0e0f132a4b984d98d6d4a97abe5e.7447454d"
+			;
+			this.dbContext.currencies.Attach(new() {
+				code = asset_id,
+				name = MstCurrencyModelConst.NAME_GEM,
+				network = MstCurrencyModelConst.Network.Cardano,
+				network_name = MstCurrencyModelConst.NetworkName_Cardano,
+				decimals = 6,
+			});
 
-		await this.dbContext.SaveChangesAsync();
+			await this.dbContext.SaveChangesAsync();
+		}
 
 		return new ApiSuccessResponse();
 	}

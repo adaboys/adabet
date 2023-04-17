@@ -29,6 +29,8 @@ internal class Program {
 		// Ref: https://www.tutorialsteacher.com/core/aspnet-core-introduction
 		services
 			.AddScoped<BootCommand>()
+			.AddScoped<UserCommand>()
+
 			.AddScoped<AuthService>()
 			.AddScoped<AuthTokenService>()
 			.AddScoped<UserService>()
@@ -46,6 +48,8 @@ internal class Program {
 			.AddScoped<BetsapiRepo>()
 			.AddScoped<BlockfrostHookService>()
 			.AddScoped<SportPredictionService>()
+			.AddScoped<CurrencyService>()
+			.AddScoped<UserWalletDao>()
 			.AddControllers();
 
 		// Our app setting
@@ -88,7 +92,7 @@ internal class Program {
 		// Use signalR for realtime actions (communication, notification, ...)
 		// We customize id-provider to let signalR create/lookup userId from our specified claim.
 		services.AddSignalR();
-		services.AddSingleton<IUserIdProvider, CustomSignalRUserIdProvider>();
+		services.AddSingleton<IUserIdProvider, CustomSignalrUserIdProvider>();
 
 
 		// Step 2. Configure app.

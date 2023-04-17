@@ -71,14 +71,41 @@ public class GetUserProfileResponse : ApiSuccessResponse {
 	public Data data { get; set; }
 
 	public class Data {
+		[JsonPropertyName(name: "name")]
+		public string name { get; set; }
+
+		[JsonPropertyName(name: "player_name")]
+		public string player_name { get; set; }
+
 		[JsonPropertyName(name: "email")]
 		public string email { get; set; }
+
+		[JsonPropertyName(name: "code")]
+		public string? code { get; set; }
+
+		[JsonPropertyName(name: "telno")]
+		public string? telno { get; set; }
+
+		[JsonPropertyName(name: "referral_code")]
+		public string? referral_code { get; set; }
 
 		[JsonPropertyName(name: "wallet_address")]
 		public string wallet_address { get; set; }
 
 		[JsonPropertyName(name: "has_password")]
 		public bool has_password { get; set; }
+
+		[JsonPropertyName(name: "avatar")]
+		public string? avatar { get; set; }
+
+		[JsonPropertyName(name: "vip_level")]
+		public int vip_level { get; set; }
+
+		[JsonPropertyName(name: "cur_vip_point")]
+		public int cur_vip_point { get; set; }
+
+		[JsonPropertyName(name: "next_vip_point")]
+		public int next_vip_point { get; set; }
 	}
 }
 
@@ -134,5 +161,20 @@ public class LinkExternalWalletResponse : ApiSuccessResponse {
 	public Data data { get; set; }
 
 	public class Data {
+	}
+}
+
+public class UpdateUserAvatarRequestBody {
+	[Required]
+	[JsonPropertyName(name: "avatar")]
+	public IFormFile avatar { get; set; }
+}
+public class UpdateUserAvatarResponse : ApiSuccessResponse {
+	[JsonPropertyName(name: "data")]
+	public Data data { get; set; }
+
+	public class Data {
+		[JsonPropertyName(name: "avatar")]
+		public string? avatar { get; set; }
 	}
 }

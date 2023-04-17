@@ -16,7 +16,7 @@ public class Betsapi_FetchUpcomingMatchesJob : BaseJob {
 		quartzConfig.ScheduleJob<Betsapi_FetchUpcomingMatchesJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 0 /6 * * ?") // Run at everyday
+			.WithCronSchedule("0 0 0 /1 * ?") // Onetime every day
 			.WithDescription(JOB_NAME)
 		);
 	}
@@ -39,7 +39,7 @@ public class Betsapi_FetchUpcomingMatchesJob : BaseJob {
 		var now = DateTime.UtcNow;
 		var moreDay = 3;
 
-		// Fetch upcoming matches
+		// Fetch next 3 days from today
 		while (moreDay-- > 0) {
 			// Padding 0: https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 			var day = $"{(now.Year):D4}{(now.Month):D2}{(now.Day):D2}";
@@ -51,24 +51,21 @@ public class Betsapi_FetchUpcomingMatchesJob : BaseJob {
 	}
 
 	private async Task _RecursiveFetchUpcomingMatches(string day, int page) {
-		// Focus on football
-		var sport_id = await this.dbContext.sports.Where(m => m.name == MstSportModelConst.Name_Football).Select(m => m.id).FirstAsync();
+		var sport_id = MstSportModelConst.Id_Football;
 
 		var apiResult = await this.betsapiRepo.FetchUpcomingMatches(sport_id, day, page);
-		if (apiResult is null) {
+		if (apiResult is null || apiResult.failed) {
 			return;
 		}
 
 		var apiMatches = apiResult.results;
 
 		foreach (var apiMatch in apiMatches) {
-			var sysMatch = await this.dbContext.sportMatches.FirstOrDefaultAsync(m =>
-				m.ref_betsapi_match_id == apiMatch.id
-			);
+			var sysMatches = await this.dbContext.sportMatches.Where(m => m.ref_betsapi_match_id == apiMatch.id).ToArrayAsync();
 
 			// Register new match with its info (league, team,...)
-			if (sysMatch is null) {
-				sysMatch = await this._RegisterNewMatch(sport_id, apiMatch);
+			if (sysMatches.Length == 0) {
+				await this._RegisterNewMatch(sport_id, apiMatch);
 			}
 		}
 

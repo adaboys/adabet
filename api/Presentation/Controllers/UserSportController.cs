@@ -29,4 +29,24 @@ public class UserSportController : BaseController {
 
 		return await service.PlaceBet(userId.Value, sport_id, requestBody);
 	}
+
+	/// <summary>
+	/// Get bet histories of the user.
+	/// </summary>
+	/// <response code="200">
+	/// - status: 1 (upcoming), 2 (in-play), 3 (ended). For other status, just consider as ...
+	/// </response>
+	[Authorize]
+	[HttpGet, Route(Routes.sport_user_bet_histories)]
+	public async Task<ActionResult<ApiResponse>> GetBetHistories([FromRoute] int sport_id, [FromQuery] int page, [FromQuery] int item) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+		// Restricts range to avoid spam
+		if (page < 1 || item < 1 || item > 100) {
+			return new ApiBadRequestResponse("Invalid range");
+		}
+
+		return await service.GetBetHistories(userId.Value, sport_id, page, item);
+	}
 }

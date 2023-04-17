@@ -4,6 +4,9 @@ namespace App;
 public partial class Routes {
 	public const string api_prefix = "api";
 
+	/// [Master]
+
+
 	/// [App]
 	public const string app_info = "app/{os_type}/info"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 10}}
 
@@ -26,10 +29,13 @@ public partial class Routes {
 	public const string user_profile = "user/profile"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string user_balance = "user/balance"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string user_identity_update = "user/identity/update"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string user_avatar_update = "user/avatar/update"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string user_external_wallet_requestLink = "user/external_wallet/{wallet_address}/requestLink"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string user_external_wallet_link = "user/external_wallet/{wallet_address}/link"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string user_external_wallet_linked_wallets = "user/external_wallet/linked_wallets"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string user_external_wallet_unlink = "user/external_wallet/{wallet_address}/unlink"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+
+	public const string user_currency_list = "user/currency/list"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 30}}
 
 	/// [Sport]
 	public const string sports = "sports"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
@@ -39,8 +45,10 @@ public partial class Routes {
 	public const string sport_matches_highlight = "sport/{sport_id}/matches/highlight"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_matches_top = "sport/{sport_id}/matches/top"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_bet_place = "sport/{sport_id}/bet/place"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string sport_user_bet_histories = "sport/{sport_id}/user/bet/histories"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 
 	public const string sport_prediction_match_list = "sport/{sport_id}/prediction/match/list"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_prediction_match_predict = "sport/prediction/match/{match_id}/predict"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string sport_prediction_match_predicted_users = "sport/prediction/match/{match_id}/predicted_users"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
+	public const string sport_prediction_leaderboard = "sport/prediction/leaderboard"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 10}}
 }

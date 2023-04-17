@@ -53,8 +53,11 @@ public class GetSportPredictionMatchesResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "start_at")]
 		public DateTime start_at { get; set; }
 
-		[JsonPropertyName(name: "cur_time")]
-		public int cur_time { get; set; }
+		[JsonPropertyName(name: "timer")]
+		public int timer { get; set; }
+
+		[JsonPropertyName(name: "predicted_at")]
+		public DateTime? predicted_at { get; set; }
 	}
 }
 
@@ -95,22 +98,45 @@ public class GetSportPredictionUserListOnMatchResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "player_name")]
 		public string player_name { get; set; }
 
-		[JsonPropertyName(name: "s1")]
-		public int score1 { get; set; }
+		[JsonPropertyName(name: "predict_score1")]
+		public int predict_score1 { get; set; }
 
-		[JsonPropertyName(name: "s2")]
-		public int score2 { get; set; }
+		[JsonPropertyName(name: "predict_score2")]
+		public int predict_score2 { get; set; }
+
+		[JsonPropertyName(name: "predicted_at")]
+		public DateTime? predicted_at { get; set; }
+
+		[JsonPropertyName(name: "prediction_rank")]
+		public int prediction_rank { get; set; }
+
+		[JsonPropertyName(name: "reward_coin_name")]
+		public string reward_coin_name { get; set; }
+
+		[JsonPropertyName(name: "reward_coin_amount")]
+		public decimal reward_coin_amount { get; set; }
 
 		[JsonPropertyName(name: "reward_delivery_status")]
 		public int reward_delivery_status { get; set; }
+	}
+}
 
-		[JsonPropertyName(name: "predicted_at")]
-		public DateTime predicted_at { get; set; }
+public class GetLeaderboardResponse : ApiSuccessResponse {
+	[JsonPropertyName(name: "data")]
+	public Data data { get; set; }
 
-		[JsonPropertyName(name: "rewarded_coin_name")]
-		public string rewarded_coin_name { get; set; }
+	public class Data {
+		[JsonPropertyName(name: "leaderboard")]
+		public LeaderboardItem[] leaderboard { get; set; }
+	}
 
-		[JsonPropertyName(name: "rewarded_coin_amount")]
-		public decimal rewarded_coin_amount { get; set; }
+	public class LeaderboardItem {
+		internal Guid tmp_userId;
+
+		[JsonPropertyName(name: "player")]
+		public string? player { get; set; }
+
+		[JsonPropertyName(name: "reward_sum")]
+		public decimal reward_sum { get; set; }
 	}
 }

@@ -7,6 +7,11 @@ public class Betsapi_InplayMatchesData {
 	public Pager pager { get; set; }
 	public List<Result> results { get; set; }
 
+	[JsonIgnore]
+	public bool succeed => this.success == 1;
+	[JsonIgnore]
+	public bool failed => this.success != 1;
+
 	public class _1 {
 		public string home { get; set; }
 		public string away { get; set; }

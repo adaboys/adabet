@@ -130,7 +130,7 @@ public class UserWalletService : BaseService {
 				await this.redisService.DeleteKeyAsync(RedisKey.ForLinkExternalWallet(external_wallet_address));
 
 				return new LinkExternalWalletResponse {
-					data = new() {}
+					data = new() { }
 				};
 			}
 			catch (Exception e) {
@@ -170,7 +170,7 @@ public class UserWalletService : BaseService {
 		}
 
 		// Query balance from Cardano
-		var abeCoin = await this.dbContext.cardanoCoins.FirstAsync(m => m.coin_name == MstCardanoCoinModelConst.COIN_NAME_ABE);
+		var abeCoin = await this.dbContext.currencies.FirstAsync(m => m.name == MstCurrencyModelConst.NAME_ABE);
 		foreach (var wallet in data_wallets) {
 			var assetsResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(wallet.address);
 			if (assetsResponse.failed) {
@@ -178,7 +178,7 @@ public class UserWalletService : BaseService {
 			}
 
 			wallet.ada_balance = CardanoHelper.CalcTotalAdaFromAssets(assetsResponse.data.assets);
-			wallet.abe_balance = CardanoHelper.CalcTotalAbeFromAssets(abeCoin.asset_id, assetsResponse.data.assets);
+			wallet.abe_balance = CardanoHelper.CalcTotalCoinFromAssets(abeCoin, assetsResponse.data.assets);
 		}
 
 		return new GetLinkedExternalWalletsResponse {

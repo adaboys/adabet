@@ -7,6 +7,11 @@ public class Betsapi_UpcomingMatchesData {
 	public Pager pager { get; set; }
 	public List<Result> results { get; set; }
 
+	[JsonIgnore]
+	public bool succeed => this.success == 1;
+	[JsonIgnore]
+	public bool failed => this.success != 1;
+
 	public class Away {
 		public long id { get; set; }
 		public string name { get; set; }

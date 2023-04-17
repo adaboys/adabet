@@ -6,10 +6,9 @@ public class DbConst {
 
 	/// [Master]
 	public const string table_mst_app = "mst_app";
-	public const string table_mst_exchange_rate = "mst_exchange_rate";
-	public const string table_mst_cardano_coin = "mst_cardano_coin";
-	public const string table_mst_cardano_policy = "mst_cardano_policy";
 	public const string table_mst_country = "mst_country";
+	public const string table_mst_currency = "mst_currency";
+	public const string table_mst_exchange_rate = "mst_exchange_rate";
 
 	/// [User]
 	public const string table_user = "user";

@@ -8,52 +8,24 @@ using Quartz;
 using Tool.Compet.Core;
 using Tool.Compet.Json;
 
-[DisallowConcurrentExecution]
-public class Betsapi_UpdateOddsJob : BaseJob {
-	private const string JOB_NAME = nameof(Betsapi_UpdateOddsJob);
-
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
-		quartzConfig.ScheduleJob<Betsapi_UpdateOddsJob>(trigger => trigger
-			.WithIdentity(JOB_NAME)
-			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /3 * * * ?") // Up to 150 req (100 live + 10 upcoming)
-			.WithDescription(JOB_NAME)
-		);
-	}
-
-	private readonly ILogger<Betsapi_UpdateOddsJob> logger;
-	private readonly BetsapiRepo betsapiRepo;
+public abstract class Betsapi_UpdateOddsJob<T> : BaseJob where T : class {
+	protected readonly ILogger<T> logger;
+	protected readonly BetsapiRepo betsapiRepo;
 
 	public Betsapi_UpdateOddsJob(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<Betsapi_UpdateOddsJob> logger,
+		ILogger<T> logger,
 		BetsapiRepo betsapiRepo
 	) : base(dbContext, snapshot) {
 		this.logger = logger;
 		this.betsapiRepo = betsapiRepo;
 	}
 
-	/// Override
-	public override async Task Run(IJobExecutionContext context) {
-		// We prior to matches that has long time from previous updated
-		var sysLiveMatches = await this.dbContext.sportMatches
-			.Where(m => m.status == SportMatchModelConst.TimeStatus.InPlay)
-			.OrderBy(m => m.updated_at)
-			.ToArrayAsync()
-		;
-
-		// Only take at most 1/10 of live match count
-		var sysUpcomingMatches = await this.dbContext.sportMatches
-			.Where(m => m.status == SportMatchModelConst.TimeStatus.Upcoming)
-			.OrderBy(m => m.updated_at)
-			.Take(Math.Max(1, sysLiveMatches.Length / 10))
-			.ToArrayAsync()
-		;
-
-		var sysMatches = new List<SportMatchModel>(sysLiveMatches.Length + sysUpcomingMatches.Length);
-		sysMatches.AddRange(sysLiveMatches);
-		sysMatches.AddRange(sysUpcomingMatches);
+	protected async Task UpdateMatchOddsAsync(SportMatchModel[] sysMatches) {
+		if (sysMatches.Length == 0) {
+			return;
+		}
 
 		foreach (var sysMatch in sysMatches) {
 			var apiResult = await this.betsapiRepo.FetchMatchOddsSummary(sysMatch.ref_betsapi_match_id);
@@ -90,7 +62,7 @@ public class Betsapi_UpdateOddsJob : BaseJob {
 		var bookmaker = apiResult.results;
 
 		// Bookmaker at top will result to higher reliable odd and time.
-		var odd_1xbet = bookmaker._1XBet?.odds?.end?._1_1;
+		var odd_1xbet = bookmaker._1XBet?.odds?.end?._1_1 ?? bookmaker._1XBet?.odds?.kickoff?._1_1 ?? bookmaker._1XBet?.odds?.start?._1_1;
 		if (odd_1xbet != null) {
 			if (odd_1xbet.home_od != null) {
 				homeOdd = Math.Min(homeOdd, odd_1xbet.home_od.ParseDecimalDk());
@@ -103,7 +75,7 @@ public class Betsapi_UpdateOddsJob : BaseJob {
 			}
 		}
 
-		var odd_10bet = bookmaker._10Bet?.odds?.end?._1_1;
+		var odd_10bet = bookmaker._10Bet?.odds?.end?._1_1 ?? bookmaker._10Bet?.odds?.kickoff?._1_1 ?? bookmaker._10Bet?.odds?.start?._1_1;
 		if (odd_10bet != null) {
 			if (odd_10bet.home_od != null) {
 				homeOdd = Math.Min(homeOdd, odd_10bet.home_od.ParseDecimalDk());
@@ -116,7 +88,7 @@ public class Betsapi_UpdateOddsJob : BaseJob {
 			}
 		}
 
-		var odd_365 = bookmaker.Bet365?.odds?.end?._1_1;
+		var odd_365 = bookmaker.Bet365?.odds?.end?._1_1 ?? bookmaker.Bet365?.odds?.kickoff?._1_1 ?? bookmaker.Bet365?.odds?.start?._1_1;
 		if (odd_365 != null) {
 			if (odd_365.home_od != null) {
 				homeOdd = Math.Min(homeOdd, odd_365.home_od.ParseDecimalDk());
@@ -129,7 +101,7 @@ public class Betsapi_UpdateOddsJob : BaseJob {
 			}
 		}
 
-		var odd_bwin = bookmaker.BWin?.odds?.end?._1_1;
+		var odd_bwin = bookmaker.BWin?.odds?.end?._1_1 ?? bookmaker.BWin?.odds?.kickoff?._1_1 ?? bookmaker.BWin?.odds?.start?._1_1;
 		if (odd_bwin != null) {
 			if (odd_bwin.home_od != null) {
 				homeOdd = Math.Min(homeOdd, odd_bwin.home_od.ParseDecimalDk());
@@ -142,7 +114,7 @@ public class Betsapi_UpdateOddsJob : BaseJob {
 			}
 		}
 
-		var odd_unibet = bookmaker.UniBet?.odds?.end?._1_1;
+		var odd_unibet = bookmaker.UniBet?.odds?.end?._1_1 ?? bookmaker.UniBet?.odds?.kickoff?._1_1 ?? bookmaker.UniBet?.odds?.start?._1_1;
 		if (odd_unibet != null) {
 			if (odd_unibet.home_od != null) {
 				homeOdd = Math.Min(homeOdd, odd_unibet.home_od.ParseDecimalDk());
@@ -173,9 +145,9 @@ public class Betsapi_UpdateOddsJob : BaseJob {
 		}
 
 		// At this time, each odd will be valid value.
-		homeOdd = homeOdd.RoundOddAsFloorDk();
-		drawOdd = drawOdd.RoundOddAsFloorDk();
-		awayOdd = awayOdd.RoundOddAsFloorDk();
+		homeOdd = homeOdd.RoundOddDk();
+		drawOdd = drawOdd.RoundOddDk();
+		awayOdd = awayOdd.RoundOddDk();
 
 		// Force all big odds (> 100) to 100
 		if (homeOdd > AppConst.ODD_VALUE_MAX_INCLUSIVE) {
@@ -259,14 +231,14 @@ public class Betsapi_UpdateOddsJob : BaseJob {
 		}
 		// 必勝でない。全部が１超え。
 		else {
-			homeOrDraw = 1 + ((Math.Min(_home, _draw) + Math.Abs(_home - _draw) / 10 - 1) / 5);
-			homeOrAway = 1 + ((Math.Min(_home, _away) + Math.Abs(_home - _away) / 10 - 1) / 5);
-			awayOrDraw = 1 + ((Math.Min(_away, _draw) + Math.Abs(_away - _draw) / 10 - 1) / 5);
+			homeOrDraw = this._CalcDoubleChanceOdd(_home, _draw, _away);
+			homeOrAway = this._CalcDoubleChanceOdd(_home, _away, _draw);
+			awayOrDraw = this._CalcDoubleChanceOdd(_away, _draw, _home);
 
 			// Round to 2 decimal first
-			homeOrDraw = homeOrDraw.RoundOddAsFloorDk();
-			homeOrAway = homeOrAway.RoundOddAsFloorDk();
-			awayOrDraw = awayOrDraw.RoundOddAsFloorDk();
+			homeOrDraw = homeOrDraw.RoundOddDk();
+			homeOrAway = homeOrAway.RoundOddDk();
+			awayOrDraw = awayOrDraw.RoundOddDk();
 
 			// Force all big odds (> 100) to 100
 			if (homeOrDraw > AppConst.ODD_VALUE_MAX_INCLUSIVE) {
@@ -303,5 +275,16 @@ public class Betsapi_UpdateOddsJob : BaseJob {
 			new() { name = OddConst.HomeOrAway, value = homeOrAway, suspend = (homeOrAway == AppConst.ODD_VALUE_NULL) },
 			new() { name = OddConst.AwayOrDraw, value = awayOrDraw, suspend = (awayOrDraw == AppConst.ODD_VALUE_NULL) },
 		});
+	}
+
+	private decimal _CalcDoubleChanceOdd(decimal odd1, decimal odd2, decimal other) {
+		var defaultScale = 5m;
+		var diff = other - Math.Max(odd1, odd2);
+
+		if (diff > 0) {
+			defaultScale += diff / 10;
+		}
+
+		return 1 + ((Math.Min(odd1, odd2) - 1) / defaultScale);
 	}
 }

@@ -16,8 +16,7 @@ public class AppDbContext : DbContext {
 	/// [Master]
 	public DbSet<MstAppModel> apps { get; set; }
 	public DbSet<MstCountryModel> countries { get; set; }
-	public DbSet<MstCardanoCoinModel> cardanoCoins { get; set; }
-	public DbSet<MstCardanoPolicyModel> cardanoPolicies { get; set; }
+	public DbSet<MstCurrencyModel> currencies { get; set; }
 	public DbSet<MstExchangeRateModel> exchangeRates { get; set; }
 
 	/// [User]
@@ -42,17 +41,15 @@ public class AppDbContext : DbContext {
 
 		// Master
 		MstAppModelBuilder.OnModelCreating(modelBuilder);
-		MstExchangeRateModelBuilder.OnModelCreating(modelBuilder);
+		MstCurrencyModelBuilder.OnModelCreating(modelBuilder);
 		MstCountryModelBuilder.OnModelCreating(modelBuilder);
+		MstExchangeRateModelBuilder.OnModelCreating(modelBuilder);
 
 		// User
 		UserModelBuilder.OnModelCreating(modelBuilder);
 		UserAuthModelBuilder.OnModelCreating(modelBuilder);
 		UserWalletModelBuilder.OnModelCreating(modelBuilder);
 
-		// Cardano
-		MstCardanoCoinModelBuilder.OnModelCreating(modelBuilder);
-		MstCardanoPolicyModelBuilder.OnModelCreating(modelBuilder);
 
 		// Sport
 		MstSportModelBuilder.OnModelCreating(modelBuilder);

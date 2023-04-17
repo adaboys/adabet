@@ -8,30 +8,30 @@ using Microsoft.Extensions.Options;
 /// cd api/BootProject
 /// post
 [ApiController, Route(Routes.api_prefix)]
-public class BootController : ControllerBase {
+public class UserCommandController : ControllerBase {
 	private readonly AppSetting appSetting;
 	private readonly ILogger logger;
-	private readonly BootCommand bootService;
+	private readonly UserCommand service;
 
-	public BootController(
+	public UserCommandController(
 		IOptionsSnapshot<AppSetting> option,
-		ILogger<BootController> logger,
-		BootCommand bootService
+		ILogger<UserCommandController> logger,
+		UserCommand service
 	) {
 		this.appSetting = option.Value;
 		this.logger = logger;
-		this.bootService = bootService;
+		this.service = service;
 	}
 
 	/// <summary>
-	/// Boot project. Run at initial time after configured servers.
+	/// Update codes for users.
 	/// </summary>
 	/// <response code="200"></response>
-	[HttpPost, Route("cmd/project/Boot")]
-	public async Task<ApiResponse> BootProject() {
+	[HttpPost, Route("cmd/users/update_codes")]
+	public async Task<ApiResponse> UpdateCodesForUsers() {
 		if (!this.appSetting.taskMode.enableCommand) {
 			return new ApiBadRequestResponse("Bad mode");
 		}
-		return await this.bootService.BootProject();
+		return await this.service.UpdateCodesForUsers();
 	}
 }

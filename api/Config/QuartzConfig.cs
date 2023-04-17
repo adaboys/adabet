@@ -41,12 +41,19 @@ public static class QuartzConfig {
 
 		Betsapi_FetchLiveMatchesJob.Register(quartzConfig);
 		Betsapi_FetchUpcomingMatchesJob.Register(quartzConfig);
-		Betsapi_UpdateOddsJob.Register(quartzConfig);
-		Betsapi_UpdateMatchStateJob.Register(quartzConfig);
+
+		Betsapi_UpdateOdds_Live_Job.Register(quartzConfig);
+		Betsapi_UpdateOdds_Upcoming_Job.Register(quartzConfig);
+
+		Betsapi_UpdateMatchStatus_Live_Job.Register(quartzConfig);
+		Betsapi_UpdateMatchStatus_Upcoming_Job.Register(quartzConfig);
+		Betsapi_UpdateMatchStatus_ComingSoon_Job.Register(quartzConfig);
 
 		DecideUserBetResultJob.Register(quartzConfig);
 		SendCoinToWinnerJob.Register(quartzConfig);
-		SubmitUserBetToCardanoJob.Register(quartzConfig);
+		// SubmitUserBetToCardanoJob.Register(quartzConfig);
+
+		SendPredictionRewardJob.Register(quartzConfig);
 	}
 }
 

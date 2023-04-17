@@ -95,4 +95,19 @@ public class UserController : BaseController {
 
 		return await this.userService.UpdateUserIdentity(userId.Value, requestBody);
 	}
+
+	/// <summary>
+	/// Update user's identity for KYC.
+	/// </summary>
+	/// <response code="200"></response>
+	[Authorize]
+	[HttpPost, Route(Routes.user_avatar_update)]
+	public async Task<ActionResult<ApiResponse>> UpdateAvatar([FromForm] UpdateUserAvatarRequestBody requestBody) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+		DkReflections.TrimJsonAnnotatedProperties(requestBody);
+
+		return await this.userService.UpdateAvatar(userId.Value, requestBody);
+	}
 }

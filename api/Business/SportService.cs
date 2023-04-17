@@ -58,6 +58,7 @@ public class SportService {
 
 			where _league.sport_id == sport_id
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
+			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 
 			orderby _match.start_at ascending
 
@@ -65,7 +66,7 @@ public class SportService {
 				id = _match.id,
 				start_at = _match.start_at,
 
-				country = _country.name_en,
+				country = _country.name,
 				league = _league.name,
 
 				team1 = _team1.name,
@@ -77,7 +78,7 @@ public class SportService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				cur_time = _match.cur_play_time,
+				cur_time = _match.timer,
 				markets = _match.markets == null ? null : DkJsons.ToObj<List<Market>>(_match.markets!),
 			}
 		;
@@ -101,15 +102,16 @@ public class SportService {
 			join _country in this.dbContext.countries on _league.country_id equals _country.id into _left_countries
 			from _country in _left_countries.DefaultIfEmpty()
 
-			where ((int)_league.sport_id) == sport_id
+			where _league.sport_id == sport_id
 			where _match.status == SportMatchModelConst.TimeStatus.Upcoming
+			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 
 			orderby _match.start_at ascending
 
 			select new Sport_UpcomingMatchesResponse.Match {
 				start_at = _match.start_at,
 
-				country = _country.name_en,
+				country = _country.name,
 				league = _league.name,
 
 				team1 = _team1.name,
@@ -121,7 +123,7 @@ public class SportService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				cur_time = _match.cur_play_time,
+				cur_time = _match.timer,
 				markets = _match.markets == null ? null : DkJsons.ToObj<List<Market>>(_match.markets!),
 			}
 		;
@@ -151,6 +153,7 @@ public class SportService {
 
 			where ((int)_league.sport_id) == sport_id
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
+			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 
 			orderby _match.user_bet_count descending, _match.start_at ascending
 
@@ -158,7 +161,7 @@ public class SportService {
 				id = _match.id,
 				start_at = _match.start_at,
 
-				country = _country.name_en,
+				country = _country.name,
 				league = _league.name,
 
 				team1 = _team1.name,
@@ -170,7 +173,7 @@ public class SportService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				cur_time = _match.cur_play_time,
+				cur_time = _match.timer,
 
 				tmp_markets = _match.markets == null ? null : DkJsons.ToObj<List<Market>>(_match.markets!),
 			}
@@ -204,6 +207,7 @@ public class SportService {
 
 			where ((int)_league.sport_id) == sport_id
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
+			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 
 			orderby _match.start_at ascending
 
@@ -211,7 +215,7 @@ public class SportService {
 				id = _match.id,
 				start_at = _match.start_at,
 
-				country = _country.name_en,
+				country = _country.name,
 				league = _league.name,
 
 				team1 = _team1.name,
@@ -223,7 +227,7 @@ public class SportService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				cur_time = _match.cur_play_time,
+				cur_time = _match.timer,
 
 				markets = _match.markets == null ? null : DkJsons.ToObj<List<Market>>(_match.markets!),
 			}
