@@ -1,12 +1,12 @@
 <?php
 /**
- *   Stake iGaming platform
+ *   Stake ADABET platform
  *   ----------------------
- *   2022_02_02_000000_alter_users_table_add_code.php
+ *   2023_4_1_000000_alter_users_table_add_code.php
  * 
- *   @copyright  Copyright (c) FinancialPlugins, All rights reserved
- *   @author     FinancialPlugins <info@financialplugins.com>
- *   @see        https://financialplugins.com
+ *   @copyright  Copyright (c) ADABET, All rights reserved
+ *   @author     dev <contact@adabet.io>
+ *   @see        https://adabet.io
 */
 
 use App\Helpers\Utils;
