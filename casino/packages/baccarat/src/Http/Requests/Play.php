@@ -1,12 +1,12 @@
 <?php
 /**
- *   Stake iGaming platform
+ *   Stake ADABET platform
  *   ----------------------
- *   Play.php
+ *   Http/Requests
  * 
- *   @copyright  Copyright (c) FinancialPlugins, All rights reserved
- *   @author     FinancialPlugins <info@financialplugins.com>
- *   @see        https://financialplugins.com
+ *   @copyright  Copyright (c) ADABET, All rights reserved
+ *   @author     dev <contact@adabet.io>
+ *   @see        https://adabet.io
 */
 
 namespace Packages\Baccarat\Http\Requests;
