@@ -2,7 +2,7 @@
 /**
  *   Stake ADABET platform
  *   ----------------------
- *   filename.php
+ *   2023_04_09_121212_create_user_wallets_table
  * 
  *   @copyright  Copyright (c) ADABET, All rights reserved
  *   @author     dev <contact@adabet.io>
