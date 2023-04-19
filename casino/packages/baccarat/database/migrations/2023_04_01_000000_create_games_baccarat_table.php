@@ -2,7 +2,7 @@
 /**
  *   Stake ADABET platform
  *   ----------------------
- *   migrations
+ *   database/migrations
  * 
  *   @copyright  Copyright (c) ADABET, All rights reserved
  *   @author     dev <contact@adabet.io>
