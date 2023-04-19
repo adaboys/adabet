@@ -1,12 +1,12 @@
 <?php
 /**
- *   Stake iGaming platform
+ *   Stake ADABET platform
  *   ----------------------
- *   2019_12_01_000000_create_bonuses_table.php
+ *   database/migrations
  * 
- *   @copyright  Copyright (c) FinancialPlugins, All rights reserved
- *   @author     FinancialPlugins <info@financialplugins.com>
- *   @see        https://financialplugins.com
+ *   @copyright  Copyright (c) ADABET, All rights reserved
+ *   @author     dev <contact@adabet.io>
+ *   @see        https://adabet.io
 */
 
 use Illuminate\Database\Migrations\Migration;
