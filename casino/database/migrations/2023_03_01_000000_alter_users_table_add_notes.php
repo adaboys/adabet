@@ -2,7 +2,7 @@
 /**
  *   Stake ADABET platform
  *   ----------------------
- *   filename.php
+ *   2023_03_01_000000_alter_users_table_add_notes.php
  * 
  *   @copyright  Copyright (c) ADABET, All rights reserved
  *   @author     dev <contact@adabet.io>
