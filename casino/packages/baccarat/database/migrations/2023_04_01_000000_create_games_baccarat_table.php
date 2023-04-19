@@ -1,12 +1,12 @@
 <?php
 /**
- *   Stake iGaming platform
+ *   Stake ADABET platform
  *   ----------------------
- *   2019_11_03_000000_create_games_baccarat_table.php
+ *   migrations
  * 
- *   @copyright  Copyright (c) FinancialPlugins, All rights reserved
- *   @author     FinancialPlugins <info@financialplugins.com>
- *   @see        https://financialplugins.com
+ *   @copyright  Copyright (c) ADABET, All rights reserved
+ *   @author     dev <contact@adabet.io>
+ *   @see        https://adabet.io
 */
 
 use Illuminate\Support\Facades\Schema;
