@@ -1,13 +1,13 @@
 <?php
 /**
- *   Stake iGaming platform
+ *   Stake ADABET platform
  *   ----------------------
  *   api.php
- * 
- *   @copyright  Copyright (c) FinancialPlugins, All rights reserved
- *   @author     FinancialPlugins <info@financialplugins.com>
- *   @see        https://financialplugins.com
-*/
+ *
+ *   @copyright  Copyright (c) ADABET, All rights reserved
+ *   @author     dev <contact@adabet.io>
+ *   @see        https://adabet.io
+ */
 
 use App\Http\Controllers\Admin\BonusController as AdminBonusController;
 use App\Http\Controllers\Admin\HelpController;

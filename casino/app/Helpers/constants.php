@@ -1,13 +1,12 @@
 <?php
 /**
- *   Stake iGaming platform
+ *   Stake ADABET platform
  *   ----------------------
- *   constants.php
- * 
- *   @copyright  Copyright (c) FinancialPlugins, All rights reserved
- *   @author     FinancialPlugins <info@financialplugins.com>
- *   @see        https://financialplugins.com
-*/
+ *
+ *   @copyright  Copyright (c) ADABET, All rights reserved
+ *   @author     dev <contact@adabet.io>
+ *   @see        https://adabet.io
+ */
 
 define('HTTP_CODE_EMAIL_NOT_VERIFIED', 455);
 define('HTTP_CODE_2FA_NOT_PASSED', 456);
