@@ -1,0 +1,15 @@
+{
+    "id": "release-manager",
+    "name": "Release manager",
+    "type": "demo",
+    "description": "This add-on provides an API to pull app and add-ons release information.",
+    "providers": [
+        "Packages\\ReleaseManager\\Providers\\PackageServiceProvider"
+    ],
+    "base_path": "release-manager",
+    "source_path": "src",
+    "namespace": "Packages\\ReleaseManager\\",
+    "static": {},
+    "purchase_url": "",
+    "min_app_version": "1.19.0"
+}
