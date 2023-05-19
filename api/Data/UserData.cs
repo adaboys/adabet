@@ -30,13 +30,11 @@ public class ConfirmRegisterUserRequestBody {
 }
 
 public class UpdateUserIdentityRequestBody {
-	[Required]
 	[JsonPropertyName(name: "full_name")]
-	public string full_name { get; set; }
+	public string? full_name { get; set; }
 
-	[Required]
 	[JsonPropertyName(name: "telno")]
-	public string telno { get; set; }
+	public string? telno { get; set; }
 }
 
 public class UpdateUserIdentityResponse : ApiSuccessResponse {
@@ -45,10 +43,10 @@ public class UpdateUserIdentityResponse : ApiSuccessResponse {
 
 	public class Data {
 		[JsonPropertyName(name: "full_name")]
-		public string full_name { get; set; }
+		public string? full_name { get; set; }
 
 		[JsonPropertyName(name: "telno")]
-		public string telno { get; set; }
+		public string? telno { get; set; }
 	}
 }
 

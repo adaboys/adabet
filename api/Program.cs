@@ -50,6 +50,8 @@ internal class Program {
 			.AddScoped<SportPredictionService>()
 			.AddScoped<CurrencyService>()
 			.AddScoped<UserWalletDao>()
+
+			.AddScoped<CasinoRepo>()
 			.AddControllers();
 
 		// Our app setting
@@ -78,8 +80,7 @@ internal class Program {
 			services.ConfigureQuartzDk(config, appSetting);
 		}
 
-		// [Swagger] Use swagger for api doc
-		//todo remove true when release
+		// [Swagger] For api doc
 		if (true || !isProduction) {
 			services.AddSwaggerGen(option => {
 				// Support generating api-doc
@@ -104,7 +105,6 @@ internal class Program {
 		}
 
 		// [Swagger] for api doc at non-production env
-		//todo remove true when release
 		if (true || !isProduction) {
 			app.UseSwagger();
 			app.UseSwaggerUI();

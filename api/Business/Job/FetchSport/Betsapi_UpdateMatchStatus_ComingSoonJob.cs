@@ -13,11 +13,13 @@ using Tool.Compet.Log;
 public class Betsapi_UpdateMatchStatus_ComingSoon_Job : Betsapi_UpdateMatchStatusJob<Betsapi_UpdateMatchStatus_ComingSoon_Job> {
 	private const string JOB_NAME = nameof(Betsapi_UpdateMatchStatus_ComingSoon_Job);
 
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
+	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
+		var cronExpression = appSetting.environment == AppSetting.ENV_PRODUCTION ? "0 /1 * * * ?" : "0 /3 * * * ?";
+
 		quartzConfig.ScheduleJob<Betsapi_UpdateMatchStatus_ComingSoon_Job>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /3 * * * ?") // 10 api in 10s
+			.WithCronSchedule(cronExpression) // 10 api in 10s
 			.WithDescription(JOB_NAME)
 		);
 	}
@@ -34,21 +36,11 @@ public class Betsapi_UpdateMatchStatus_ComingSoon_Job : Betsapi_UpdateMatchStatu
 	public override async Task Run(IJobExecutionContext context) {
 		var comingSoonMatches = await this.dbContext.sportMatches
 			.Where(m => SportMatchModelConst.ComingSoonMatchStatusList.Contains(m.status))
-			.OrderBy(m => m.updated_at)
-			.Take(80)
+			.OrderBy(m => m.start_at)
+			.Take(100)
 			.ToArrayAsync()
 		;
 
-		var upcomingMatches = await this.dbContext.sportMatches
-			.Where(m => m.status == SportMatchModelConst.TimeStatus.Upcoming)
-			.OrderBy(m => m.start_at)
-			.Take(20)
-			.ToArrayAsync();
-
-		var reqSysMatches = new SportMatchModel[comingSoonMatches.Length + upcomingMatches.Length];
-		Array.Copy(comingSoonMatches, 0, reqSysMatches, 0, comingSoonMatches.Length);
-		Array.Copy(upcomingMatches, 0, reqSysMatches, comingSoonMatches.Length, upcomingMatches.Length);
-
-		await this.UpdateMatchesInfoAsync(reqSysMatches);
+		await this.UpdateMatchesInfoAsync(comingSoonMatches);
 	}
 }

@@ -34,4 +34,16 @@ public class UserCommandController : ControllerBase {
 		}
 		return await this.service.UpdateCodesForUsers();
 	}
+
+	/// <summary>
+	/// Sync (send) users to Casino service.
+	/// </summary>
+	/// <response code="200"></response>
+	[HttpPost, Route("cmd/users/sync_to_casino")]
+	public async Task<ApiResponse> SyncUsersToCasino() {
+		if (!this.appSetting.taskMode.enableCommand) {
+			return new ApiBadRequestResponse("Bad mode");
+		}
+		return await this.service.SyncUsersToCasino();
+	}
 }

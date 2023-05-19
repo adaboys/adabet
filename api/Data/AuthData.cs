@@ -208,3 +208,13 @@ public class ConfirmResetPasswordRequestBody {
 	[JsonPropertyName(name: "logout_everywhere")]
 	public bool logout_everywhere { get; set; } = true;
 }
+
+public class GetUserAuthInfoResponse : ApiSuccessResponse {
+	[JsonPropertyName(name: "data")]
+	public Data data { get; set; }
+
+	public class Data {
+		[JsonPropertyName(name: "user_id")]
+		public Guid user_id { get; set; }
+	}
+}

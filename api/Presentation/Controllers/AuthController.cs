@@ -152,4 +152,9 @@ public class AuthController : BaseController {
 
 		return await authService.ConfirmResetPassword(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
 	}
+
+	[HttpGet, Route(ServiceRoutes.user_auth_info)]
+	public async Task<ActionResult<ApiResponse>> GetUserAuthInfo([FromQuery] string api_key, [FromQuery] string refresh_token) {
+		return await authService.GetUserAuthInfo(api_key, refresh_token);
+	}
 }

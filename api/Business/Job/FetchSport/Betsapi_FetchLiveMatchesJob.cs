@@ -12,11 +12,11 @@ using Tool.Compet.Json;
 public class Betsapi_FetchLiveMatchesJob : BaseJob {
 	private const string JOB_NAME = nameof(Betsapi_FetchLiveMatchesJob);
 
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
+	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
 		quartzConfig.ScheduleJob<Betsapi_FetchLiveMatchesJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /3 * * * ?") // 1 api in 30s
+			.WithCronSchedule("0 /3 * * * ?")
 			.WithDescription(JOB_NAME)
 		);
 	}

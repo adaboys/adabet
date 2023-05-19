@@ -48,6 +48,7 @@ public partial class Routes {
 	public const string sport_user_bet_histories = "sport/{sport_id}/user/bet/histories"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 
 	public const string sport_prediction_match_list = "sport/{sport_id}/prediction/match/list"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
+	public const string sport_prediction_match_detail = "sport/prediction/match/{match_id}/detail"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_prediction_match_predict = "sport/prediction/match/{match_id}/predict"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string sport_prediction_match_predicted_users = "sport/prediction/match/{match_id}/predicted_users"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_prediction_leaderboard = "sport/prediction/leaderboard"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 10}}

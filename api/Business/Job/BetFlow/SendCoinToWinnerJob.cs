@@ -16,7 +16,7 @@ public class SendCoinToWinnerJob : BaseJob {
 		quartzConfig.ScheduleJob<SendCoinToWinnerJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /5 * * * ?")
+			.WithCronSchedule("0 /2 * * * ?")
 			.WithDescription(JOB_NAME)
 		);
 	}
@@ -60,8 +60,8 @@ public class SendCoinToWinnerJob : BaseJob {
 				rewardTx = _tx,
 			}
 		;
-		var totalRewardItems = await query.Take(100).ToArrayAsync();
-		if (totalRewardItems.Length == 0) {
+		var winnerRewards = await query.Take(100).ToArrayAsync();
+		if (winnerRewards.Length == 0) {
 			return;
 		}
 
@@ -72,23 +72,23 @@ public class SendCoinToWinnerJob : BaseJob {
 
 		//todo should choose lower reward for higher tx status? maybe need remove some high-reward item?
 
-		foreach (var item in totalRewardItems) {
-			var sender_addr = item.rewardTx.sender_address;
-			var coinSendToWinner = item.bet_currency_amount * item.bet_odd_value;
+		foreach (var winnerReward in winnerRewards) {
+			var sender_addr = winnerReward.rewardTx.sender_address;
+			var coinSendToWinner = winnerReward.bet_currency_amount * winnerReward.bet_odd_value;
 
 			senderAddrs.Add(sender_addr);
 
 			var sendAssets = new List<CardanoNode_AssetInfo>();
-			if (item.currency_network != MstCurrencyModelConst.Network.Cardano) {
+			if (winnerReward.currency_network != MstCurrencyModelConst.Network.Cardano) {
 				return;
 			}
 
 			// Send token and 1.4 ADA if need
 			sendAssets.Add(new() {
-				asset_id = item.currency_code,
-				quantity = $"{(coinSendToWinner * DkMaths.Pow(10, item.currency_decimals)):0}",
+				asset_id = winnerReward.currency_code,
+				quantity = $"{(coinSendToWinner * DkMaths.Pow(10, winnerReward.currency_decimals)):0}",
 			});
-			if (item.currency_code != MstCurrencyModelConst.CODE_ADA) {
+			if (winnerReward.currency_code != MstCurrencyModelConst.CODE_ADA) {
 				sendAssets.Add(new() {
 					asset_id = MstCurrencyModelConst.CODE_ADA,
 					quantity = $"{AppConst.MIN_LOVELACE_TO_SEND}",
@@ -97,23 +97,23 @@ public class SendCoinToWinnerJob : BaseJob {
 
 			transactions.Add(new() {
 				sender_address = sender_addr,
-				receiver_address = item.rewardTx.receiver_address,
-				assets = sendAssets.ToArray()
+				receiver_address = winnerReward.rewardTx.receiver_address,
+				assets = sendAssets.ToArray(),
 			});
 		}
 
-		var cardanoRequest = new CardanoNode_TxRawAssetsRequestBody {
+		var cnodeRequest = new CardanoNode_TxRawAssetsRequestBody {
 			fee_payer_addresses = senderAddrs.ToArray(),
 			transactions = transactions.ToArray()
 		};
-		var cardanoResponse = await this.cardanoNodeRepo.TxRawAssetsAsync(cardanoRequest);
+		var cnodeResponse = await this.cardanoNodeRepo.TxRawAssetsAsync(cnodeRequest);
 
-		var tx_status = cardanoResponse.succeed ? SportWinnerBetRewardTxModelConst.TxStatus.SubmitSucceed : SportWinnerBetRewardTxModelConst.TxStatus.SubmitFailed;
-		var tx_id = cardanoResponse.data?.tx_id;
-		var tx_message = cardanoResponse.message.TruncateForShortLengthDk();
+		var tx_status = cnodeResponse.succeed ? SportWinnerBetRewardTxModelConst.TxStatus.SubmitSucceed : SportWinnerBetRewardTxModelConst.TxStatus.SubmitFailed;
+		var tx_id = cnodeResponse.data?.tx_id;
+		var tx_message = cnodeResponse.message.TruncateForShortLengthDk();
 
 		// Update tx status
-		foreach (var item in totalRewardItems) {
+		foreach (var item in winnerRewards) {
 			var rewardTx = item.rewardTx;
 
 			rewardTx.fee_in_ada = fee_in_ada;

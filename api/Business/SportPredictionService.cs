@@ -63,7 +63,7 @@ public class SportPredictionService : BaseService {
 		var pagedResult = await query.AsNoTracking().PaginateDk(pagePos, pageSize);
 		var matches = pagedResult.items;
 
-		// On each match, check the user has predicted or not.
+		// Check the user has predicted or not on each match.
 		if (userId != null) {
 			var predictedMatches = await this.dbContext.sportPredictUsers
 				.Where(m => m.user_id == userId && m.predicted_at != null)
@@ -75,12 +75,79 @@ public class SportPredictionService : BaseService {
 			}
 		}
 
+		// Count participant joined to predict on each match
+		var match_participant = await this.dbContext.sportPredictUsers
+			.Where(m => matches.Select(m => m.id).ToArray().Contains(m.sport_match_id))
+			.GroupBy(m => m.sport_match_id)
+			.Select(g => new {
+				match_id = g.Key,
+				participant_count = g.Count(),
+			})
+			.ToDictionaryAsync(m => m.match_id)
+		;
+		foreach (var match in matches) {
+			match.participant = match_participant.GetValueOrDefault(match.id)?.participant_count ?? 0;
+		}
+
 		return new GetSportPredictionMatchesResponse {
 			data = new() {
 				page_pos = pagedResult.pagePos,
 				page_count = pagedResult.pageCount,
 				total_item_count = pagedResult.totalItemCount,
 				matches = matches
+			}
+		};
+	}
+
+	public async Task<ApiResponse> GetPredictionMatchDetail(long match_id) {
+		var query =
+			from _match in this.dbContext.sportMatches
+
+			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
+			join _team1 in this.dbContext.sportTeams on _match.home_team_id equals _team1.id
+			join _team2 in this.dbContext.sportTeams on _match.away_team_id equals _team2.id
+			join _country in this.dbContext.countries on _league.country_id equals _country.id into _left_countries
+			from _country in _left_countries.DefaultIfEmpty()
+
+			where _match.id == match_id
+
+			select new GetSportPredictionMatchDetailResponse.Match {
+				id = _match.id,
+
+				start_at = _match.start_at,
+
+				country = _country.name,
+				league = _league.name,
+
+				team1 = _team1.name,
+				team2 = _team2.name,
+
+				image1 = SportTeamModelConst.CalcFlagImageName(_team1.flag_image_name, _team1.flag_image_src),
+				image2 = SportTeamModelConst.CalcFlagImageName(_team2.flag_image_name, _team2.flag_image_src),
+
+				score1 = _match.home_score,
+				score2 = _match.away_score,
+
+				timer = _match.timer,
+			}
+		;
+
+		var match = await query.AsNoTracking().FirstOrDefaultAsync();
+		if (match is null) {
+			return new ApiBadRequestResponse("Invalid match");
+		}
+
+		// var winnerCount = await this.dbContext.sportPredictUsers
+		// 	.Where(m => m.sport_match_id == match_id && )
+		// 	.CountAsync()
+		// ;
+
+		match.winner = 0;
+		match.loser = 0;
+
+		return new GetSportPredictionMatchDetailResponse {
+			data = new() {
+				match = match
 			}
 		};
 	}
@@ -186,7 +253,7 @@ public class SportPredictionService : BaseService {
 			}
 
 			// Submit prediction to chain.
-			// For now, we suppose user predict with ADA, so just send 1.4 ADA to the user itself.
+			// Let user predict with ADA. Just send 1.4 ADA to the user itself to indicate the user has predicted.
 			var sendAssets = new CardanoNode_AssetInfo[] {
 				new() {
 					asset_id = MstCurrencyModelConst.CODE_ADA,
@@ -298,12 +365,15 @@ public class SportPredictionService : BaseService {
 		var userIds = predictionRanks.Select(m => m.tmp_userId).ToArray();
 		var users = await this.dbContext.users
 			.Where(m => userIds.Contains(m.id))
-			.Select(m => new { m.id, m.player_name })
+			.Select(m => new { m.id, m.player_name, m.avatar_relative_path })
 			.ToDictionaryAsync(m => m.id)
 		;
 
 		foreach (var item in predictionRanks) {
-			item.player = users.GetValueOrDefault(item.tmp_userId)?.player_name;
+			var user = users.GetValueOrDefault(item.tmp_userId);
+
+			item.player = user?.player_name;
+			item.ava = user?.avatar_relative_path is null ? null : $"{this.appSetting.s3.baseUrl}/{user.avatar_relative_path}";
 		}
 
 		return new GetLeaderboardResponse {

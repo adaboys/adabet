@@ -105,10 +105,12 @@ public class SportService {
 			where _league.sport_id == sport_id
 			where _match.status == SportMatchModelConst.TimeStatus.Upcoming
 			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
+			where _match.markets != null // Ignore matches that does not ready for betting
 
 			orderby _match.start_at ascending
 
 			select new Sport_UpcomingMatchesResponse.Match {
+				id = _match.id,
 				start_at = _match.start_at,
 
 				country = _country.name,

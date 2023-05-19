@@ -295,7 +295,15 @@ public class UserSportService : BaseService {
 		}
 	}
 
-	public async Task<ApiResponse> GetBetHistories(Guid userId, int sport_id, int pagePos, int pageSize) {
+	public async Task<ApiResponse> GetBetHistories(Guid userId, int sport_id, int pagePos, int pageSize, string? tab) {
+		var notFilterBetResult = (tab is null);
+		var bet_result = tab switch {
+			"won" => SportUserBetModelConst.BetResult.Won,
+			"lost" => SportUserBetModelConst.BetResult.Losed,
+			"draw" => SportUserBetModelConst.BetResult.Draw,
+			_ => SportUserBetModelConst.BetResult.Nothing
+		};
+
 		var query =
 			from _ubet in this.dbContext.sportUserBets
 
@@ -304,11 +312,16 @@ public class UserSportService : BaseService {
 			join _team1 in this.dbContext.sportTeams on _match.home_team_id equals _team1.id
 			join _team2 in this.dbContext.sportTeams on _match.away_team_id equals _team2.id
 			join _coin in this.dbContext.currencies on _ubet.bet_currency_id equals _coin.id
+
 			join _country in this.dbContext.countries on _league.country_id equals _country.id into _left_countries
 			from _country in _left_countries.DefaultIfEmpty()
 
+			join _reward in this.dbContext.sportWinnerBetRewardTxs on _ubet.id equals _reward.sport_user_bet_id into _left_reward
+			from _reward in _left_reward.DefaultIfEmpty()
+
 			where _league.sport_id == sport_id
 			where _ubet.user_id == userId
+			where notFilterBetResult || _ubet.bet_result == bet_result
 
 			orderby _ubet.id descending
 
@@ -325,13 +338,17 @@ public class UserSportService : BaseService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				status = _match.status,
+				status = (int)_match.status,
 				timer = _match.timer,
 
 				bet_market_name = _ubet.bet_market_name,
 				bet_odd_value = _ubet.bet_odd_value,
-				staked = _ubet.bet_currency_amount,
 				coin = _coin.name,
+				staked = _ubet.bet_currency_amount,
+				bet_result = (int)_ubet.bet_result,
+
+				reward_status = (int?)(_reward.tx_status) ?? 0,
+				reward_tx_id = _reward.tx_id,
 			}
 		;
 

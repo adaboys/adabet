@@ -16,7 +16,7 @@ public class DecideUserBetResultJob : BaseJob {
 		quartzConfig.ScheduleJob<DecideUserBetResultJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /5 * * * ?")
+			.WithCronSchedule("0 /2 * * * ?")
 			.WithDescription(JOB_NAME)
 		);
 	}
@@ -47,7 +47,8 @@ public class DecideUserBetResultJob : BaseJob {
 
 			orderby _ubet.created_at descending
 
-			select new {
+			select new SelectResult {
+				match_status = _match.status,
 				cur_play_time = _match.timer,
 				home_score = _match.home_score,
 				away_score = _match.away_score,
@@ -64,24 +65,11 @@ public class DecideUserBetResultJob : BaseJob {
 
 			switch (ubet.bet_market_name) {
 				case MarketConst.MainFullTime: {
-					// Only check if the match end
-					var matchEnded = matchItem.cur_play_time >= FulltimeSeconds;
-
-					if (matchEnded) {
-						var homeWin = (matchItem.home_score > matchItem.away_score);
-						var draw = (matchItem.home_score == matchItem.away_score);
-						var awayWin = (matchItem.home_score < matchItem.away_score);
-
-						if (ubet.bet_odd_name == OddConst.HomeWin) {
-							ubet.bet_result = homeWin ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
-						}
-						else if (ubet.bet_odd_name == OddConst.Draw) {
-							ubet.bet_result = draw ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
-						}
-						else if (ubet.bet_odd_name == OddConst.AwayWin) {
-							ubet.bet_result = awayWin ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
-						}
-					}
+					this._UpdateUserBetResult_MainFullTime(matchItem);
+					break;
+				}
+				case MarketConst.DoubleChance: {
+					this._UpdateUserBetResult_DoubleChance(matchItem);
 					break;
 				}
 				case MarketConst.BothToScore: {
@@ -246,5 +234,55 @@ public class DecideUserBetResultJob : BaseJob {
 		}
 
 		await this.dbContext.SaveChangesAsync();
+	}
+
+	private void _UpdateUserBetResult_MainFullTime(SelectResult matchItem) {
+		var ubet = matchItem.ubet;
+
+		//fixme We can also check and update result while play is in progress
+		if (matchItem.match_status == SportMatchModelConst.TimeStatus.Ended) {
+			var homeWin = (matchItem.home_score > matchItem.away_score);
+			var draw = (matchItem.home_score == matchItem.away_score);
+			var awayWin = (matchItem.home_score < matchItem.away_score);
+
+			if (ubet.bet_odd_name == OddConst.HomeWin) {
+				ubet.bet_result = homeWin ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			}
+			else if (ubet.bet_odd_name == OddConst.Draw) {
+				ubet.bet_result = draw ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			}
+			else if (ubet.bet_odd_name == OddConst.AwayWin) {
+				ubet.bet_result = awayWin ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			}
+		}
+	}
+
+	private void _UpdateUserBetResult_DoubleChance(SelectResult matchItem) {
+		var ubet = matchItem.ubet;
+
+		//fixme We can also check and update result while play is in progress
+		if (matchItem.match_status == SportMatchModelConst.TimeStatus.Ended) {
+			var homeWin = (matchItem.home_score > matchItem.away_score);
+			var draw = (matchItem.home_score == matchItem.away_score);
+			var awayWin = (matchItem.home_score < matchItem.away_score);
+
+			if (homeWin || draw) {
+				ubet.bet_result = ubet.bet_odd_name == OddConst.HomeOrDraw ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			}
+			else if (awayWin || draw) {
+				ubet.bet_result = ubet.bet_odd_name == OddConst.AwayOrDraw ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			}
+			else if (homeWin || awayWin) {
+				ubet.bet_result = ubet.bet_odd_name == OddConst.HomeOrAway ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			}
+		}
+	}
+
+	private class SelectResult {
+		public SportMatchModelConst.TimeStatus match_status { get; set; }
+		public short cur_play_time { get; set; }
+		public short home_score { get; set; }
+		public short away_score { get; set; }
+		public SportUserBetModel ubet { get; set; }
 	}
 }

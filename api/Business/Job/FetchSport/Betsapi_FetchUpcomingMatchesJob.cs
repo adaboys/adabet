@@ -12,7 +12,7 @@ using Tool.Compet.Json;
 public class Betsapi_FetchUpcomingMatchesJob : BaseJob {
 	private const string JOB_NAME = nameof(Betsapi_FetchUpcomingMatchesJob);
 
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
+	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
 		quartzConfig.ScheduleJob<Betsapi_FetchUpcomingMatchesJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay

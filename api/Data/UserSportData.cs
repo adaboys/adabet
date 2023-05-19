@@ -99,7 +99,7 @@ public class Sport_GetBetHistoriesResponse : ApiSuccessResponse {
 		public short score2 { get; set; }
 
 		[JsonPropertyName(name: "status")]
-		public SportMatchModelConst.TimeStatus status { get; set; }
+		public int status { get; set; }
 
 		[JsonPropertyName(name: "timer")]
 		public short timer { get; set; }
@@ -113,10 +113,19 @@ public class Sport_GetBetHistoriesResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "odd")]
 		public decimal bet_odd_value { get; set; }
 
-		[JsonPropertyName(name: "staked")]
-		public decimal staked { get; set; }
+		[JsonPropertyName(name: "bet_result")]
+		public int bet_result { get; set; }
 
 		[JsonPropertyName(name: "coin")]
 		public string coin { get; set; }
+
+		[JsonPropertyName(name: "staked")]
+		public decimal staked { get; set; }
+
+		[JsonPropertyName(name: "reward_status")]
+		public int reward_status { get; set; }
+
+		[JsonPropertyName(name: "reward_tx_id")]
+		public string? reward_tx_id { get; set; }
 	}
 }

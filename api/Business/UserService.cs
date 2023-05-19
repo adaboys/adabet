@@ -177,8 +177,8 @@ public class UserService : BaseService {
 			return new ApiNotFoundResponse();
 		}
 
-		user.name = requestBody.full_name.Trim();
-		user.telno = requestBody.telno.Trim();
+		user.name = requestBody.full_name?.Trim();
+		user.telno = requestBody.telno?.Trim();
 
 		await this.dbContext.SaveChangesAsync();
 

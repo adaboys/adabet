@@ -25,6 +25,15 @@ public class SportPredictionController : BaseController {
 	}
 
 	/// <summary>
+	/// Get prediction match detail.
+	/// </summary>
+	/// <response code="200"></response>
+	[HttpGet, Route(Routes.sport_prediction_match_detail)]
+	public async Task<ActionResult<ApiResponse>> GetPredictionMatchDetail([FromRoute] long match_id) {
+		return await service.GetPredictionMatchDetail(match_id);
+	}
+
+	/// <summary>
 	/// Get list of sport prediction match.
 	/// </summary>
 	/// <response code="200"></response>

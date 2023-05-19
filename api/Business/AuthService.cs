@@ -690,6 +690,27 @@ public class AuthService : BaseService {
 		return new ApiSuccessResponse();
 	}
 
+	public async Task<ApiResponse> GetUserAuthInfo(string api_key, string refresh_token) {
+		if (this.appSetting.casino.apiKey != api_key) {
+			return new ApiForbiddenResponse("Invalid api key");
+		}
+
+		var auth = await this.dbContext.userAuths.FirstOrDefaultAsync(m =>
+			m.refresh_token == refresh_token &&
+			m.token_expired_at > DateTime.UtcNow &&
+			m.revoked_at == null
+		);
+		if (auth is null) {
+			return new ApiBadRequestResponse("Bad token");
+		}
+
+		return new GetUserAuthInfoResponse {
+			data = new() {
+				user_id = auth.user_id
+			}
+		};
+	}
+
 	private sealed class LoginWithExternalWalletCache {
 		public string nonce { get; set; }
 		public string email { get; set; }

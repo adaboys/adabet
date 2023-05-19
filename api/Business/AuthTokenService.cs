@@ -41,11 +41,12 @@ public class AuthTokenService {
 		var guid = Guid.NewGuid().ToStringDk();
 
 		if (tokenLength > guid.Length) {
-			var randomNumber = new byte[tokenLength - guid.Length];
-			using var rng = RandomNumberGenerator.Create();
-			rng.GetBytes(randomNumber);
+			// var randomNumber = new byte[tokenLength - guid.Length];
+			// using var rng = RandomNumberGenerator.Create();
+			// rng.GetBytes(randomNumber);
+			// Convert.ToBase64String(randomNumber);
 
-			return guid + Convert.ToBase64String(randomNumber);
+			return guid + CodeGenerator.RandomAlphabets(tokenLength - guid.Length);
 		}
 
 		return guid;

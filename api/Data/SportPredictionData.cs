@@ -58,6 +58,63 @@ public class GetSportPredictionMatchesResponse : ApiSuccessResponse {
 
 		[JsonPropertyName(name: "predicted_at")]
 		public DateTime? predicted_at { get; set; }
+
+		[JsonPropertyName(name: "participant")]
+		public int participant { get; set; }
+	}
+}
+
+public class GetSportPredictionMatchDetailResponse : ApiSuccessResponse {
+	[JsonPropertyName(name: "data")]
+	public Data data { get; set; }
+
+	public class Data {
+		[JsonPropertyName(name: "match")]
+		public Match match { get; set; }
+	}
+
+	public class Match {
+		[JsonPropertyName(name: "id")]
+		public long id { get; set; }
+
+		[JsonPropertyName(name: "s1")]
+		public int score1 { get; set; }
+
+		[JsonPropertyName(name: "s2")]
+		public int score2 { get; set; }
+
+		[JsonPropertyName(name: "t1")]
+		public string team1 { get; set; }
+
+		[JsonPropertyName(name: "t2")]
+		public string team2 { get; set; }
+
+		[JsonPropertyName(name: "img1")]
+		public string? image1 { get; set; }
+
+		[JsonPropertyName(name: "img2")]
+		public string? image2 { get; set; }
+
+		[JsonPropertyName(name: "country")]
+		public string? country { get; set; }
+
+		[JsonPropertyName(name: "league")]
+		public string league { get; set; }
+
+		[JsonPropertyName(name: "start_at")]
+		public DateTime start_at { get; set; }
+
+		[JsonPropertyName(name: "timer")]
+		public int timer { get; set; }
+
+		[JsonPropertyName(name: "predicted_at")]
+		public DateTime? predicted_at { get; set; }
+
+		[JsonPropertyName(name: "winner")]
+		public int winner { get; set; }
+
+		[JsonPropertyName(name: "loser")]
+		public int loser { get; set; }
 	}
 }
 
@@ -135,6 +192,9 @@ public class GetLeaderboardResponse : ApiSuccessResponse {
 
 		[JsonPropertyName(name: "player")]
 		public string? player { get; set; }
+
+		[JsonPropertyName(name: "ava")]
+		public string? ava { get; set; }
 
 		[JsonPropertyName(name: "reward_sum")]
 		public decimal reward_sum { get; set; }

@@ -24,7 +24,7 @@ public static class QuartzConfig {
 				poolOption.MaxConcurrency = 10;
 			});
 
-			RegisterJobs(quartzConfig);
+			RegisterJobs(quartzConfig, appSetting);
 		});
 
 		// Handle with ASP.NET Core server
@@ -36,18 +36,18 @@ public static class QuartzConfig {
 
 	/// Register all jobs here.
 	/// Quickest way to create a job with single trigger is to use ScheduleJob (requires version 3.2)
-	private static void RegisterJobs(IServiceCollectionQuartzConfigurator quartzConfig) {
+	private static void RegisterJobs(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
 		UpdateExchangeRateJob.Register(quartzConfig);
 
-		Betsapi_FetchLiveMatchesJob.Register(quartzConfig);
-		Betsapi_FetchUpcomingMatchesJob.Register(quartzConfig);
+		Betsapi_FetchLiveMatchesJob.Register(quartzConfig, appSetting);
+		Betsapi_FetchUpcomingMatchesJob.Register(quartzConfig, appSetting);
 
-		Betsapi_UpdateOdds_Live_Job.Register(quartzConfig);
-		Betsapi_UpdateOdds_Upcoming_Job.Register(quartzConfig);
+		Betsapi_UpdateOdds_Live_Job.Register(quartzConfig, appSetting);
+		Betsapi_UpdateOdds_Upcoming_Job.Register(quartzConfig, appSetting);
 
-		Betsapi_UpdateMatchStatus_Live_Job.Register(quartzConfig);
-		Betsapi_UpdateMatchStatus_Upcoming_Job.Register(quartzConfig);
-		Betsapi_UpdateMatchStatus_ComingSoon_Job.Register(quartzConfig);
+		Betsapi_UpdateMatchStatus_Live_Job.Register(quartzConfig, appSetting);
+		Betsapi_UpdateMatchStatus_Upcoming_Job.Register(quartzConfig, appSetting);
+		Betsapi_UpdateMatchStatus_ComingSoon_Job.Register(quartzConfig, appSetting);
 
 		DecideUserBetResultJob.Register(quartzConfig);
 		SendCoinToWinnerJob.Register(quartzConfig);

@@ -33,12 +33,20 @@ public class UserSportController : BaseController {
 	/// <summary>
 	/// Get bet histories of the user.
 	/// </summary>
+	/// <param name="tab">One of: open, won, lost</param>
 	/// <response code="200">
-	/// - status: 1 (upcoming), 2 (in-play), 3 (ended). For other status, just consider as ...
+	/// - status: 1 (upcoming), 2 (in-play), 3 (ended). For other status, just consider as `...`
+	/// - reward_status: 1 (processing), 2 (submitted), 3 (submit failed).
+	/// - bet_result: 0 (unknown), 1 (won), 2 (draw), 3 (losed)
 	/// </response>
 	[Authorize]
 	[HttpGet, Route(Routes.sport_user_bet_histories)]
-	public async Task<ActionResult<ApiResponse>> GetBetHistories([FromRoute] int sport_id, [FromQuery] int page, [FromQuery] int item) {
+	public async Task<ActionResult<ApiResponse>> GetBetHistories(
+		[FromRoute] int sport_id,
+		[FromQuery] int page,
+		[FromQuery] int item,
+		[FromQuery] string? tab = null
+	) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
@@ -47,6 +55,6 @@ public class UserSportController : BaseController {
 			return new ApiBadRequestResponse("Invalid range");
 		}
 
-		return await service.GetBetHistories(userId.Value, sport_id, page, item);
+		return await service.GetBetHistories(userId.Value, sport_id, page, item, tab);
 	}
 }
