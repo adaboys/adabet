@@ -9,11 +9,11 @@ using Tool.Compet.Core;
 /// See https://docs.microsoft.com/en-us/aspnet/core/web-api/action-return-types?view=aspnetcore-6.0
 [ApiController, Route(Routes.api_prefix)]
 public class AuthController : BaseController {
-	private readonly AuthService authService;
+	private readonly AuthService service;
 	private readonly ILogger<AuthController> logger;
 
-	public AuthController(AuthService authService, ILogger<AuthController> logger) {
-		this.authService = authService;
+	public AuthController(AuthService service, ILogger<AuthController> logger) {
+		this.service = service;
 		this.logger = logger;
 	}
 
@@ -28,7 +28,7 @@ public class AuthController : BaseController {
 	public async Task<ActionResult<ApiResponse>> LogIn([FromBody] LoginRequestBody requestBody) {
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.LogIn(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
+		return await service.LogIn(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
 	}
 
 	/// <summary>
@@ -45,7 +45,7 @@ public class AuthController : BaseController {
 	public async Task<ActionResult<ApiResponse>> LogInWithProvider([FromBody] ProviderLoginRequestBody requestBody) {
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.LogInWithProvider(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
+		return await service.LogInWithProvider(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
 	}
 
 	/// <summary>
@@ -62,7 +62,7 @@ public class AuthController : BaseController {
 	public async Task<ActionResult<ApiResponse>> RequestLoginWithExternalWallet([FromBody] RequestLoginWithExternalWalletRequestBody requestBody) {
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.RequestLoginWithExternalWallet(requestBody);
+		return await service.RequestLoginWithExternalWallet(requestBody);
 	}
 
 	/// <summary>
@@ -82,7 +82,7 @@ public class AuthController : BaseController {
 	public async Task<ActionResult<ApiResponse>> LoginWithExternalWallet([FromBody] LoginWithExternalWalletRequestBody requestBody) {
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.LoginWithExternalWallet(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
+		return await service.LoginWithExternalWallet(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
 	}
 
 	/// <summary>
@@ -93,7 +93,7 @@ public class AuthController : BaseController {
 	public async Task<ActionResult<ApiResponse>> SilentLogin([FromBody] SilentLoginRequestBody requestBody) {
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.SilentLogin(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
+		return await service.SilentLogin(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
 	}
 
 	/// <summary>
@@ -108,7 +108,7 @@ public class AuthController : BaseController {
 	public async Task<ActionResult<ApiResponse>> LoginWithToken([FromBody] LoginWithTokenRequestBody requestBody) {
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.LoginWithToken(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
+		return await service.LoginWithToken(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
 	}
 
 	/// <summary>
@@ -126,7 +126,7 @@ public class AuthController : BaseController {
 		}
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.LogOut(userId.Value, requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
+		return await service.LogOut(userId.Value, requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
 	}
 
 	/// <summary>
@@ -138,7 +138,7 @@ public class AuthController : BaseController {
 	public async Task<ActionResult<ApiResponse>> RequestResetPassword([FromBody] RequestResetPasswordRequestBody requestBody) {
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.RequestResetPassword(requestBody.email);
+		return await service.RequestResetPassword(requestBody.email);
 	}
 
 	/// <summary>
@@ -150,11 +150,11 @@ public class AuthController : BaseController {
 	public async Task<ActionResult<ApiResponse>> ConfirmResetPassword([FromBody] ConfirmResetPasswordRequestBody requestBody) {
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await authService.ConfirmResetPassword(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
+		return await service.ConfirmResetPassword(requestBody, RequestHelper.GetClientIp(this.Request), RequestHelper.GetUserAgent(this.Request));
 	}
 
 	[HttpGet, Route(ServiceRoutes.user_auth_info)]
 	public async Task<ActionResult<ApiResponse>> GetUserAuthInfo([FromQuery] string api_key, [FromQuery] string refresh_token) {
-		return await authService.GetUserAuthInfo(api_key, refresh_token);
+		return await service.GetUserAuthInfo(api_key, refresh_token);
 	}
 }

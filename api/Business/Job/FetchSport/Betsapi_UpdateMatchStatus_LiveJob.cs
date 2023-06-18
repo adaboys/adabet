@@ -14,8 +14,10 @@ public class Betsapi_UpdateMatchStatus_Live_Job : Betsapi_UpdateMatchStatusJob<B
 	private const string JOB_NAME = nameof(Betsapi_UpdateMatchStatus_Live_Job);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		var cronExpression = appSetting.environment == AppSetting.ENV_PRODUCTION ? "0 /1 * * * ?" : "0 /3 * * * ?";
-
+		var cronExpression = appSetting.environment == AppSetting.ENV_PRODUCTION ?
+			"0 /1 * * * ?" :
+			"0 /3 * * * ?"
+		;
 		quartzConfig.ScheduleJob<Betsapi_UpdateMatchStatus_Live_Job>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
@@ -38,10 +40,10 @@ public class Betsapi_UpdateMatchStatus_Live_Job : Betsapi_UpdateMatchStatusJob<B
 			.Where(m => m.status == SportMatchModelConst.TimeStatus.InPlay)
 			.OrderBy(m => m.start_at)
 			.ThenBy(m => m.updated_at)
-			.Take(200)
+			.Take(300)
 			.ToArrayAsync()
 		;
 
-		await this.UpdateMatchesInfoAsync(reqSysMatches);
+		await this.OnetimeUpdateMatchesInfoAsync(reqSysMatches);
 	}
 }

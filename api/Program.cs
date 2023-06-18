@@ -2,6 +2,7 @@ using System.Reflection;
 using App;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 internal class Program {
@@ -50,8 +51,8 @@ internal class Program {
 			.AddScoped<SportPredictionService>()
 			.AddScoped<CurrencyService>()
 			.AddScoped<UserWalletDao>()
+			.AddScoped<UserFavoriteService>()
 
-			.AddScoped<CasinoRepo>()
 			.AddControllers();
 
 		// Our app setting
@@ -65,6 +66,7 @@ internal class Program {
 
 		// Config database connections
 		services.AddDbContextPool<AppDbContext>(options => options.UseSqlServer(appSetting.database.appdb));
+		services.AddDbContextPool<CasinoDbContext>(options => options.UseMySQL(appSetting.database.casinoDb));
 
 		// Config JWT Authentication
 		services.ConfigureJwtAuthenticationDk(appSetting);
@@ -81,13 +83,41 @@ internal class Program {
 		}
 
 		// [Swagger] For api doc
-		if (true || !isProduction) {
+		if (!isProduction || appSetting.taskMode.enableCommand) {
 			services.AddSwaggerGen(option => {
 				// Support generating api-doc
 				var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 				option.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+				// Add JWT authorization Bearer token
+				// Ref: https://www.c-sharpcorner.com/article/how-to-add-jwt-bearer-token-authorization-functionality-in-swagger/
+				option.SwaggerDoc("v1", new OpenApiInfo {
+					Title = "JWTToken_Auth_API",
+					Version = "v1"
+				});
+				option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme() {
+					Name = "Authorization",
+					Type = SecuritySchemeType.ApiKey,
+					Scheme = "Bearer",
+					BearerFormat = "JWT",
+					In = ParameterLocation.Header,
+					Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\"",
+				});
+				option.AddSecurityRequirement(new OpenApiSecurityRequirement {
+					{
+						new OpenApiSecurityScheme {
+							Reference = new OpenApiReference {
+								Type = ReferenceType.SecurityScheme,
+								Id = "Bearer"
+							}
+						},
+						new string[] {}
+					}
+				});
 			});
-			// services.AddEndpointsApiExplorer();
+
+			// For what?
+			services.AddEndpointsApiExplorer();
 		}
 
 		// Use signalR for realtime actions (communication, notification, ...)
@@ -105,7 +135,7 @@ internal class Program {
 		}
 
 		// [Swagger] for api doc at non-production env
-		if (true || !isProduction) {
+		if (!isProduction || appSetting.taskMode.enableCommand) {
 			app.UseSwagger();
 			app.UseSwaggerUI();
 		}

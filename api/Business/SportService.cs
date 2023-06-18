@@ -46,7 +46,7 @@ public class SportService {
 		};
 	}
 
-	public async Task<ApiResponse> GetLiveMatches(int sport_id) {
+	public async Task<ApiResponse> GetLiveMatches(Guid? user_id, int sport_id) {
 		var query =
 			from _match in this.dbContext.sportMatches
 
@@ -69,6 +69,8 @@ public class SportService {
 				country = _country.name,
 				league = _league.name,
 
+				is_esport = _match.is_esport,
+
 				team1 = _team1.name,
 				team2 = _team2.name,
 
@@ -78,12 +80,35 @@ public class SportService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				cur_time = _match.timer,
+				timer = new() {
+					time = _match.timer,
+					total_timer = _match.total_timer,
+					is_break = _match.timer_break,
+					injury_time = _match.timer_injury,
+				},
+
 				markets = _match.markets == null ? null : DkJsons.ToObj<List<Market>>(_match.markets!),
 			}
 		;
 
 		var matches = await query.AsNoTracking().ToArrayAsync();
+
+		// Check whether each match is in user's favorited matches
+		if (user_id != null) {
+			var matchIds = matches.Select(m => m.id).ToArray();
+			var userFavMatchIds = await this.dbContext.userFavoriteMatches
+				.Where(m => m.user_id == user_id)
+				.Where(m => m.toggled)
+				.Where(m => matchIds.Contains(m.match_id))
+				.Select(m => m.match_id)
+				.ToArrayAsync()
+			;
+			var uniqueFavMatchIds = userFavMatchIds.ToHashSet();
+
+			foreach (var mat in matches) {
+				mat.favorited = uniqueFavMatchIds.Contains(mat.id);
+			}
+		}
 
 		return new Sport_MatchesResponse {
 			data = new() {
@@ -92,7 +117,7 @@ public class SportService {
 		};
 	}
 
-	public async Task<ApiResponse> GetUpcomingMatches(int sport_id, int pagePos, int pageSize) {
+	public async Task<ApiResponse> GetUpcomingMatches(Guid? user_id, int sport_id, int pagePos, int pageSize) {
 		var query =
 			from _match in this.dbContext.sportMatches
 
@@ -116,6 +141,8 @@ public class SportService {
 				country = _country.name,
 				league = _league.name,
 
+				is_esport = _match.is_esport,
+
 				team1 = _team1.name,
 				team2 = _team2.name,
 
@@ -125,13 +152,36 @@ public class SportService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				cur_time = _match.timer,
+				timer = new() {
+					time = _match.timer,
+					total_timer = _match.total_timer,
+					is_break = _match.timer_break,
+					injury_time = _match.timer_injury,
+				},
+
 				markets = _match.markets == null ? null : DkJsons.ToObj<List<Market>>(_match.markets!),
 			}
 		;
 
 		var pagedResult = await query.AsNoTracking().PaginateDk(pagePos, pageSize);
 		var matches = pagedResult.items;
+
+		// Check whether each match is in user's favorited matches
+		if (user_id != null) {
+			var matchIds = matches.Select(m => m.id).ToArray();
+			var userFavMatchIds = await this.dbContext.userFavoriteMatches
+				.Where(m => m.user_id == user_id)
+				.Where(m => m.toggled)
+				.Where(m => matchIds.Contains(m.match_id))
+				.Select(m => m.match_id)
+				.ToArrayAsync()
+			;
+			var uniqueFavMatchIds = userFavMatchIds.ToHashSet();
+
+			foreach (var mat in matches) {
+				mat.favorited = uniqueFavMatchIds.Contains(mat.id);
+			}
+		}
 
 		return new Sport_UpcomingMatchesResponse {
 			data = new() {
@@ -166,6 +216,8 @@ public class SportService {
 				country = _country.name,
 				league = _league.name,
 
+				is_esport = _match.is_esport,
+
 				team1 = _team1.name,
 				team2 = _team2.name,
 
@@ -175,7 +227,12 @@ public class SportService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				cur_time = _match.timer,
+				timer = new() {
+					time = _match.timer,
+					total_timer = _match.total_timer,
+					is_break = _match.timer_break,
+					injury_time = _match.timer_injury,
+				},
 
 				tmp_markets = _match.markets == null ? null : DkJsons.ToObj<List<Market>>(_match.markets!),
 			}
@@ -197,7 +254,7 @@ public class SportService {
 		};
 	}
 
-	public async Task<ApiResponse> GetTopMatches(int sport_id) {
+	public async Task<ApiResponse> GetTopMatches(Guid? user_id, int sport_id) {
 		var query =
 			from _match in this.dbContext.sportMatches
 
@@ -207,7 +264,7 @@ public class SportService {
 			join _country in this.dbContext.countries on _league.country_id equals _country.id into _left_countries
 			from _country in _left_countries.DefaultIfEmpty()
 
-			where ((int)_league.sport_id) == sport_id
+			where _league.sport_id == sport_id
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
 			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 
@@ -220,6 +277,8 @@ public class SportService {
 				country = _country.name,
 				league = _league.name,
 
+				is_esport = _match.is_esport,
+
 				team1 = _team1.name,
 				team2 = _team2.name,
 
@@ -229,13 +288,35 @@ public class SportService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				cur_time = _match.timer,
+				timer = new() {
+					time = _match.timer,
+					total_timer = _match.total_timer,
+					is_break = _match.timer_break,
+					injury_time = _match.timer_injury,
+				},
 
 				markets = _match.markets == null ? null : DkJsons.ToObj<List<Market>>(_match.markets!),
 			}
 		;
 
 		var matches = await query.AsNoTracking().Take(20).ToArrayAsync();
+
+		// Check whether each match is in user's favorited matches
+		if (user_id != null) {
+			var matchIds = matches.Select(m => m.id).ToArray();
+			var userFavMatchIds = await this.dbContext.userFavoriteMatches
+				.Where(m => m.user_id == user_id)
+				.Where(m => m.toggled)
+				.Where(m => matchIds.Contains(m.match_id))
+				.Select(m => m.match_id)
+				.ToArrayAsync()
+			;
+			var uniqueFavMatchIds = userFavMatchIds.ToHashSet();
+
+			foreach (var mat in matches) {
+				mat.favorited = uniqueFavMatchIds.Contains(mat.id);
+			}
+		}
 
 		return new Sport_GetTopMatchesResponse {
 			data = new() {

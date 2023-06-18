@@ -22,31 +22,39 @@ public abstract class Betsapi_UpdateOddsJob<T> : BaseJob where T : class {
 		this.betsapiRepo = betsapiRepo;
 	}
 
-	protected async Task UpdateMatchOddsAsync(SportMatchModel[] sysMatches) {
+	protected async Task OnetimeUpdateMatchOddsAsync(SportMatchModel[] sysMatches) {
 		if (sysMatches.Length == 0) {
 			return;
 		}
 
-		foreach (var sysMatch in sysMatches) {
-			var apiResult = await this.betsapiRepo.FetchMatchOddsSummary(sysMatch.ref_betsapi_match_id);
-			if (apiResult is null || apiResult.failed) {
-				continue;
-			}
+		// Use LinQ will deferrer (lazy) start task. If we call ToArray() or ToList() on deferredTasks,
+		// it causes tasks be executed immediately.
+		var deferredTasks = sysMatches.Select(sysMatch => _UpdateMatchOddAsync(sysMatch));
 
-			// Update markets of the match.
-			// Each odd should NOT exceed 100 to avoid huge payment from system.
-			var sysMatchMarkets = sysMatch.markets == null ? new() : (DkJsons.ToObj<List<Market>>(sysMatch.markets) ?? new());
-			var name2market = sysMatchMarkets.ToDictionary(m => m.name);
+		// Run tasks parallel.
+		// Each task maybe run at different thread, we need take care of concurency when interact with dbContext !
+		await Task.WhenAll(deferredTasks);
 
-			var (homeOdd, drawOdd, awayOdd) = this._UpdateOdd_MainFullTime(name2market, apiResult);
-			this._UpdateOdd_DoubleChance(homeOdd, drawOdd, awayOdd, name2market, apiResult);
+		// Save changes
+		await this.dbContext.SaveChangesAsync();
+	}
 
-			// Write back markets
-			sysMatch.markets = DkJsons.ToJson(name2market.Select(m => m.Value).ToArray());
+	private async Task _UpdateMatchOddAsync(SportMatchModel sysMatch) {
+		var apiResult = await this.betsapiRepo.FetchMatchOddsSummary(sysMatch.ref_betsapi_match_id);
+		if (apiResult is null || apiResult.failed) {
+			return;
 		}
 
-		// Save all matches
-		await this.dbContext.SaveChangesAsync();
+		// Update markets of the match.
+		// Each odd should NOT exceed 100 to avoid huge payment from system.
+		var sysMatchMarkets = sysMatch.markets == null ? new() : (DkJsons.ToObj<List<Market>>(sysMatch.markets) ?? new());
+		var name2market = sysMatchMarkets.ToDictionary(m => m.name);
+
+		var (homeOdd, drawOdd, awayOdd) = this._UpdateOdd_MainFullTime(name2market, apiResult);
+		this._UpdateOdd_DoubleChance(homeOdd, drawOdd, awayOdd, name2market, apiResult);
+
+		// Write back markets
+		sysMatch.markets = DkJsons.ToJson(name2market.Select(m => m.Value).ToArray());
 	}
 
 	/// Update odds by choose lowest result from providers.

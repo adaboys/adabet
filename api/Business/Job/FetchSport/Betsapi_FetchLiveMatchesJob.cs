@@ -13,10 +13,14 @@ public class Betsapi_FetchLiveMatchesJob : BaseJob {
 	private const string JOB_NAME = nameof(Betsapi_FetchLiveMatchesJob);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
+		var cronExpression = appSetting.environment == AppSetting.ENV_PRODUCTION ?
+			"0 /1 * * * ?" :
+			"0 /3 * * * ?"
+		;
 		quartzConfig.ScheduleJob<Betsapi_FetchLiveMatchesJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /3 * * * ?")
+			.WithCronSchedule(cronExpression) // Every minute
 			.WithDescription(JOB_NAME)
 		);
 	}
@@ -36,8 +40,9 @@ public class Betsapi_FetchLiveMatchesJob : BaseJob {
 
 	/// Override
 	public override async Task Run(IJobExecutionContext context) {
-		var sport_id = MstSportModelConst.Id_Football;
+		var sport_id = MstSportModelConst.Id_Soccer;
 
+		// Onetime fetch
 		var apiResult = await this.betsapiRepo.FetchInplayMatches(sport_id);
 		if (apiResult is null || apiResult.failed) {
 			return;
@@ -48,7 +53,7 @@ public class Betsapi_FetchLiveMatchesJob : BaseJob {
 		foreach (var apiMatch in apiMatches) {
 			var sysMatches = await this.dbContext.sportMatches.Where(m => m.ref_betsapi_match_id == apiMatch.id).ToArrayAsync();
 
-			// Register new match with its info (league, team,...)
+			// Register new match with apiMatch info
 			if (sysMatches.Length == 0) {
 				sysMatches = new SportMatchModel[] { await this._RegisterNewMatch(sport_id, apiMatch) };
 			}
@@ -59,6 +64,22 @@ public class Betsapi_FetchLiveMatchesJob : BaseJob {
 				var timer = apiMatch.timer;
 				if (timer != null) {
 					sysMatch.timer = (short)(timer.tm * 60 + timer.ts);
+					sysMatch.timer_break = timer.tt;
+					sysMatch.timer_injury = (short)(timer.ta * 60);
+				}
+
+				// Update total timer.
+				// Check esport: Esoccer Battle - 8 mins play
+				var leagueName = apiMatch.league.name;
+				if (leagueName != null && leagueName.StartsWithDk("Esoccer")) {
+					var arr = apiMatch.league.name.Split('-');
+					if (arr.Length >= 2) {
+						arr = arr.Last().Trim().Split(' ');
+						if (arr.Length > 0) {
+							sysMatch.is_esport = true;
+							sysMatch.total_timer = (short)(arr[0].Trim().ParseShortDk() * 60);
+						}
+					}
 				}
 
 				// Current scores

@@ -106,8 +106,8 @@ public class BetsapiData_MatchDetail {
 	public class Timer {
 		public int tm { get; set; }
 		public int ts { get; set; }
-		public string tt { get; set; }
-		public int ta { get; set; }
+		public bool tt { get; set; }
+		public short ta { get; set; }
 		public int md { get; set; }
 	}
 }

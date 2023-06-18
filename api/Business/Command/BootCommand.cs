@@ -64,7 +64,7 @@ public class BootCommand : BaseService {
 		try {
 			await userComponent.CreateUserOrThrowAsync(
 				name: "root",
-				signup_type: UserModelConst.SignupType.IdPwd,
+				signupType: UserModelConst.SignupType.IdPwd,
 				role: UserModelConst.Role.Root,
 				email: this.appSetting.rootUserTemplate.email,
 				password: this.appSetting.rootUserTemplate.password

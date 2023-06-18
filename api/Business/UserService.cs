@@ -123,8 +123,8 @@ public class UserService : BaseService {
 	}
 
 	public async Task<ApiResponse> ChangePassword(Guid userId, ChangePasswordRequestBody requestBody, string? ipAddress, string? userAgent) {
-		var user = await this.userDao.FindValidUserViaIdAsync(userId);
-		if (user == null) {
+		var user = await this.userDao.FindValidUserViaIdAsync(userId, asNoTracking: false);
+		if (user is null) {
 			return new ApiBadRequestResponse("No user");
 		}
 
@@ -172,8 +172,8 @@ public class UserService : BaseService {
 	}
 
 	public async Task<ApiResponse> UpdateUserIdentity(Guid userId, UpdateUserIdentityRequestBody requestBody) {
-		var user = await this.userDao.FindValidUserViaIdAsync(userId);
-		if (user == null) {
+		var user = await this.userDao.FindValidUserViaIdAsync(userId, asNoTracking: false);
+		if (user is null) {
 			return new ApiNotFoundResponse();
 		}
 
@@ -216,13 +216,12 @@ public class UserService : BaseService {
 		}
 
 		// Cache registry for use at next confirm step
-		var passwordHasher = new PasswordHasher<UserRegistryCache>();
 		var registryCache = new UserRegistryCache {
 			name = reqBody.name,
 			email = reqBody.email,
+			password = reqBody.password,
 			otp_code = otpCode,
 		};
-		registryCache.hashed_password = passwordHasher.HashPassword(registryCache, reqBody.password);
 
 		await this.redisComponent.SetJsonAsync(cacheKey, registryCache, TimeSpan.FromMinutes(timeout));
 
@@ -250,10 +249,10 @@ public class UserService : BaseService {
 
 				await userComponent.CreateUserOrThrowAsync(
 					role: UserModelConst.Role.User,
-					signup_type: UserModelConst.SignupType.IdPwd,
+					signupType: UserModelConst.SignupType.IdPwd,
 					name: registryCache.name,
 					email: registryCache.email,
-					hashed_password: registryCache.hashed_password
+					password: registryCache.password
 				);
 
 				// Delete cache
@@ -282,7 +281,7 @@ public class UserService : BaseService {
 			using (var memoryStream = new MemoryStream()) {
 				file.CopyTo(memoryStream);
 
-				var avatarRelativePath = S3Paths.ForUserAvatar(Guid.NewGuid().ToStringDk() + fileExt);
+				var avatarRelativePath = S3Paths.ForUserAvatar(Guid.NewGuid().ToStringWithoutHyphen() + fileExt);
 				var uploadRequest = new TransferUtilityUploadRequest {
 					InputStream = memoryStream,
 					Key = avatarRelativePath,
@@ -313,7 +312,7 @@ public class UserService : BaseService {
 	public class UserRegistryCache {
 		public string name { get; set; }
 		public string email { get; set; }
-		public string hashed_password { get; set; }
+		public string password { get; set; }
 		public string otp_code { get; set; }
 	}
 }

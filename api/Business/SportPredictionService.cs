@@ -172,7 +172,7 @@ public class SportPredictionService : BaseService {
 			}
 		}
 
-		var user_internal_address = await this.dbContext.userWallets
+		var userInternalWallet = await this.dbContext.userWallets
 			.Where(m =>
 				m.user_id == userId &&
 				m.wallet_type == UserWalletModelConst.WalletType.Internal &&
@@ -183,7 +183,7 @@ public class SportPredictionService : BaseService {
 		;
 
 		// Check wallet balance (at least 1.6 ADA)
-		var balanceResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(user_internal_address);
+		var balanceResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(userInternalWallet);
 		if (balanceResponse.failed) {
 			return balanceResponse;
 		}
@@ -194,9 +194,9 @@ public class SportPredictionService : BaseService {
 
 		// For now, we support only ADA as reward coin.
 		// In future, user may request reward with GEM, ABE,...
-		var reward_coin_id = await this.dbContext.currencies
+		var rewardCoin = await this.dbContext.currencies
 			.Where(m => m.network == MstCurrencyModelConst.Network.Cardano)
-			.Select(m => m.id)
+			.Select(m => new { m.id, m.name })
 			.FirstAsync();
 
 		// Step 1/2. Register prediction if not exist (allow only one bet)
@@ -208,7 +208,7 @@ public class SportPredictionService : BaseService {
 			return new ApiBadRequestResponse("Already predicted");
 		}
 		if (prediction is null) {
-			var reward_address = reqBody.reward_address ?? user_internal_address;
+			var reward_address = reqBody.reward_address ?? userInternalWallet;
 
 			prediction = new() {
 				user_id = userId,
@@ -216,7 +216,7 @@ public class SportPredictionService : BaseService {
 				predict_home_score = reqBody.score1,
 				predict_away_score = reqBody.score2,
 				reward_address = reward_address,
-				reward_coin_id = reward_coin_id
+				reward_coin_id = rewardCoin.id
 			};
 
 			this.dbContext.sportPredictUsers.Attach(prediction);
@@ -227,6 +227,7 @@ public class SportPredictionService : BaseService {
 		// Get match info
 		var queryMatchInfo =
 			from _predict in this.dbContext.sportPredictUsers
+
 			join _match in this.dbContext.sportMatches on _predict.sport_match_id equals _match.id
 			join _team1 in this.dbContext.sportTeams on _match.home_team_id equals _team1.id
 			join _team2 in this.dbContext.sportTeams on _match.away_team_id equals _team2.id
@@ -267,11 +268,12 @@ public class SportPredictionService : BaseService {
 				$"t2: {matchInfo.away_team_name}".TruncateAsMetadataEntryDk(),
 				$"predict: {reqBody.score1} - {reqBody.score2}".TruncateAsMetadataEntryDk(),
 				$"start: {matchInfo.match_start_at.FormatDk()}".TruncateAsMetadataEntryDk(),
+				$"reward_as: {rewardCoin.name}".TruncateAsMetadataEntryDk(),
 			};
 			var cnodeRequest = new CardanoNode_SendAssetsRequestBody {
-				sender_address = user_internal_address,
-				receiver_address = user_internal_address,
-				fee_payer_address = user_internal_address,
+				sender_address = userInternalWallet,
+				receiver_address = userInternalWallet,
+				fee_payer_address = userInternalWallet,
 				discount_fee_from_assets = false,
 				assets = sendAssets,
 				metadata = new BetMetadata {

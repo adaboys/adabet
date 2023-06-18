@@ -52,31 +52,45 @@ public class AuthService : BaseService {
 	}
 
 	public async Task<ApiResponse> LogIn(LoginRequestBody reqBody, string? ipAddress, string? userAgent) {
-		var user = await this.userDao.FindValidUserViaEmailAsync(reqBody.email);
+		var user = await this.userDao.FindValidUserViaEmailAsync(reqBody.email, asNoTracking: false);
 		if (user is null) {
 			return new ApiUnauthorizedResponse();
 		}
 
-		// Allow login normally after a year blocked.
-		if (user.login_failed_count >= UserModelConst.MAX_LOGIN_FAILED_COUNT && user.login_denied_at != null) {
-			if (user.login_denied_at.Value.AddYears(1) >= DateTime.UtcNow) {
-				return new ApiBadRequestResponse { code = ErrCode.blocked };
-			}
-			user.login_failed_count = 0;
-			user.login_denied_at = null;
+		var now = DateTime.UtcNow;
+
+		// Must not be locked
+		if (user.login_locked_until != null && now < user.login_locked_until) {
+			return new ApiBadRequestResponse { code = ErrCode.blocked };
 		}
 
 		// Check password
 		if (user.password == null) {
 			return new ApiUnauthorizedResponse();
 		}
+
+		// Verify password.
+		// Also lock if many failed login.
 		var passwordHasher = new PasswordHasher<UserModel>();
 		if (passwordHasher.VerifyHashedPassword(user, user.password, reqBody.password) == PasswordVerificationResult.Failed) {
-			// Remember failed login
-			if (++user.login_failed_count >= UserModelConst.MAX_LOGIN_FAILED_COUNT) {
-				user.login_denied_at = DateTime.UtcNow;
+			// Lock login for a while
+			const int LOCKED_HOUR = 1;
+			var blocked = ++user.login_failed_count >= UserModelConst.MAX_LOGIN_FAILED_COUNT;
+			if (blocked) {
+				user.login_locked_until = now.AddHours(LOCKED_HOUR);
 			}
 			await this.dbContext.SaveChangesAsync();
+
+			// Send locked warning mail
+			if (blocked) {
+				await this.mailComponent.SendAsync(
+					toEmail: user.email,
+					subject: "Account was locked",
+					body: await MailTemplate.ForBlockLogin(LOCKED_HOUR, this.appSetting.ses.fromEmail, $"{this.appSetting.webBaseUrl}/sports")
+				);
+
+				return new ApiBadRequestResponse { code = ErrCode.blocked };
+			}
 
 			return new ApiBadRequestResponse {
 				code = ErrCode.invalid_attempt,
@@ -85,10 +99,10 @@ public class AuthService : BaseService {
 				}
 			};
 		}
+		// Reset failed login if entered correct password.
 		else {
-			// Reset failed login if entered correct password.
 			user.login_failed_count = 0;
-			user.login_denied_at = null;
+			user.login_locked_until = null;
 		}
 
 		return await this._DoLogin(
@@ -348,7 +362,7 @@ public class AuthService : BaseService {
 						if (user is null) {
 							user = await this.userComponent.CreateUserOrThrowAsync(
 								role: UserModelConst.Role.User,
-								signup_type: UserModelConst.SignupType.ExternalWallet,
+								signupType: UserModelConst.SignupType.ExternalWallet,
 								name: null,
 								email: email,
 								password: null
@@ -481,11 +495,11 @@ public class AuthService : BaseService {
 			// Subject of the site
 			new Claim(JwtRegisteredClaimNames.Sub, this.appSetting.jwt.subject),
 			// This is jwt id (should different between issuers)
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToStringDk()),
+			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToStringWithoutHyphen()),
 			// Issued at (must be UtcNow from 1970)
 			new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
 			// Attach our custom claims
-			new Claim(AppConst.jwt.claim_type_user_id, userId.ToStringDk()),
+			new Claim(AppConst.jwt.claim_type_user_id, userId.ToStringWithoutHyphen()),
 			new Claim(AppConst.jwt.claim_type_user_role, ((int)userRole).ToString()),
 			new Claim(AppConst.jwt.claim_type_client_type, ((int)clientType).ToString()),
 		};
@@ -511,38 +525,26 @@ public class AuthService : BaseService {
 		var refreshToken = this.authTokenService.GenerateRefreshToken();
 		var accessToken = this.authTokenService.GenerateAccessToken(claims);
 
-		try {
-			// Add login info
-			this.dbContext.userAuths.Attach(new() {
-				user_id = userId,
-				login_type = loginType,
-				client_type = clientType,
-				refresh_token = refreshToken,
-				token_expired_at = DateTime.UtcNow.AddSeconds(this.appSetting.jwt.refreshExpiresInSeconds),
-				created_by_ip = ipAddress,
-				created_by_agent = userAgent,
-			});
+		// Add login info
+		this.dbContext.userAuths.Attach(new() {
+			user_id = userId,
+			login_type = loginType,
+			client_type = clientType,
+			refresh_token = refreshToken,
+			token_expired_at = DateTime.UtcNow.AddSeconds(this.appSetting.jwt.refreshExpiresInSeconds),
+			created_by_ip = ipAddress,
+			created_by_agent = userAgent,
+		});
 
-			await this.dbContext.SaveChangesAsync();
+		await this.dbContext.SaveChangesAsync();
 
-			return new LoginResponse {
-				data = new() {
-					token_schema = "Bearer",
-					access_token = accessToken,
-					refresh_token = refreshToken
-				}
-			};
-		}
-		catch (Exception e) {
-			this.logger.ErrorDk(this, "Could not login, data: {@data}", new Dictionary<string, object> {
-				{ "error", e.Message },
-				{ "clientType" , clientType },
-				{ "loginType", loginType },
-				{ "userId", userId },
-			});
-
-			return new ApiInternalServerErrorResponse();
-		}
+		return new LoginResponse {
+			data = new() {
+				token_schema = "Bearer",
+				access_token = accessToken,
+				refresh_token = refreshToken
+			}
+		};
 	}
 
 	/// @param idToken: This is jwt.
@@ -598,7 +600,7 @@ public class AuthService : BaseService {
 			// Create new user with extra work
 			var newUser = await userComponent.CreateUserOrThrowAsync(
 				role: UserModelConst.Role.User,
-				signup_type: signup_type,
+				signupType: signup_type,
 				name: name,
 				email: email
 			);
@@ -644,7 +646,7 @@ public class AuthService : BaseService {
 			await MailTemplate.ForResetPassword(reset_password_token, timeout)
 		);
 		if (sendMailResponse.failed) {
-			return new ApiInternalServerErrorResponse("Could not send mail");
+			return sendMailResponse;
 		}
 
 		return new ApiSuccessResponse();
@@ -655,8 +657,8 @@ public class AuthService : BaseService {
 
 		// Check OTP
 		var cacheKey = RedisKey.ForResetPassword(email);
-		var reset_password_token = await this.redisComponent.GetStringAsync(cacheKey);
-		if (reset_password_token != requestBody.otp_code) {
+		var resetPwdOtp = await this.redisComponent.GetStringAsync(cacheKey);
+		if (resetPwdOtp != requestBody.otp_code) {
 			return new ApiBadRequestResponse("Invalid OTP") { code = ErrCode.invalid_otp };
 		}
 
@@ -664,7 +666,7 @@ public class AuthService : BaseService {
 		await this.redisComponent.DeleteKeyAsync(cacheKey);
 
 		// Change password
-		var user = await this.userDao.FindValidUserViaEmailAsync(email);
+		var user = await this.userDao.FindValidUserViaEmailAsync(email, asNoTracking: false);
 		if (user is null) {
 			return new ApiBadRequestResponse("Invalid user");
 		}

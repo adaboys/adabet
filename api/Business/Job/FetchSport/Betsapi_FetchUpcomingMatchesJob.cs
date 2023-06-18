@@ -16,7 +16,7 @@ public class Betsapi_FetchUpcomingMatchesJob : BaseJob {
 		quartzConfig.ScheduleJob<Betsapi_FetchUpcomingMatchesJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 0 0 /1 * ?") // Onetime every day
+			.WithCronSchedule("0 0 2 /1 * ?") // Onetime every day
 			.WithDescription(JOB_NAME)
 		);
 	}
@@ -44,14 +44,15 @@ public class Betsapi_FetchUpcomingMatchesJob : BaseJob {
 			// Padding 0: https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 			var day = $"{(now.Year):D4}{(now.Month):D2}{(now.Day):D2}";
 
-			await this._RecursiveFetchUpcomingMatches(day, page: 1);
+			// Recursive fetch
+			await this._RecursiveFetchUpcomingMatches(day: day, page: 1);
 
 			now = now.AddDays(1);
 		}
 	}
 
 	private async Task _RecursiveFetchUpcomingMatches(string day, int page) {
-		var sport_id = MstSportModelConst.Id_Football;
+		var sport_id = MstSportModelConst.Id_Soccer;
 
 		var apiResult = await this.betsapiRepo.FetchUpcomingMatches(sport_id, day, page);
 		if (apiResult is null || apiResult.failed) {

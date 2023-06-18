@@ -113,6 +113,9 @@ public class Sport_GetBetHistoriesResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "odd")]
 		public decimal bet_odd_value { get; set; }
 
+		[JsonPropertyName(name: "bet_tx_id")]
+		public string? bet_tx_id { get; set; }
+
 		[JsonPropertyName(name: "bet_result")]
 		public int bet_result { get; set; }
 
@@ -127,5 +130,18 @@ public class Sport_GetBetHistoriesResponse : ApiSuccessResponse {
 
 		[JsonPropertyName(name: "reward_tx_id")]
 		public string? reward_tx_id { get; set; }
+	}
+}
+
+public class GetBadgesResponse : ApiSuccessResponse {
+	[JsonPropertyName(name: "data")]
+	public Data data { get; set; }
+
+	public class Data {
+		[JsonPropertyName(name: "fav_cnt")]
+		public int favorite_count { get; set; }
+
+		[JsonPropertyName(name: "bet_cnt")]
+		public int bet_count { get; set; }
 	}
 }

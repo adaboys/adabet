@@ -57,4 +57,17 @@ public class UserSportController : BaseController {
 
 		return await service.GetBetHistories(userId.Value, sport_id, page, item, tab);
 	}
+
+	/// <summary>
+	/// Get badges (bet, favorites, ...).
+	/// </summary>
+	/// <response code="200"></response>
+	[Authorize]
+	[HttpGet, Route(Routes.user_sport_badges)]
+	public async Task<ActionResult<ApiResponse>> GetBadges([FromRoute] int sport_id) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+		return await service.GetBadges(userId.Value, sport_id);
+	}
 }

@@ -14,8 +14,10 @@ public class Betsapi_UpdateMatchStatus_ComingSoon_Job : Betsapi_UpdateMatchStatu
 	private const string JOB_NAME = nameof(Betsapi_UpdateMatchStatus_ComingSoon_Job);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		var cronExpression = appSetting.environment == AppSetting.ENV_PRODUCTION ? "0 /1 * * * ?" : "0 /3 * * * ?";
-
+		var cronExpression = appSetting.environment == AppSetting.ENV_PRODUCTION ?
+			"0 /1 * * * ?" :
+			"0 /3 * * * ?"
+		;
 		quartzConfig.ScheduleJob<Betsapi_UpdateMatchStatus_ComingSoon_Job>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
@@ -41,6 +43,6 @@ public class Betsapi_UpdateMatchStatus_ComingSoon_Job : Betsapi_UpdateMatchStatu
 			.ToArrayAsync()
 		;
 
-		await this.UpdateMatchesInfoAsync(comingSoonMatches);
+		await this.OnetimeUpdateMatchesInfoAsync(comingSoonMatches);
 	}
 }

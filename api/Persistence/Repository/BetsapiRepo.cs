@@ -6,6 +6,10 @@ using Microsoft.Extensions.Options;
 using Tool.Compet.Http;
 
 /// Api doc: https://betsapi.com/docs/events/
+
+/// `tt` is playing or on break. it would be =0 when on half break.
+/// `ta` is injury time.
+/// `md` is period but that's not reliable sometimes.
 public class BetsapiRepo : BaseRepo {
 	public BetsapiRepo(IOptionsSnapshot<AppSetting> snapshot) : base(snapshot) {
 	}

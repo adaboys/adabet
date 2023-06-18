@@ -54,7 +54,7 @@ public class SportController : BaseController {
 	/// </response>
 	[HttpGet, Route(Routes.sport_matches_top)]
 	public async Task<ActionResult<ApiResponse>> GetTopMatches([FromRoute] int sport_id) {
-		return await service.GetTopMatches(sport_id);
+		return await service.GetTopMatches(userId, sport_id);
 	}
 
 	/// <summary>
@@ -68,7 +68,7 @@ public class SportController : BaseController {
 	/// </response>
 	[HttpGet, Route(Routes.sport_matches_live)]
 	public async Task<ActionResult<ApiResponse>> GetLiveMatches([FromRoute] int sport_id) {
-		return await service.GetLiveMatches(sport_id);
+		return await service.GetLiveMatches(userId, sport_id);
 	}
 
 	/// <summary>
@@ -86,6 +86,6 @@ public class SportController : BaseController {
 		if (page < 1 || item < 1 || item > 100) {
 			return new ApiBadRequestResponse("Invalid range");
 		}
-		return await service.GetUpcomingMatches(sport_id, page, item);
+		return await service.GetUpcomingMatches(userId, sport_id, page, item);
 	}
 }

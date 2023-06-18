@@ -6,10 +6,10 @@ using Tool.Compet.Core;
 
 [ApiController, Route(Routes.api_prefix)]
 public class UserWalletController : BaseController {
-	private readonly UserWalletService userWalletService;
+	private readonly UserWalletService service;
 
-	public UserWalletController(UserWalletService userWalletService) {
-		this.userWalletService = userWalletService;
+	public UserWalletController(UserWalletService service) {
+		this.service = service;
 	}
 
 	/// <summary>
@@ -26,7 +26,7 @@ public class UserWalletController : BaseController {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
-		return await this.userWalletService.RequestLinkExternalWallet(userId.Value, wallet_address.Trim());
+		return await this.service.RequestLinkExternalWallet(userId.Value, wallet_address.Trim());
 	}
 
 	/// <summary>
@@ -53,7 +53,7 @@ public class UserWalletController : BaseController {
 		}
 		DkReflections.TrimJsonAnnotatedProperties(requestBody);
 
-		return await this.userWalletService.LinkExternalWallet(userId.Value, wallet_address, requestBody);
+		return await this.service.LinkExternalWallet(userId.Value, wallet_address, requestBody);
 	}
 
 	/// <summary>
@@ -68,7 +68,7 @@ public class UserWalletController : BaseController {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
-		return await this.userWalletService.GetLinkedExternalWallets(userId.Value);
+		return await this.service.GetLinkedExternalWallets(userId.Value);
 	}
 
 	/// <summary>
@@ -83,6 +83,43 @@ public class UserWalletController : BaseController {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
-		return await this.userWalletService.UnlinkExternalWallet(userId.Value, wallet_address);
+		return await this.service.UnlinkExternalWallet(userId.Value, wallet_address);
+	}
+
+	/// <summary>
+	/// Step 1/2 when withdraw to target address.
+	/// After call this, client should goto step 2/2 to perform transaction.
+	/// </summary>
+	/// <response code="200">
+	/// - code: invalid_address (the wallet address is not exist),
+	/// 				balance_not_enough (wallet balance is not enough).
+	/// </response>
+	[Authorize]
+	[HttpPost, Route(Routes.coin_withdraw_prepare)]
+	public async Task<ActionResult<ApiResponse>> PrepareWithdraw([FromBody] WithdrawCoinRequestBody requestBody) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+		DkReflections.TrimJsonAnnotatedProperties(requestBody);
+
+		return await this.service.PrepareWithdraw(userId.Value, requestBody);
+	}
+
+	/// <summary>
+	/// Step 2/2 when withdraw to target address.
+	/// After call this, the transaction will be actual sent to Cardano.
+	/// </summary>
+	/// <response code="200">
+	/// - code: invalid_address (the wallet address is not exist),
+	/// 				balance_not_enough (wallet balance is not enough).
+	/// </response>
+	[Authorize]
+	[HttpPost, Route(Routes.coin_withdraw_actual)]
+	public async Task<ActionResult<ApiResponse>> PerformWithdrawActual([FromBody] PerformWithdrawActualRequestBody requestBody) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+
+		return await this.service.PerformWithdrawActual(userId.Value, requestBody);
 	}
 }

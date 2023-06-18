@@ -38,7 +38,7 @@ public class AuthTokenService {
 	}
 
 	internal string GenerateRefreshToken(int tokenLength = 40) {
-		var guid = Guid.NewGuid().ToStringDk();
+		var guid = Guid.NewGuid().ToStringWithoutHyphen();
 
 		if (tokenLength > guid.Length) {
 			// var randomNumber = new byte[tokenLength - guid.Length];
@@ -54,7 +54,7 @@ public class AuthTokenService {
 
 	/// Generate unique login_token without special char since it will be displayed in browser.
 	internal string GenerateLoginToken(int tokenLength = 40) {
-		var guid = Guid.NewGuid().ToStringDk();
+		var guid = Guid.NewGuid().ToStringWithoutHyphen();
 
 		if (tokenLength > guid.Length) {
 			var suffix = string.Empty;

@@ -218,8 +218,8 @@ public class UserSportService : BaseService {
 				bet_memos.Add($"start: {item.match_start_at.FormatDk()}".TruncateAsMetadataEntryDk());
 				bet_memos.Add($"market: {item.bet_market_name}".TruncateAsMetadataEntryDk());
 				bet_memos.Add($"odn: {item.bet_odd_name}".TruncateAsMetadataEntryDk());
-				bet_memos.Add($"odv: {item.bet_odd_value}".TruncateAsMetadataEntryDk());
-				bet_memos.Add($"bet: {item.bet_coin_amount} {item.bet_coin_name}".TruncateAsMetadataEntryDk());
+				bet_memos.Add($"odv: {item.bet_odd_value.TrimEndDecimalZero()}".TruncateAsMetadataEntryDk());
+				bet_memos.Add($"bet: {item.bet_coin_amount.TrimEndDecimalZero()} {item.bet_coin_name}".TruncateAsMetadataEntryDk());
 
 				totalBetCoinAmount += item.bet_coin_amount;
 				if (userInternalWalletAddress is null) {
@@ -347,6 +347,8 @@ public class UserSportService : BaseService {
 				staked = _ubet.bet_currency_amount,
 				bet_result = (int)_ubet.bet_result,
 
+				bet_tx_id = _ubet.submit_tx_id,
+
 				reward_status = (int?)(_reward.tx_status) ?? 0,
 				reward_tx_id = _reward.tx_id,
 			}
@@ -361,6 +363,43 @@ public class UserSportService : BaseService {
 				page_count = pagedResult.pageCount,
 				total_item_count = pagedResult.totalItemCount,
 				bets = bets
+			}
+		};
+	}
+
+	public async Task<ApiResponse> GetBadges(Guid user_id, int sport_id) {
+		var queryFavorite =
+			from _fav in this.dbContext.userFavoriteMatches
+
+			join _mat in this.dbContext.sportMatches on _fav.match_id equals _mat.id
+			join _leg in this.dbContext.sportLeagues on _mat.league_id equals _leg.id
+
+			where _fav.user_id == user_id
+			where _leg.sport_id == sport_id
+			where SportMatchModelConst.ActiveTimeStatusForFavorite.Contains(_mat.status)
+
+			select new { }
+		;
+		var favCount = await queryFavorite.CountAsync();
+
+		var queryBet =
+			from _bet in this.dbContext.sportUserBets
+
+			join _mat in this.dbContext.sportMatches on _bet.sport_match_id equals _mat.id
+			join _leg in this.dbContext.sportLeagues on _mat.league_id equals _leg.id
+
+			where _bet.user_id == user_id
+			where _leg.sport_id == sport_id
+			where SportMatchModelConst.ActiveTimeStatusForBadges.Contains(_mat.status)
+
+			select new { }
+		;
+		var betCount = await queryBet.CountAsync();
+
+		return new GetBadgesResponse {
+			data = new() {
+				favorite_count = favCount,
+				bet_count = betCount
 			}
 		};
 	}

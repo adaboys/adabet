@@ -36,7 +36,7 @@ public class UserCommandController : ControllerBase {
 	}
 
 	/// <summary>
-	/// Sync (send) users to Casino service.
+	/// Sync users to Casino.
 	/// </summary>
 	/// <response code="200"></response>
 	[HttpPost, Route("cmd/users/sync_to_casino")]
@@ -45,5 +45,17 @@ public class UserCommandController : ControllerBase {
 			return new ApiBadRequestResponse("Bad mode");
 		}
 		return await this.service.SyncUsersToCasino();
+	}
+
+	/// <summary>
+	/// Add missing internal wallet for users.
+	/// </summary>
+	/// <response code="200"></response>
+	[HttpPost, Route("cmd/users/add_missing_internal_wallet")]
+	public async Task<ApiResponse> AddMissingInternalWalletForUsers() {
+		if (!this.appSetting.taskMode.enableCommand) {
+			return new ApiBadRequestResponse("Bad mode");
+		}
+		return await this.service.AddMissingInternalWalletForUsers();
 	}
 }
