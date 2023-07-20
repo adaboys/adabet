@@ -8,11 +8,98 @@ using Quartz;
 using Tool.Compet.Core;
 using Tool.Compet.Json;
 
-public abstract class Betsapi_UpdateOddsJob<T> : BaseJob where T : class {
+[DisallowConcurrentExecution]
+public class UpdateSoccerOdds_LiveJob_Betsapi : Base_UpdateSoccerOddsJob_Betsapi<UpdateSoccerOdds_LiveJob_Betsapi> {
+	private const string JOB_NAME = nameof(UpdateSoccerOdds_LiveJob_Betsapi);
+
+	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
+		quartzConfig.ScheduleJob<UpdateSoccerOdds_LiveJob_Betsapi>(trigger => trigger
+			.WithIdentity(JOB_NAME)
+			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
+			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
+				"0 /1 * * * ?" : // Should run at every minute
+				"0 /10 * * * ?"
+			)
+			.WithDescription(JOB_NAME)
+		);
+	}
+
+	public UpdateSoccerOdds_LiveJob_Betsapi(
+		AppDbContext dbContext,
+		IOptionsSnapshot<AppSetting> snapshot,
+		ILogger<UpdateSoccerOdds_LiveJob_Betsapi> logger,
+		BetsapiRepo betsapiRepo
+	) : base(dbContext, snapshot, logger, betsapiRepo) {
+	}
+
+	/// Override
+	public override async Task Run(IJobExecutionContext context) {
+		// We prior to matches that has long time from previous updated
+		var query =
+			from _match in this.dbContext.sportMatches
+			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
+			where _league.sport_id == MstSportModelConst.Id_Soccer
+			where _match.status == SportMatchModelConst.TimeStatus.InPlay
+			orderby _match.updated_at
+			select new {
+				_match
+			}
+		;
+		var sysMatches = await query.Select(m => m._match).Take(300).ToArrayAsync();
+
+		await this.UpdateMatchOddsAsync(sysMatches);
+	}
+}
+
+/// Upcoming
+[DisallowConcurrentExecution]
+public class UpdateSoccerOdds_UpcomingJob_Betsapi : Base_UpdateSoccerOddsJob_Betsapi<UpdateSoccerOdds_UpcomingJob_Betsapi> {
+	private const string JOB_NAME = nameof(UpdateSoccerOdds_UpcomingJob_Betsapi);
+
+	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
+		quartzConfig.ScheduleJob<UpdateSoccerOdds_UpcomingJob_Betsapi>(trigger => trigger
+			.WithIdentity(JOB_NAME)
+			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
+			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
+				"0 /2 * * * ?" : // Should run at every minute
+				"0 /10 * * * ?"
+			)
+			.WithDescription(JOB_NAME)
+		);
+	}
+
+	public UpdateSoccerOdds_UpcomingJob_Betsapi(
+		AppDbContext dbContext,
+		IOptionsSnapshot<AppSetting> snapshot,
+		ILogger<UpdateSoccerOdds_UpcomingJob_Betsapi> logger,
+		BetsapiRepo betsapiRepo
+	) : base(dbContext, snapshot, logger, betsapiRepo) {
+	}
+
+	/// Override
+	public override async Task Run(IJobExecutionContext context) {
+		// １０試合ずつを順次に更新していく
+		var query =
+			from _match in this.dbContext.sportMatches
+			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
+			where _league.sport_id == MstSportModelConst.Id_Soccer
+			where _match.status == SportMatchModelConst.TimeStatus.Upcoming
+			orderby _match.updated_at
+			select new {
+				_match
+			}
+		;
+		var sysMatches = await query.Select(m => m._match).Take(10).ToArrayAsync();
+
+		await this.UpdateMatchOddsAsync(sysMatches);
+	}
+}
+
+public abstract class Base_UpdateSoccerOddsJob_Betsapi<T> : BaseJob where T : class {
 	protected readonly ILogger<T> logger;
 	protected readonly BetsapiRepo betsapiRepo;
 
-	public Betsapi_UpdateOddsJob(
+	public Base_UpdateSoccerOddsJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
 		ILogger<T> logger,
@@ -22,7 +109,7 @@ public abstract class Betsapi_UpdateOddsJob<T> : BaseJob where T : class {
 		this.betsapiRepo = betsapiRepo;
 	}
 
-	protected async Task OnetimeUpdateMatchOddsAsync(SportMatchModel[] sysMatches) {
+	protected async Task UpdateMatchOddsAsync(SportMatchModel[] sysMatches) {
 		if (sysMatches.Length == 0) {
 			return;
 		}
@@ -40,7 +127,7 @@ public abstract class Betsapi_UpdateOddsJob<T> : BaseJob where T : class {
 	}
 
 	private async Task _UpdateMatchOddAsync(SportMatchModel sysMatch) {
-		var apiResult = await this.betsapiRepo.FetchMatchOddsSummary(sysMatch.ref_betsapi_match_id);
+		var apiResult = await this.betsapiRepo.FetchMatchOddsSummary<Betsapi_SoccerOddsSummaryData>(sysMatch.ref_betsapi_match_id);
 		if (apiResult is null || apiResult.failed) {
 			return;
 		}
@@ -62,7 +149,7 @@ public abstract class Betsapi_UpdateOddsJob<T> : BaseJob where T : class {
 	/// See https://betsapi.com/docs/events/odds.html to get better odd-supported providers.
 	private (decimal, decimal, decimal) _UpdateOdd_MainFullTime(
 		Dictionary<string, Market> name2market,
-		Betsapi_OddsSummaryData apiResult
+		Betsapi_SoccerOddsSummaryData apiResult
 	) {
 		var homeOdd = AppConst.ODD_VALUE_INFINITY;
 		var drawOdd = AppConst.ODD_VALUE_INFINITY;
@@ -203,7 +290,7 @@ public abstract class Betsapi_UpdateOddsJob<T> : BaseJob where T : class {
 	private void _UpdateOdd_DoubleChance(
 		decimal _home, decimal _draw, decimal _away,
 		Dictionary<string, Market> name2market,
-		Betsapi_OddsSummaryData apiResult
+		Betsapi_SoccerOddsSummaryData apiResult
 	) {
 		// Remove dbc if 1x2 unavailable
 		if (_home == AppConst.ODD_VALUE_NULL && _draw == AppConst.ODD_VALUE_NULL && _away == AppConst.ODD_VALUE_NULL) {

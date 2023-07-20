@@ -6,6 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Tool.Compet.Core;
 
+public class CacheWithdrawCoin {
+	public string? otp_code { get; set; }
+
+	public WithdrawCoinRequestBody req_body { get; set; }
+}
+
 /// Raw query with interpolated: https://docs.microsoft.com/en-us/ef/core/querying/raw-sql
 public class UserWalletService : BaseService {
 	private readonly ILogger<UserWalletService> logger;
@@ -218,7 +224,7 @@ public class UserWalletService : BaseService {
 		return new ApiSuccessResponse($"Unlinked the wallet");
 	}
 
-	public async Task<ActionResult<ApiResponse>> PrepareWithdraw(Guid sender_id, WithdrawCoinRequestBody in_reqBody) {
+	public async Task<ActionResult<ApiResponse>> PrepareWithdraw(Guid sender_id, WithdrawCoinRequestBody reqBody) {
 		// Get sender user
 		var sender = await this.userDao.FindValidUserViaIdAsync(sender_id);
 		if (sender is null) {
@@ -238,7 +244,7 @@ public class UserWalletService : BaseService {
 		if (assetsResponse.failed) {
 			return new ApiInternalServerErrorResponse("Could not check wallet balance");
 		}
-		var validateAddressResponse = await this.cardanoNodeRepo.ValidateAddressAsync(in_reqBody.receiver_address);
+		var validateAddressResponse = await this.cardanoNodeRepo.ValidateAddressAsync(reqBody.receiver_address);
 		if (validateAddressResponse.failed) {
 			if (validateAddressResponse.code == ErrCode.invalid_address) {
 				return new ApiBadRequestResponse { code = ErrCode.invalid_address };
@@ -248,31 +254,26 @@ public class UserWalletService : BaseService {
 
 		var walletAssets = assetsResponse.data.assets;
 
-		var name2coin = await this.dbContext.currencies.AsNoTracking()
-			.Where(m =>
-				m.name == MstCurrencyModelConst.NAME_ABE ||
-				m.name == MstCurrencyModelConst.NAME_GEM
-			)
-			.ToDictionaryAsync(m => m.name)
-		;
-		var abeCoin = name2coin[MstCurrencyModelConst.NAME_ABE];
-		var gemCoin = name2coin[MstCurrencyModelConst.NAME_GEM];
+		var currency = await this.dbContext.currencies.AsNoTracking().FirstOrDefaultAsync(m => m.id == reqBody.currency_id);
+		if (currency is null) {
+			return new ApiBadRequestResponse("Invalid currency");
+		}
 
-		var holdAdaAmount = CardanoHelper.CalcTotalAdaFromAssets(walletAssets);
-		var holdAbeAmount = CardanoHelper.CalcTotalCoinFromAssets(abeCoin, walletAssets);
-		var holdGemAmount = CardanoHelper.CalcTotalCoinFromAssets(gemCoin, walletAssets);
-
-		// Not enoud ADA or ABE or GEM
-		if (holdAdaAmount < in_reqBody.ada_amount || holdAbeAmount < in_reqBody.abe_amount || holdGemAmount < in_reqBody.gem_amount) {
+		// Balance not enough
+		var holdAmount = CardanoHelper.CalcTotalCoinFromAssets(currency, walletAssets);
+		if (holdAmount < reqBody.amount) {
 			return new ApiBadRequestResponse { code = ErrCode.balance_not_enough };
 		}
 
 		// Cache in_reqBody at Redis server.
 		// We use it as checksum to validate consistence of data (wallet address,...) at send-actual api.
 		const int timeout = 30;
-		in_reqBody.tmp_otp_code = CodeGenerator.GenerateOtpCode();
+		var cache = new CacheWithdrawCoin {
+			otp_code = CodeGenerator.GenerateOtpCode(),
+			req_body = reqBody
+		};
 		var cacheKey = RedisKey.ForWithdrawCoin(sender_id.ToStringWithoutHyphen());
-		var cached = await this.redisComponent.SetJsonAsync(cacheKey, in_reqBody, TimeSpan.FromMinutes(timeout));
+		var cached = await this.redisComponent.SetJsonAsync(cacheKey, cache, TimeSpan.FromMinutes(timeout));
 		if (!cached) {
 			return new ApiInternalServerErrorResponse("Could not gen otp");
 		}
@@ -282,7 +283,7 @@ public class UserWalletService : BaseService {
 		var sendMailResponse = await this.mailComponent.SendAsync(
 			toEmail: sender.email,
 			subject: "Withdraw Confirmation",
-			body: await MailTemplate.ForWithdrawCoin_SendOtp(in_reqBody.tmp_otp_code, timeout)
+			body: await MailTemplate.ForWithdrawCoin_SendOtp(cache.otp_code, timeout)
 		);
 		if (sendMailResponse.failed) {
 			return new ApiInternalServerErrorResponse("Could not send OTP");
@@ -291,13 +292,15 @@ public class UserWalletService : BaseService {
 		return new ApiSuccessResponse();
 	}
 
-	public async Task<ApiResponse> PerformWithdrawActual(Guid sender_id, PerformWithdrawActualRequestBody requestBody) {
+	public async Task<ApiResponse> PerformWithdrawActual(Guid sender_id, PerformWithdrawActualRequestBody payload) {
 		// Get request body from cache
 		var cacheKey = RedisKey.ForWithdrawCoin(sender_id.ToStringWithoutHyphen());
-		var reqBody = await this.redisComponent.GetJsonAsync<WithdrawCoinRequestBody>(cacheKey);
-		if (reqBody is null || reqBody.tmp_otp_code != requestBody.otp_code) {
-			return new ApiBadRequestResponse("Invalid withdraw request");
+		var cache = await this.redisComponent.GetJsonAsync<CacheWithdrawCoin>(cacheKey);
+		if (cache is null || cache.otp_code != payload.otp_code) {
+			return new ApiBadRequestResponse("Invalid or Expired otp") { code = ErrCode.invalid_otp };
 		}
+
+		var reqBody = cache.req_body;
 
 		// Get user and wallet
 		var sender = await this.userDao.FindValidUserViaIdAsync(sender_id);
@@ -317,49 +320,45 @@ public class UserWalletService : BaseService {
 		var feePayerAddress = senderWallet.wallet_address;
 		var discountFeeFromAssets = false;
 
-		var name2coin = await this.dbContext.currencies.AsNoTracking()
-			.Where(m =>
-				m.name == MstCurrencyModelConst.NAME_ABE ||
-				m.name == MstCurrencyModelConst.NAME_GEM
-			)
-			.ToDictionaryAsync(m => m.name)
-		;
-		var abeCoin = name2coin[MstCurrencyModelConst.NAME_ABE];
-		var gemCoin = name2coin[MstCurrencyModelConst.NAME_GEM];
+		// Send to receiver
+		var forwardCoinId = reqBody.currency_id;
+		var forwardAmount = reqBody.amount;
+		var attachAdaAmount = 0m;
+
+		var currency = await this.dbContext.currencies.AsNoTracking().FirstAsync(m => m.id == reqBody.currency_id);
+
+		CardanoNode_AssetInfo[] sendAssets;
+
+		var sendAssetList = new List<CardanoNode_AssetInfo>();
 
 		// Must always send ADA (at least 1.4 ADA)
-		var sendAssets = new List<CardanoNode_AssetInfo> {
-			new() {
+		if (currency.code != MstCurrencyModelConst.CODE_ADA) {
+			attachAdaAmount = AppConst.MIN_ADA_TO_SEND;
+			sendAssetList.Add(new() {
 				asset_id = MstCurrencyModelConst.CODE_ADA,
-				quantity = $"{(reqBody.ada_amount * AppConst.ADA_COIN2TOKEN):0}",
-			}
-		};
-		if (reqBody.abe_amount > 0) {
-			sendAssets.Add(new() {
-				asset_id = abeCoin.code,
-				quantity = $"{(reqBody.abe_amount * AppConst.ABE_COIN2TOKEN):0}",
+				quantity = $"{AppConst.MIN_LOVELACE_TO_SEND}",
 			});
 		}
-		if (reqBody.gem_amount > 0) {
-			sendAssets.Add(new() {
-				asset_id = gemCoin.code,
-				quantity = $"{(reqBody.gem_amount * AppConst.GEM_COIN2TOKEN):0}",
-			});
-		}
+
+		sendAssetList.Add(new() {
+			asset_id = currency.code,
+			quantity = $"{(forwardAmount * DkMaths.Pow(10, currency.decimals)):0}",
+		});
+
+		sendAssets = sendAssetList.ToArray();
 
 		// Note: Sender will pay the tx-fee.
 		var cnodeRequest = new CardanoNode_SendAssetsRequestBody {
-			force_send_all_assets = reqBody.send_all,
 			sender_address = senderAddress,
 			receiver_address = receiverAddress,
 			fee_payer_address = senderAddress,
 			discount_fee_from_assets = discountFeeFromAssets,
-			assets = sendAssets.ToArray(),
+			assets = sendAssets,
 		};
 
 		// [Main 1/3] Save tx first
 		var coinTx = new CoinTxModel {
-			action_type = CoinTxModelConst.ActionType.SendAsWithdraw,
+			action_type = CoinTxModelConst.ActionType.Withdraw,
 
 			// Sender
 			seller_id = senderWallet.user_id,
@@ -369,10 +368,10 @@ public class UserWalletService : BaseService {
 			buyer_id = null, // no receiver id
 			receiver_address = receiverAddress,
 
-			// Amount to send
-			forward_ada_amount = reqBody.ada_amount,
-			forward_abe_amount = reqBody.abe_amount,
-			forward_gem_amount = reqBody.gem_amount,
+			// Forward currency
+			forward_currency_id = currency.id,
+			forward_currency_amount = forwardAmount,
+			attach_ada_amount = attachAdaAmount,
 
 			fee_payer_id = senderWallet.user_id,
 			fee_payer_address = feePayerAddress,
@@ -411,9 +410,8 @@ public class UserWalletService : BaseService {
 					await MailTemplate.ForWithdrawCoin_SendActual(
 						senderAddress,
 						receiverAddress,
-						reqBody.ada_amount,
-						reqBody.abe_amount,
-						reqBody.gem_amount,
+						forwardAmount,
+						attachAdaAmount,
 						cnodeResponse.data.fee / AppConst.ADA_COIN2TOKEN
 					)
 				);
@@ -421,7 +419,7 @@ public class UserWalletService : BaseService {
 				// Post update our db
 				coinTx.tx_status = CoinTxModelConst.TxStatus.SubmitSucceed;
 				coinTx.tx_hash = cnodeResponse.data.tx_id;
-				coinTx.tx_result_message = txResultMessage.TruncateForShortLengthDk();
+				coinTx.tx_result_message = txResultMessage;
 				coinTx.fee_in_ada = cnodeResponse.data.fee / AppConst.ADA_COIN2TOKEN;
 				coinTx.discounted_fee_in_ada = discountFeeFromAssets ? coinTx.fee_in_ada : 0;
 
@@ -443,8 +441,8 @@ public class UserWalletService : BaseService {
 				{ "sender_id", sender_id.ToString() },
 				{ "reqBody", reqBody },
 				{ "error", e.Message },
-				{ "cardanoRequest", cnodeRequest },
-				{ "cardanoResponse", cnodeResponse },
+				{ "cnodeRequest", cnodeRequest },
+				{ "cnodeResponse", cnodeResponse },
 			});
 
 			return new ApiInternalServerErrorResponse();
@@ -455,7 +453,7 @@ public class UserWalletService : BaseService {
 				if (txFailed) {
 					coinTx.tx_status = CoinTxModelConst.TxStatus.SubmitFailed;
 				}
-				coinTx.tx_result_message = txResultMessage.TruncateForShortLengthDk();
+				coinTx.tx_result_message = txResultMessage;
 
 				await this.dbContext.SaveChangesAsync();
 			}

@@ -176,3 +176,36 @@ public class UpdateUserAvatarResponse : ApiSuccessResponse {
 		public string? avatar { get; set; }
 	}
 }
+
+public class GetBetStatisticsResponse : ApiSuccessResponse {
+	[JsonPropertyName(name: "data")]
+	public Data data { get; set; }
+
+	public class Data {
+		[JsonPropertyName(name: "totalBetCount")]
+		public long totalBetCount { get; set; }
+
+		[JsonPropertyName(name: "totalWonCount")]
+		public long totalWonCount { get; set; }
+
+		[JsonPropertyName(name: "totalWagered")]
+		public decimal totalWagered { get; set; }
+
+		[JsonPropertyName(name: "coinStats")]
+		public List<CoinStats> coinStats { get; set; }
+	}
+
+	public class CoinStats {
+		[JsonPropertyName(name: "currency")]
+		public string currency { get; set; }
+
+		[JsonPropertyName(name: "betCount")]
+		public int betCount { get; set; }
+
+		[JsonPropertyName(name: "wonCount")]
+		public int wonCount { get; set; }
+
+		[JsonPropertyName(name: "wager")]
+		public decimal wager { get; set; }
+	}
+}

@@ -77,7 +77,7 @@ public class UserSportService : BaseService {
 					if (odd is null) {
 						return new ApiBadRequestResponse($"Not found odd {req_odd.name}") { code = ErrCode.not_found_odd };
 					}
-					if (odd.value <= AppConst.ODD_VALUE_MIN_EXCLUSIVE) {
+					if (odd.suspend) {
 						return new ApiBadRequestResponse($"Current odd {odd.name} is unavailable for betting");
 					}
 					if (odd.value != req_odd.value) {
@@ -246,17 +246,19 @@ public class UserSportService : BaseService {
 			}
 			// Bet with other token
 			else {
-				sendAssets.Add(new() {
-					asset_id = betWithCoin.code,
-					quantity = $"{(totalBetCoinAmount * DkMaths.Pow(10, betWithCoin.decimals)):0}"
-				});
-				// Attach 1.4 ADA for other token
+				// Need 1.4 ADA when send non-ADA token
 				sendAssets.Add(new() {
 					asset_id = MstCurrencyModelConst.CODE_ADA,
 					quantity = $"{AppConst.MIN_LOVELACE_TO_SEND}"
 				});
+
+				sendAssets.Add(new() {
+					asset_id = betWithCoin.code,
+					quantity = $"{(totalBetCoinAmount * DkMaths.Pow(10, betWithCoin.decimals)):0}"
+				});
 			}
-			var cardanoRequest = new CardanoNode_SendAssetsRequestBody {
+
+			var cnodeRequest = new CardanoNode_SendAssetsRequestBody {
 				sender_address = betUserWalletAddr,
 				receiver_address = sysWalletAddr,
 				fee_payer_address = betUserWalletAddr,
@@ -268,13 +270,16 @@ public class UserSportService : BaseService {
 			};
 
 			// Send to chain and Update status
-			var cardanoResponse = await this.cardanoNodeRepo.SendAssetsAsync(cardanoRequest);
+			var cnodeResponse = await this.cardanoNodeRepo.SendAssetsAsync(cnodeRequest);
 
-			txFailed = cardanoResponse.failed;
-			txId = cardanoResponse.data?.tx_id;
-			txResultMessage = cardanoResponse.message;
+			txFailed = cnodeResponse.failed;
+			txId = cnodeResponse.data?.tx_id;
+			txResultMessage = cnodeResponse.message;
 
-			return cardanoResponse;
+			return txFailed ?
+				new ApiInternalServerErrorResponse(txResultMessage) { code = cnodeResponse.code } :
+				new ApiSuccessResponse(txResultMessage)
+			;
 		}
 		catch (Exception e) {
 			txResultMessage = e.Message;
@@ -284,12 +289,11 @@ public class UserSportService : BaseService {
 		// Update tx-status at finally block
 		finally {
 			var submitStatus = txFailed ? SportUserBetModelConst.TxStatus.SubmitFailed : SportUserBetModelConst.TxStatus.SubmitSucceed;
-			var submitMessage = txResultMessage.TruncateForShortLengthDk();
 
 			foreach (var ubet in userBets) {
 				ubet.submit_tx_status = submitStatus;
 				ubet.submit_tx_id = txId;
-				ubet.submit_tx_result_message = submitMessage;
+				ubet.submit_tx_result_message = txResultMessage;
 			}
 			await this.dbContext.SaveChangesAsync();
 		}
@@ -328,6 +332,7 @@ public class UserSportService : BaseService {
 			select new Sport_GetBetHistoriesResponse.Bet {
 				ticket = _ubet.id,
 				start_at = _match.start_at,
+				status = (int)_match.status,
 
 				country = _country.name,
 				league = _league.name,
@@ -338,7 +343,6 @@ public class UserSportService : BaseService {
 				score1 = _match.home_score,
 				score2 = _match.away_score,
 
-				status = (int)_match.status,
 				timer = _match.timer,
 
 				bet_market_name = _ubet.bet_market_name,

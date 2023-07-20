@@ -24,7 +24,7 @@ public static class QuartzConfig {
 				poolOption.MaxConcurrency = 10;
 			});
 
-			RegisterJobs(quartzConfig);
+			RegisterJobs(quartzConfig, appSetting);
 		});
 
 		// Handle with ASP.NET Core server
@@ -36,7 +36,10 @@ public static class QuartzConfig {
 
 	/// Register all jobs here.
 	/// Quickest way to create a job with single trigger is to use ScheduleJob (requires version 3.2)
-	private static void RegisterJobs(IServiceCollectionQuartzConfigurator quartzConfig) {
+	private static void RegisterJobs(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
+		if (appSetting.environment != AppSetting.ENV_PRODUCTION) {
+			ReportIpChangeJob.Register(quartzConfig, appSetting);
+		}
 	}
 }
 

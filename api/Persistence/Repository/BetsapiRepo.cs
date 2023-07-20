@@ -54,36 +54,36 @@ public class BetsapiRepo : BaseRepo {
 
 	/// Load all live matches.
 	/// Ref: https://betsapi.com/docs/events/inplay.html
-	public async Task<Betsapi_InplayMatchesData?> FetchInplayMatches(int sport_id) {
+	public async Task<T?> FetchInplayMatches<T>(int sport_id) where T : class {
 		var url = SportApiUrl(sport_id, "/v3/events/inplay");
-		return await this.httpClient.GetForType<Betsapi_InplayMatchesData>(url);
+		return await this.httpClient.GetForTypeOrThrow<T>(url);
 	}
 
 	/// <param name="day">YYYYMMDD format, for eg,. 20230912</param>
 	/// <param name="page">Max 100</param>
-	public async Task<Betsapi_UpcomingMatchesData?> FetchUpcomingMatches(int sport_id, string day, int page) {
+	public async Task<T?> FetchUpcomingMatches<T>(int sport_id, string day, int page) where T : class {
 		if (page < 1 || page > 100) {
 			throw new AppInvalidArgumentException("Invalid page range ! Must in [1, 100]");
 		}
 		var url = SportApiUrl(sport_id, "/v3/events/upcoming", $"day={day}&page={page}");
-		return await this.httpClient.GetForType<Betsapi_UpcomingMatchesData>(url);
+		return await this.httpClient.GetForTypeOrThrow<T>(url);
 	}
 
 	/// Ref: https://betsapi.com/docs/events/odds_summary.html
-	public async Task<Betsapi_OddsSummaryData?> FetchMatchOddsSummary(long match_id) {
+	public async Task<T?> FetchMatchOddsSummary<T>(long match_id) where T : class {
 		var url = MatchApiUrl("/v2/event/odds/summary", $"event_id={match_id}");
-		return await this.httpClient.GetForType<Betsapi_OddsSummaryData>(url);
+		return await this.httpClient.GetForTypeOrThrow<T>(url);
 	}
 
 	/// Limitation: query at most 10 matches each time.
-	public async Task<BetsapiData_MatchDetail?> FetchMatchDetail(params long[] match_ids) {
+	public async Task<T?> FetchMatchDetail<T>(params long[] match_ids) where T : class {
 		var url = MatchApiUrl("/v1/event/view", $"event_id={string.Join(',', match_ids)}");
-		return await this.httpClient.GetForType<BetsapiData_MatchDetail>(url);
+		return await this.httpClient.GetForTypeOrThrow<T>(url);
 	}
 
-	public async Task<BetsapiData_MatchDetail_Upcoming?> FetchMatchDetail_Upcoming(params long[] match_ids) {
+	public async Task<T?> FetchMatchDetail_Upcoming<T>(params long[] match_ids) where T : class {
 		var url = MatchApiUrl("/v1/event/view", $"event_id={string.Join(',', match_ids)}");
-		return await this.httpClient.GetForType<BetsapiData_MatchDetail_Upcoming>(url);
+		return await this.httpClient.GetForTypeOrThrow<T>(url);
 	}
 
 	/// <param name="page">Max 100</param>
@@ -92,7 +92,12 @@ public class BetsapiRepo : BaseRepo {
 			throw new AppInvalidArgumentException("Invalid page range ! Must in [1, 100]");
 		}
 		var url = MatchApiUrl("/v1/event/merge_history", $"since_time={since_time}&page={page}");
-		return await this.httpClient.GetForType<BetsapiData_MergeHistory>(url);
+		return await this.httpClient.GetForTypeOrThrow<BetsapiData_MergeHistory>(url);
+	}
+
+	public async Task<BetsapiData_MatchHistory?> FetchMatchHistory(long match_id) {
+		var url = MatchApiUrl("/v1/event/history", $"event_id={match_id}");
+		return await this.httpClient.GetForTypeOrThrow<BetsapiData_MatchHistory>(url);
 	}
 
 	/// <param name="size">One of: s (small), m (medium), b (big)</param>

@@ -134,7 +134,7 @@ public class SendPredictionRewardJob : BaseJob {
 		var cnodeResponse = await this.cardanoNodeRepo.TxRawAssetsAsync(cnodeRequest);
 
 		var tx_id = cnodeResponse.data?.tx_id;
-		var tx_message = cnodeResponse.message.TruncateForShortLengthDk();
+		var tx_message = cnodeResponse.message;
 		var tx_status = cnodeResponse.succeed ? SportPredictUserModelConst.RewardSubmitTxStatus.SubmitSucceed : SportPredictUserModelConst.RewardSubmitTxStatus.SubmitFailed;
 
 		foreach (var item in rewardWinners) {

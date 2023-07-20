@@ -39,21 +39,33 @@ public static class QuartzConfig {
 	private static void RegisterJobs(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
 		UpdateExchangeRateJob.Register(quartzConfig);
 
-		Betsapi_FetchLiveMatchesJob.Register(quartzConfig, appSetting);
-		Betsapi_FetchUpcomingMatchesJob.Register(quartzConfig, appSetting);
-
-		Betsapi_UpdateOdds_Live_Job.Register(quartzConfig, appSetting);
-		Betsapi_UpdateOdds_Upcoming_Job.Register(quartzConfig, appSetting);
-
-		Betsapi_UpdateMatchStatus_Live_Job.Register(quartzConfig, appSetting);
-		Betsapi_UpdateMatchStatus_Upcoming_Job.Register(quartzConfig, appSetting);
-		Betsapi_UpdateMatchStatus_ComingSoon_Job.Register(quartzConfig, appSetting);
-
 		DecideUserBetResultJob.Register(quartzConfig);
 		SendCoinToWinnerJob.Register(quartzConfig);
 		// SubmitUserBetToCardanoJob.Register(quartzConfig);
 
 		SendPredictionRewardJob.Register(quartzConfig);
+
+		// Soccer
+		FetchSoccerLiveMatchesJob_Betsapi.Register(quartzConfig, appSetting);
+		FetchSoccerUpcomingMatchesJob_Betsapi.Register(quartzConfig, appSetting);
+
+		UpdateSoccerOdds_LiveJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateSoccerOdds_UpcomingJob_Betsapi.Register(quartzConfig, appSetting);
+
+		UpdateSoccerMatchStatus_LiveJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateSoccerMatchStatus_UpcomingJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateSoccerMatchStatus_ComingSoonJob_Betsapi.Register(quartzConfig, appSetting);
+
+		// Tennis
+		FetchTennisLiveMatchesJob_Betsapi.Register(quartzConfig, appSetting);
+		FetchTennisUpcomingMatchesJob_Betsapi.Register(quartzConfig, appSetting);
+
+		UpdateTennisOdds_LiveJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateTennisOdds_UpcomingJob_Betsapi.Register(quartzConfig, appSetting);
+
+		UpdateTennisMatchStatus_LiveJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateTennisMatchStatus_UpcomingJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateTennisMatchStatus_ComingSoonJob_Betsapi.Register(quartzConfig, appSetting);
 	}
 }
 

@@ -286,7 +286,7 @@ public class SportPredictionService : BaseService {
 
 			// Update bet-submit
 			prediction.bet_submit_tx_id = cnodeResponse.data?.tx_id;
-			prediction.bet_submit_tx_result_message = cnodeResponse.message.TruncateForShortLengthDk();
+			prediction.bet_submit_tx_result_message = cnodeResponse.message;
 			prediction.bet_submit_tx_status = cnodeResponse.succeed ? SportPredictUserModelConst.BetSubmitTxStatus.SubmitSucceed : SportPredictUserModelConst.BetSubmitTxStatus.SubmitFailed;
 
 			if (cnodeResponse.succeed) {

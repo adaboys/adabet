@@ -52,6 +52,7 @@ internal class Program {
 			.AddScoped<CurrencyService>()
 			.AddScoped<UserWalletDao>()
 			.AddScoped<UserFavoriteService>()
+			.AddScoped<UserCoinTxService>()
 
 			.AddControllers();
 

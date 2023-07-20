@@ -45,9 +45,8 @@ public class MailTemplate {
 	public static async Task<string> ForWithdrawCoin_SendActual(
 		string sender_address,
 		string receiver_address,
-		decimal ada_amount,
-		decimal abe_amount,
-		decimal gem_amount,
+		decimal currency_amount,
+		decimal attach_ada_amount,
 		decimal tx_fee
 	) {
 		var mailContent = await File.ReadAllTextAsync("./Assets/MailTemplate/withdraw-actual.html");
@@ -55,9 +54,8 @@ public class MailTemplate {
 		return mailContent
 			.Replace("{{sender_address}}", sender_address)
 			.Replace("{{receiver_address}}", receiver_address)
-			.Replace("{{ada_amount}}", ada_amount.ToString())
-			.Replace("{{abe_amount}}", abe_amount.ToString())
-			.Replace("{{gem_amount}}", gem_amount.ToString())
+			.Replace("{{currency_amount}}", currency_amount.ToString())
+			.Replace("{{attach_ada_amount}}", attach_ada_amount.ToString())
 			.Replace("{{tx_fee}}", tx_fee.ToString())
 		;
 	}

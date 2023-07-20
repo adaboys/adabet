@@ -2,7 +2,7 @@ namespace App;
 
 using System.Text.Json.Serialization;
 
-public class Betsapi_OddsSummaryData {
+public class Betsapi_SoccerOddsSummaryData {
 	public int success { get; set; }
 	public Results results { get; set; }
 
@@ -284,5 +284,113 @@ public class Betsapi_OddsSummaryData {
 		public int matching_dir { get; set; }
 		public OddsUpdate odds_update { get; set; }
 		public Odds odds { get; set; }
+	}
+}
+
+
+public class Betsapi_TennisOddsSummaryData {
+	public int success { get; set; }
+	public Results results { get; set; }
+
+	[JsonIgnore]
+	public bool succeed => this.success == 1;
+	[JsonIgnore]
+	public bool failed => this.success != 1;
+
+	// Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
+	public class _131 {
+		public string id { get; set; }
+		public string home_od { get; set; }
+		public string away_od { get; set; }
+		public string? ss { get; set; }
+		public long add_time { get; set; }
+	}
+
+	public class Bet365 {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class BetClic {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class BetFair {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class BWin {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class CashPoint {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class DafaBet {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class End {
+		[JsonPropertyName("13_1")]
+		public _131 _13_1 { get; set; }
+	}
+
+	public class Interwetten {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class Kickoff {
+		[JsonPropertyName("13_1")]
+		public _131 _13_1 { get; set; }
+	}
+
+	public class Odds {
+		public Start start { get; set; }
+		public Kickoff kickoff { get; set; }
+		public End end { get; set; }
+	}
+
+	public class OddsUpdate {
+		[JsonPropertyName("13_1")]
+		public int _13_1 { get; set; }
+
+		[JsonPropertyName("13_4")]
+		public int _13_4 { get; set; }
+	}
+
+	public class PlanetWin365 {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class Results {
+		public Bet365 Bet365 { get; set; }
+		public BetClic BetClic { get; set; }
+		public PlanetWin365 PlanetWin365 { get; set; }
+		public BWin BWin { get; set; }
+		public BetFair BetFair { get; set; }
+		public DafaBet DafaBet { get; set; }
+		public Interwetten Interwetten { get; set; }
+		public CashPoint CashPoint { get; set; }
+	}
+
+	public class Start {
+		[JsonPropertyName("13_1")]
+		public _131 _13_1 { get; set; }
 	}
 }

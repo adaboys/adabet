@@ -110,7 +110,7 @@ public class SendCoinToWinnerJob : BaseJob {
 
 		var tx_status = cnodeResponse.succeed ? SportWinnerBetRewardTxModelConst.TxStatus.SubmitSucceed : SportWinnerBetRewardTxModelConst.TxStatus.SubmitFailed;
 		var tx_id = cnodeResponse.data?.tx_id;
-		var tx_message = cnodeResponse.message.TruncateForShortLengthDk();
+		var tx_message = cnodeResponse.message;
 
 		// Update tx status
 		foreach (var item in winnerRewards) {

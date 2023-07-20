@@ -69,6 +69,9 @@ public class Sport_MatchesResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "start_at")]
 		public DateTime start_at { get; set; }
 
+		[JsonPropertyName(name: "s")]
+		public int status { get; set; }
+
 		[JsonPropertyName(name: "timer")]
 		public Timer timer { get; set; }
 
@@ -145,6 +148,9 @@ public class Sport_UpcomingMatchesResponse : ApiSuccessResponse {
 
 		[JsonPropertyName(name: "start_at")]
 		public DateTime start_at { get; set; }
+
+		[JsonPropertyName(name: "s")]
+		public int status { get; set; }
 
 		[JsonPropertyName(name: "timer")]
 		public Timer timer { get; set; }
@@ -231,6 +237,9 @@ public class Sport_GetHighlightMatchesResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "start_at")]
 		public DateTime start_at { get; set; }
 
+		[JsonPropertyName(name: "s")]
+		public int status { get; set; }
+
 		[JsonPropertyName(name: "timer")]
 		public Timer timer { get; set; }
 
@@ -296,6 +305,9 @@ public class Sport_GetTopMatchesResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "start_at")]
 		public DateTime start_at { get; set; }
 
+		[JsonPropertyName(name: "s")]
+		public int status { get; set; }
+
 		[JsonPropertyName(name: "timer")]
 		public Timer timer { get; set; }
 
@@ -318,5 +330,131 @@ public class Sport_GetTopMatchesResponse : ApiSuccessResponse {
 
 		[JsonPropertyName(name: "i")]
 		public short injury_time { get; set; }
+	}
+}
+
+public class Sport_GetMatchHistoryResponse : ApiSuccessResponse {
+	[JsonPropertyName(name: "data")]
+	public Data data { get; set; }
+
+	public class Data {
+
+		[JsonPropertyName(name: "summary")]
+		public Summary summary { get; set; }
+
+		[JsonPropertyName(name: "next_meetings")]
+		public Matches next_meetings { get; set; }
+
+		[JsonPropertyName(name: "last_meetings")]
+		public last_meetings last_meetings { get; set; }
+
+		[JsonPropertyName(name: "last_matches")]
+		public Matches last_matches { get; set; }
+
+		[JsonPropertyName(name: "next_matches")]
+		public Matches next_matches { get; set; }
+	}
+
+	public class Summary {
+		[JsonPropertyName(name: "home")]
+		public SummaryDetail home { get; set; } = new();
+
+		[JsonPropertyName(name: "away")]
+		public SummaryDetail away { get; set; } = new();
+
+		public class SummaryDetail {
+			[JsonPropertyName(name: "tt_goals")]
+			public int tt_goals { get; set; }
+
+			[JsonPropertyName(name: "avg_goal_match")]
+			public float avg_goal_match { get; set; }
+
+			[JsonPropertyName(name: "highest_win")]
+			public string highest_win { get; set; }
+
+			[JsonPropertyName(name: "performance")]
+			public string performance { get; set; }
+		}
+	}
+
+	public class last_meetings {
+		[JsonPropertyName(name: "ss")]
+		public string scores { get; set; }
+
+		[JsonPropertyName(name: "list")]
+		public List<last_meetings_detail> list { get; set; } = new();
+	}
+
+	public class last_meetings_detail {
+		[JsonPropertyName(name: "ss")]
+		public string scores { get; set; }
+
+		[JsonPropertyName(name: "time")]
+		public string time { get; set; }
+
+		[JsonPropertyName(name: "league")]
+		public string league { get; set; }
+
+		[JsonPropertyName(name: "home")]
+		public Team home { get; set; }
+
+		[JsonPropertyName(name: "away")]
+		public Team away { get; set; }
+	}
+
+	public class Matches {
+		[JsonPropertyName(name: "homes")]
+		public List<Home> homes { get; set; } = new();
+
+		[JsonPropertyName(name: "aways")]
+		public List<Away> aways { get; set; } = new();
+	}
+
+	public class Home {
+		[JsonPropertyName(name: "league")]
+		public string league { get; set; }
+
+		[JsonPropertyName(name: "time")]
+		public string time { get; set; }
+
+		[JsonPropertyName(name: "status")]
+		public int status { get; set; }
+
+		[JsonPropertyName(name: "ss")]
+		public string scores { get; set; }
+
+		[JsonPropertyName(name: "home")]
+		public Team home { get; set; }
+
+		[JsonPropertyName(name: "away")]
+		public Team away { get; set; }
+	}
+
+	public class Away {
+		[JsonPropertyName(name: "league")]
+		public string league { get; set; }
+
+		[JsonPropertyName(name: "time")]
+		public string time { get; set; }
+
+		[JsonPropertyName(name: "status")]
+		public int status { get; set; }
+
+		[JsonPropertyName(name: "ss")]
+		public string scores { get; set; }
+
+		[JsonPropertyName(name: "home")]
+		public Team home { get; set; }
+
+		[JsonPropertyName(name: "away")]
+		public Team away { get; set; }
+	}
+
+	public class Team {
+		[JsonPropertyName(name: "name")]
+		public string name { get; set; }
+
+		[JsonPropertyName(name: "img")]
+		public string img { get; set; }
 	}
 }

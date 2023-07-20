@@ -34,27 +34,17 @@ public class GetLinkedExternalWalletsResponse : ApiSuccessResponse {
 }
 
 public class WithdrawCoinRequestBody {
-	[JsonPropertyName(name: "tmp_otp_code")]
-	public string? tmp_otp_code { get; set; }
-
 	[Required]
 	[JsonPropertyName(name: "receiver_address")]
 	public string receiver_address { get; set; }
 
-	[JsonPropertyName(name: "send_all")]
-	public bool send_all { get; set; } = false;
-
-	[MinDk((double)AppConst.MIN_ADA_TO_SEND)]
-	[JsonPropertyName(name: "ada_amount")]
-	public decimal ada_amount { get; set; }
+	[Required]
+	[JsonPropertyName(name: "currency_id")]
+	public int currency_id { get; set; }
 
 	[MinDk(0.0)]
-	[JsonPropertyName(name: "abe_amount")]
-	public decimal abe_amount { get; set; }
-
-	[MinDk(0.0)]
-	[JsonPropertyName(name: "gem_amount")]
-	public decimal gem_amount { get; set; }
+	[JsonPropertyName(name: "amount")]
+	public decimal amount { get; set; }
 }
 
 public class PerformWithdrawActualRequestBody {

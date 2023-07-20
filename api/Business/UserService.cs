@@ -309,6 +309,77 @@ public class UserService : BaseService {
 		}
 	}
 
+	public async Task<ApiResponse> GetBetStatistics(Guid userId, string time) {
+		var baseQuery =
+			from _bet in this.dbContext.sportUserBets
+			join _coin in this.dbContext.currencies on _bet.bet_currency_id equals _coin.id
+			where _bet.user_id == userId
+			select new {
+				bet_at = _bet.created_at,
+				bet_result = _bet.bet_result,
+				bet_currency = _coin.name,
+				bet_currency_amount = _bet.bet_currency_amount,
+			}
+		;
+
+		// Filter time
+		var startToday = DateTime.UtcNow.Date;
+		switch (time) {
+			case "today": {
+				baseQuery = baseQuery.Where(m => startToday <= m.bet_at && m.bet_at < startToday.AddDays(1));
+				break;
+			}
+			case "week": {
+				baseQuery = baseQuery.Where(m => startToday.AddDays(-6) <= m.bet_at && m.bet_at <= startToday);
+				break;
+			}
+			case "month": {
+				baseQuery = baseQuery.Where(m => startToday.AddDays(-29) <= m.bet_at && m.bet_at <= startToday);
+				break;
+			}
+			case "all": {
+				break;
+			}
+			default: {
+				return new ApiBadRequestResponse("Invalid time");
+			}
+		}
+
+		// Total stats
+		var totalBetCount = await baseQuery.LongCountAsync();
+		var totalWonCount = await baseQuery.Where(m => m.bet_result == SportUserBetModelConst.BetResult.Won).LongCountAsync();
+		var totalWagered = await baseQuery.SumAsync(m => m.bet_currency_amount);
+
+		var coin2wager = await baseQuery
+			.GroupBy(m => m.bet_currency)
+			.Select(m => new {
+				currency = m.Key,
+				betCount = m.Sum(s => 1),
+				wonCount = m.Where(s => s.bet_result == SportUserBetModelConst.BetResult.Won).Sum(s => 1),
+				totalWager = m.Sum(s => s.bet_currency_amount)
+			})
+			.ToArrayAsync()
+		;
+		var coinStats = new List<GetBetStatisticsResponse.CoinStats>();
+		foreach (var item in coin2wager) {
+			coinStats.Add(new() {
+				currency = item.currency,
+				betCount = item.betCount,
+				wonCount = item.wonCount,
+				wager = item.totalWager
+			});
+		}
+
+		return new GetBetStatisticsResponse {
+			data = new() {
+				totalBetCount = totalBetCount,
+				totalWonCount = totalWonCount,
+				totalWagered = totalWagered,
+				coinStats = coinStats
+			}
+		};
+	}
+
 	public class UserRegistryCache {
 		public string name { get; set; }
 		public string email { get; set; }

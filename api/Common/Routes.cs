@@ -48,8 +48,10 @@ public partial class Routes {
 	public const string sport_matches_upcoming = "sport/{sport_id}/matches/upcoming"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_matches_highlight = "sport/{sport_id}/matches/highlight"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_matches_top = "sport/{sport_id}/matches/top"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
+	public const string sport_match_history = "sport/match/{match_id}/history"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 60}}
 	public const string sport_bet_place = "sport/{sport_id}/bet/place"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string sport_user_bet_histories = "sport/{sport_id}/user/bet/histories"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
+	public const string sport_user_bet_statistics = "user/bet/statistics"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 
 	public const string user_sport_badges = "user/sport/{sport_id}/badges"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 
@@ -61,4 +63,5 @@ public partial class Routes {
 
 	public const string coin_withdraw_prepare = "coin/withdraw/prepare"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string coin_withdraw_actual = "coin/withdraw/actual"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string user_coin_tx_history = "coin/tx/history"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 }

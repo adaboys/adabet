@@ -36,7 +36,7 @@ public class UserWalletController : BaseController {
 	/// const wallet_address_in_hex = await this.API.getChangeAddress();
 	/// const wallet_address = Address.from_bytes(Buffer.from(wallet_address_in_hex, "hex")).to_bech32()
 	/// </param>
-	/// <param name="requestBody">
+	/// <param name="payload">
 	/// - wallet_name: Name of the external wallet. For eg,. Nami, Yoroi, Flint,...
 	/// - wallet_address_in_hex: Address-in-hex of external wallet (Yoroi, Nami,...). For eg,.
 	/// const wallet_address_in_hex = await this.API.getChangeAddress();
@@ -47,13 +47,13 @@ public class UserWalletController : BaseController {
 	/// <response code="200"></response>
 	[Authorize]
 	[HttpPost, Route(Routes.user_external_wallet_link)]
-	public async Task<ActionResult<ApiResponse>> LinkExternalWallet([FromRoute] string wallet_address, [FromBody] LinkExternalWalletRequestBody requestBody) {
+	public async Task<ActionResult<ApiResponse>> LinkExternalWallet([FromRoute] string wallet_address, [FromBody] LinkExternalWalletRequestBody payload) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
-		DkReflections.TrimJsonAnnotatedProperties(requestBody);
+		DkReflections.TrimJsonAnnotatedProperties(payload);
 
-		return await this.service.LinkExternalWallet(userId.Value, wallet_address, requestBody);
+		return await this.service.LinkExternalWallet(userId.Value, wallet_address, payload);
 	}
 
 	/// <summary>
@@ -96,13 +96,13 @@ public class UserWalletController : BaseController {
 	/// </response>
 	[Authorize]
 	[HttpPost, Route(Routes.coin_withdraw_prepare)]
-	public async Task<ActionResult<ApiResponse>> PrepareWithdraw([FromBody] WithdrawCoinRequestBody requestBody) {
+	public async Task<ActionResult<ApiResponse>> PrepareWithdraw([FromBody] WithdrawCoinRequestBody payload) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
-		DkReflections.TrimJsonAnnotatedProperties(requestBody);
+		DkReflections.TrimJsonAnnotatedProperties(payload);
 
-		return await this.service.PrepareWithdraw(userId.Value, requestBody);
+		return await this.service.PrepareWithdraw(userId.Value, payload);
 	}
 
 	/// <summary>
@@ -115,11 +115,12 @@ public class UserWalletController : BaseController {
 	/// </response>
 	[Authorize]
 	[HttpPost, Route(Routes.coin_withdraw_actual)]
-	public async Task<ActionResult<ApiResponse>> PerformWithdrawActual([FromBody] PerformWithdrawActualRequestBody requestBody) {
+	public async Task<ActionResult<ApiResponse>> PerformWithdrawActual([FromBody] PerformWithdrawActualRequestBody payload) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
+		DkReflections.TrimJsonAnnotatedProperties(payload);
 
-		return await this.service.PerformWithdrawActual(userId.Value, requestBody);
+		return await this.service.PerformWithdrawActual(userId.Value, payload);
 	}
 }

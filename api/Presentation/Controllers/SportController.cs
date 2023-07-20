@@ -88,4 +88,15 @@ public class SportController : BaseController {
 		}
 		return await service.GetUpcomingMatches(userId, sport_id, page, item);
 	}
+
+	/// <summary>
+	/// Get match history of home team and away team.
+	/// </summary>
+	/// <response code="200">
+	/// - status: Match status. One of: 1 (upcoming), 2 (inplay), 3 (ended).
+	/// </response>
+	[HttpGet, Route(Routes.sport_match_history)]
+	public async Task<ActionResult<ApiResponse>> GetMatchHistory([FromRoute] long match_id) {
+		return await service.GetMatchHistory(match_id);
+	}
 }

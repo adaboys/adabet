@@ -110,4 +110,19 @@ public class UserController : BaseController {
 
 		return await this.userService.UpdateAvatar(userId.Value, requestBody);
 	}
+
+	/// <summary>
+	/// Get user bet statistics.
+	/// </summary>
+	/// <param name="time">One of: today, week, month, all</param>
+	/// <response code="200"></response>
+	[Authorize]
+	[HttpGet, Route(Routes.sport_user_bet_statistics)]
+	public async Task<ActionResult<ApiResponse>> GetBetStatistics([FromQuery] string time) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+
+		return await this.userService.GetBetStatistics(userId.Value, time);
+	}
 }
