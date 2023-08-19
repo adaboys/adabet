@@ -320,9 +320,9 @@ public class UserService : BaseService {
 	}
 
 	public async Task<ApiResponse> SearchUsers(
-		int pagePos, int pageSize,
-		string? sortType,
-		string? keyword
+		int pagePos, int pageSize, // Pagination
+		string? sortType, // Sort on each field
+		string? keyword // Search all
 	) {
 		var query =
 			from _user in this.dbContext.users
@@ -337,7 +337,8 @@ public class UserService : BaseService {
 				wallet = _wallet.wallet_address,
 				status = (int)_user.status,
 				login_locked_until = _user.login_locked_until,
-				created_at = _user.created_at
+				created_at = _user.created_at,
+				last_login = _user.last_login_at,
 			}
 		;
 
@@ -361,11 +362,25 @@ public class UserService : BaseService {
 		}
 
 		if (keyword != null) {
-			query = query.Where(m => m.name == null || m.name.Contains(keyword));
+			query = query.Where(m =>
+				(m.name != null && m.name.Contains(keyword)) ||
+				m.player.Contains(keyword) ||
+				m.wallet.Contains(keyword)
+			);
 		}
 
 		var pagedResult = await query.AsNoTracking().PaginateDk(pagePos, pageSize);
 		var users = pagedResult.items;
+
+		foreach (var user in users) {
+			var balanceResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(user.wallet);
+			if (balanceResponse.succeed) {
+				user.balance.Add(new() {
+					coin = MstCurrencyModelConst.NAME_ADA,
+					amount = CardanoHelper.CalcTotalAdaFromAssets(balanceResponse.data.assets)
+				});
+			}
+		}
 
 		return new GetUserListResponse {
 			data = new() {

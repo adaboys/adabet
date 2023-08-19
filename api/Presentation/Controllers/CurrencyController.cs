@@ -12,15 +12,11 @@ public class CurrencyController : BaseController {
 	}
 
 	/// <summary>
-	/// Get currency list that user can use to bet with.
+	/// Get currency list.
 	/// </summary>
 	/// <response code="200"></response>
-	[Authorize]
-	[HttpGet, Route(Routes.user_currency_list)]
+	[HttpGet, Route(Routes.currency_list)]
 	public async Task<ActionResult<ApiResponse>> GetUserCurrencyList() {
-		if (userId is null) {
-			return new ApiForbiddenResponse();
-		}
-		return await service.GetUserCurrencyList(userId.Value);
+		return await service.GetCurrencyList(userId);
 	}
 }

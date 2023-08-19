@@ -28,6 +28,9 @@ public class GetListOfFavoriteMatchResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "id")]
 		public long id { get; set; }
 
+		[JsonPropertyName(name: "sport")]
+		public int sport_id { get; set; }
+
 		[JsonPropertyName(name: "country")]
 		public string? country { get; set; }
 

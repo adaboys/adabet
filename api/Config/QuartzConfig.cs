@@ -40,7 +40,7 @@ public static class QuartzConfig {
 		UpdateExchangeRateJob.Register(quartzConfig);
 
 		DecideUserBetResultJob.Register(quartzConfig);
-		SendCoinToWinnerJob.Register(quartzConfig);
+		SendRewardToWinnerJob.Register(quartzConfig);
 		// SubmitUserBetToCardanoJob.Register(quartzConfig);
 
 		SendPredictionRewardJob.Register(quartzConfig);

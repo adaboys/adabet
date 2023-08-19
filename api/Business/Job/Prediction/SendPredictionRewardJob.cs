@@ -23,7 +23,7 @@ public class SendPredictionRewardJob : BaseJob {
 
 	private readonly ILogger<SendPredictionRewardJob> logger;
 	private readonly CardanoNodeRepo cardanoNodeRepo;
-	private readonly SystemWalletDao systemWalletDao;
+	private readonly SystemDao systemWalletDao;
 
 	private const int TOP_RANK_PLAYER_COUNT = 3;
 	private static readonly int[] REWARD_ADA_AMOUNTS = new int[TOP_RANK_PLAYER_COUNT] {
@@ -35,7 +35,7 @@ public class SendPredictionRewardJob : BaseJob {
 		IOptionsSnapshot<AppSetting> snapshot,
 		ILogger<SendPredictionRewardJob> logger,
 		CardanoNodeRepo cardanoNodeRepo,
-		SystemWalletDao systemWalletDao
+		SystemDao systemWalletDao
 	) : base(dbContext, snapshot) {
 		this.logger = logger;
 		this.cardanoNodeRepo = cardanoNodeRepo;
@@ -102,7 +102,7 @@ public class SendPredictionRewardJob : BaseJob {
 			return;
 		}
 
-		var sysAddress = await this.systemWalletDao.GetSystem_MainForGame_AddressAsync();
+		var sysAddress = await this.systemWalletDao.GetSystemGameAddressAsync();
 
 		var transactions = new List<CardanoNode_TxRawAssetsRequestBody.TransactionItem>();
 		var sendAssets = new List<CardanoNode_AssetInfo>();

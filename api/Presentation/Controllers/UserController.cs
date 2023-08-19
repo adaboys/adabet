@@ -69,19 +69,6 @@ public class UserController : BaseController {
 	}
 
 	/// <summary>
-	/// Get balance (ADA, NFTs,...) of the user.
-	/// </summary>
-	/// <response code="200"></response>
-	[Authorize]
-	[HttpGet, Route(Routes.user_balance)]
-	public async Task<ActionResult<ApiResponse>> GetUserBalance() {
-		if (userId is null) {
-			return new ApiForbiddenResponse();
-		}
-		return await this.userService.GetUserBalance(userId.Value);
-	}
-
-	/// <summary>
 	/// Update user's identity for KYC.
 	/// </summary>
 	/// <response code="200"></response>

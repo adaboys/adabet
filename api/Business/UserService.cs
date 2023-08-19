@@ -91,37 +91,6 @@ public class UserService : BaseService {
 		};
 	}
 
-	public async Task<ApiResponse> GetUserBalance(Guid userId) {
-		var query =
-			from _user in this.dbContext.users
-			join _wallet in this.dbContext.userWallets on _user.id equals _wallet.user_id
-
-			where _user.id == userId && _wallet.wallet_type == UserWalletModelConst.WalletType.Internal
-
-			select new {
-				_wallet_address = _wallet.wallet_address,
-			}
-		;
-		var result = await query.FirstOrDefaultAsync();
-		if (result == null) {
-			return new ApiBadRequestResponse("No user/wallet");
-		}
-
-		// Query balance from internal wallet
-		var ada_balance = 0m;
-
-		var assetsResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(result._wallet_address);
-		if (assetsResponse.succeed) {
-			ada_balance = CardanoHelper.CalcTotalAdaFromAssets(assetsResponse.data.assets);
-		}
-
-		return new GetUserBalanceResponse {
-			data = new() {
-				ada_balance = ada_balance,
-			}
-		};
-	}
-
 	public async Task<ApiResponse> ChangePassword(Guid userId, ChangePasswordRequestBody requestBody, string? ipAddress, string? userAgent) {
 		var user = await this.userDao.FindValidUserViaIdAsync(userId, asNoTracking: false);
 		if (user is null) {

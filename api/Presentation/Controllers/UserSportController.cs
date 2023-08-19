@@ -17,7 +17,7 @@ public class UserSportController : BaseController {
 	/// <response code="200"></response>
 	[Authorize]
 	[HttpPost, Route(Routes.sport_bet_place)]
-	public async Task<ActionResult<ApiResponse>> PlaceBet([FromRoute] int sport_id, [FromBody] Sport_PlaceBetRequestBody requestBody) {
+	public async Task<ActionResult<ApiResponse>> PlaceBet([FromRoute] int sport_id, [FromBody] Sport_PlaceBetPayload payload) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
@@ -27,7 +27,33 @@ public class UserSportController : BaseController {
 		// 	return Content("{\"code\": \"ahihi\"}", "application/json");
 		// }
 
-		return await service.PlaceBet(userId.Value, sport_id, requestBody);
+		return await service.PlaceBet(userId.Value, sport_id, payload);
+	}
+
+	/// <summary>
+	/// [Step 1/2] Request place_bet of given sport via external wallet.
+	/// </summary>
+	/// <response code="200"></response>
+	[Authorize]
+	[HttpPost, Route(Routes.sport_extwallet_bet_request)]
+	public async Task<ActionResult<ApiResponse>> RequestPlaceBetViaExtWallet([FromRoute] int sport_id, [FromBody] RequestBetViaExtWalletPayload payload) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+		return await service.RequestPlaceBetViaExtWallet(userId.Value, sport_id, payload);
+	}
+
+	/// <summary>
+	/// [Step 2/2] Report place_bet of given sport via external wallet.
+	/// </summary>
+	/// <response code="200"></response>
+	[Authorize]
+	[HttpPost, Route(Routes.sport_extwallet_bet_report)]
+	public async Task<ActionResult<ApiResponse>> ReportPlaceBetWithExtWallet([FromRoute] int sport_id, [FromBody] ReportBetViaExtWalletPayload payload) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+		return await service.ReportPlaceBetWithExtWallet(userId.Value, sport_id, payload);
 	}
 
 	/// <summary>

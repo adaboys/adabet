@@ -105,7 +105,7 @@ public class FetchTennisLiveMatchesJob_Betsapi : BaseJob {
 
 		// Save home team and Get id
 		if (homeTeam is null) {
-			var image_id = await this.betsapiRepo.CalcImageId(apiMatch.home.image_id.ToString());
+			var image_id = await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id.ToString());
 
 			homeTeam = new() {
 				name = apiMatch.home.name,
@@ -119,7 +119,7 @@ public class FetchTennisLiveMatchesJob_Betsapi : BaseJob {
 
 		// Save away team and Get id
 		if (awayTeam is null) {
-			var image_id = await this.betsapiRepo.CalcImageId(apiMatch.away.image_id.ToString());
+			var image_id = await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id.ToString());
 
 			awayTeam = new() {
 				name = apiMatch.away.name,
@@ -243,7 +243,7 @@ public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
 
 		// Save home team and Get id
 		if (homeTeam is null) {
-			var image_id = apiMatch.home.image_id == 0 ? null : await this.betsapiRepo.CalcImageId(apiMatch.home.image_id.ToString());
+			var image_id = apiMatch.home.image_id == 0 ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id.ToString());
 
 			homeTeam = new() {
 				name = apiMatch.home.name,
@@ -257,7 +257,7 @@ public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
 
 		// Save away team and Get id
 		if (awayTeam is null) {
-			var image_id = apiMatch.away.image_id == 0 ? null : await this.betsapiRepo.CalcImageId(apiMatch.away.image_id.ToString());
+			var image_id = apiMatch.away.image_id == 0 ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id.ToString());
 
 			awayTeam = new() {
 				name = apiMatch.away.name,

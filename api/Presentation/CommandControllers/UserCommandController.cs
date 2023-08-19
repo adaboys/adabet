@@ -11,12 +11,12 @@ using Microsoft.Extensions.Options;
 public class UserCommandController : ControllerBase {
 	private readonly AppSetting appSetting;
 	private readonly ILogger logger;
-	private readonly UserCommand service;
+	private readonly UpdateCommand202304 service;
 
 	public UserCommandController(
 		IOptionsSnapshot<AppSetting> option,
 		ILogger<UserCommandController> logger,
-		UserCommand service
+		UpdateCommand202304 service
 	) {
 		this.appSetting = option.Value;
 		this.logger = logger;

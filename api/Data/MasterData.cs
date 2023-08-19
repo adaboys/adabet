@@ -22,6 +22,9 @@ public class GetCurrencyListResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "name")]
 		public string name { get; set; }
 
+		[JsonPropertyName(name: "limit_bet")]
+		public decimal limit_bet { get; set; }
+
 		[JsonPropertyName(name: "amount")]
 		public decimal amount { get; set; }
 	}

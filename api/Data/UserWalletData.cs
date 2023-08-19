@@ -3,16 +3,19 @@ namespace App;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-public class GetLinkedExternalWalletsResponse : ApiSuccessResponse {
+public class GetWalletsResponse : ApiSuccessResponse {
 	[JsonPropertyName(name: "data")]
 	public Data data { get; set; }
 
 	public class Data {
 		[JsonPropertyName(name: "wallets")]
-		public List<Wallet> wallets { get; set; }
+		public Wallet[] wallets { get; set; }
 	}
 
 	public class Wallet {
+		[JsonPropertyName(name: "id")]
+		public long id { get; set; }
+
 		[JsonPropertyName(name: "name")]
 		public string? name { get; set; }
 
@@ -22,14 +25,19 @@ public class GetLinkedExternalWalletsResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "status")]
 		public int status { get; set; }
 
-		[JsonPropertyName(name: "ada")]
-		public decimal ada { get; set; }
+		[JsonPropertyName(name: "coins")]
+		public List<Coin> coins { get; set; } = new();
+	}
 
-		[JsonPropertyName(name: "abe")]
-		public decimal abe { get; set; }
+	public class Coin {
+		[JsonPropertyName(name: "id")]
+		public int id { get; set; }
 
-		[JsonPropertyName(name: "gem")]
-		public decimal gem { get; set; }
+		[JsonPropertyName(name: "name")]
+		public string name { get; set; }
+
+		[JsonPropertyName(name: "amount")]
+		public decimal amount { get; set; }
 	}
 }
 

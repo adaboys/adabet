@@ -174,57 +174,6 @@ public class BetsapiData_SoccerMatchDetail_Upcoming {
 	}
 }
 
-public class BetsapiData_MatchHistory {
-	public int success { get; set; }
-	public Results results { get; set; }
-
-	[JsonIgnore]
-	public bool succeed => this.success == 1;
-	[JsonIgnore]
-	public bool failed => this.success != 1;
-
-	public class Results {
-		// public List<object> h2h { get; set; }
-		public List<Home> home { get; set; }
-		public List<Away> away { get; set; }
-	}
-
-	public class Home {
-		public string id { get; set; }
-		public string sport_id { get; set; }
-		public League league { get; set; }
-		public Team home { get; set; }
-		public Team away { get; set; }
-		public string time { get; set; }
-		public string ss { get; set; }
-		public int time_status { get; set; }
-	}
-
-	public class Away {
-		public string id { get; set; }
-		public string sport_id { get; set; }
-		public League league { get; set; }
-		public Team home { get; set; }
-		public Team away { get; set; }
-		public string time { get; set; }
-		public string ss { get; set; }
-		public int time_status { get; set; }
-	}
-
-	public class Team {
-		public long id { get; set; }
-		public string name { get; set; }
-		public string image_id { get; set; }
-		public string? cc { get; set; }
-	}
-
-	public class League {
-		public string id { get; set; }
-		public string name { get; set; }
-		public string? cc { get; set; }
-	}
-}
-
 public class BetsapiData_TennisMatchDetail {
 	public int success { get; set; }
 	public List<Result> results { get; set; }

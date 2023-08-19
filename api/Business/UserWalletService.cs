@@ -151,55 +151,97 @@ public class UserWalletService : BaseService {
 		}
 	}
 
-	public async Task<ApiResponse> GetLinkedExternalWallets(Guid userId) {
-		var linkedWallets = await this.dbContext.userWallets
+	public async Task<ApiResponse> GetLinkedExternalWallets(Guid userId, bool query_balance) {
+		var result = await this.dbContext.userWallets.AsNoTracking()
 			.Where(m =>
 				m.user_id == userId &&
 				m.wallet_type == UserWalletModelConst.WalletType.External &&
 				m.deleted_at == null
 			)
-			.AsNoTracking()
+			.Select(m => new GetWalletsResponse.Wallet {
+				id = m.id,
+				name = m.wallet_name,
+				address = m.wallet_address,
+				status = (int)m.wallet_status
+			})
 			.ToArrayAsync()
 		;
 
-		if (linkedWallets.Length == 0) {
+		if (result.Length == 0) {
 			return new ApiSuccessResponse("Empty");
 		}
 
-		var data_wallets = new List<GetLinkedExternalWalletsResponse.Wallet>(linkedWallets.Length);
+		// Query balance from Cardano
+		if (query_balance) {
+			var coins = await this.dbContext.currencies.AsNoTracking().ToArrayAsync();
 
-		foreach (var wallet in linkedWallets) {
-			data_wallets.Add(new() {
-				name = wallet.wallet_name,
-				address = wallet.wallet_address,
-				status = (int)wallet.wallet_status
-			});
+			foreach (var item in result) {
+				var assetsResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(item.address);
+				if (assetsResponse.failed) {
+					return new ApiInternalServerErrorResponse("Could not get wallet assets");
+				}
+
+				// Add balance (coins) of each wallet
+				foreach (var coin in coins) {
+					item.coins.Add(new() {
+						id = coin.id,
+						name = coin.name,
+						amount = CardanoHelper.CalcCoinAmountFromAssets(coin, assetsResponse.data.assets)
+					});
+				}
+			}
+		}
+
+		return new GetWalletsResponse {
+			data = new() {
+				wallets = result
+			}
+		};
+	}
+
+	public async Task<ApiResponse> GetAllWallets(Guid user_id, bool query_balance) {
+		var result = await this.dbContext.userWallets.AsNoTracking()
+			.Where(m =>
+				m.user_id == user_id &&
+				m.deleted_at == null
+			)
+			.Select(m => new GetWalletsResponse.Wallet {
+				id = m.id,
+				name = m.wallet_name,
+				address = m.wallet_address,
+				status = (int)m.wallet_status
+			})
+			.ToArrayAsync()
+		;
+
+		if (result.Length == 0) {
+			return new ApiSuccessResponse("No wallet");
 		}
 
 		// Query balance from Cardano
-		var name2coin = await this.dbContext.currencies.AsNoTracking()
-			.Where(m =>
-				m.name == MstCurrencyModelConst.NAME_ABE ||
-				m.name == MstCurrencyModelConst.NAME_GEM
-			)
-			.ToDictionaryAsync(m => m.name)
-		;
-		var abeCoin = name2coin[MstCurrencyModelConst.NAME_ABE];
-		var gemCoin = name2coin[MstCurrencyModelConst.NAME_GEM];
-		foreach (var item in data_wallets) {
-			var assetsResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(item.address);
-			if (assetsResponse.failed) {
-				return new ApiInternalServerErrorResponse("Could not get wallet assets");
-			}
+		if (query_balance) {
+			var coins = await this.dbContext.currencies.AsNoTracking().ToArrayAsync();
 
-			item.ada = CardanoHelper.CalcTotalAdaFromAssets(assetsResponse.data.assets);
-			item.abe = CardanoHelper.CalcTotalCoinFromAssets(abeCoin, assetsResponse.data.assets);
-			item.gem = CardanoHelper.CalcTotalCoinFromAssets(gemCoin, assetsResponse.data.assets);
+			foreach (var item in result) {
+				var assetsResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(item.address);
+				if (assetsResponse.failed) {
+					return new ApiInternalServerErrorResponse("Could not get wallet assets");
+				}
+
+				// Add balance (coins) of each wallet
+				foreach (var coin in coins) {
+					item.coins.Add(new() {
+						id = coin.id,
+						name = coin.name,
+						amount = CardanoHelper.CalcCoinAmountFromAssets(coin, assetsResponse.data.assets)
+					});
+				}
+			}
 		}
 
-		return new GetLinkedExternalWalletsResponse {
+		return new GetWalletsResponse {
 			data = new() {
-				wallets = data_wallets
+				wallets = result
 			}
 		};
 	}
@@ -260,7 +302,7 @@ public class UserWalletService : BaseService {
 		}
 
 		// Balance not enough
-		var holdAmount = CardanoHelper.CalcTotalCoinFromAssets(currency, walletAssets);
+		var holdAmount = CardanoHelper.CalcCoinAmountFromAssets(currency, walletAssets);
 		if (holdAmount < reqBody.amount) {
 			return new ApiBadRequestResponse { code = ErrCode.balance_not_enough };
 		}

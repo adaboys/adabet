@@ -65,3 +65,8 @@ public class OnNewTransactionRequestBody {
 		public bool valid_contract { get; set; }
 	}
 }
+
+public class OnBalanceChangedData {
+	public int coin_id { get; set; }
+	public decimal amount { get; set; }
+}

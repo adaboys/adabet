@@ -107,16 +107,6 @@ public class GetUserProfileResponse : ApiSuccessResponse {
 	}
 }
 
-public class GetUserBalanceResponse : ApiSuccessResponse {
-	[JsonPropertyName(name: "data")]
-	public Data data { get; set; }
-
-	public class Data {
-		[JsonPropertyName(name: "ada_balance")]
-		public decimal ada_balance { get; set; }
-	}
-}
-
 public class RequestLinkExternalWalletResponse : ApiSuccessResponse {
 	[JsonPropertyName(name: "data")]
 	public Data data { get; set; }

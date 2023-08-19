@@ -80,6 +80,7 @@ public class UserFavoriteService : BaseService {
 
 			select new GetListOfFavoriteMatchResponse.Match {
 				id = _match.id,
+				sport_id = _league.sport_id,
 				start_at = _match.start_at,
 
 				country = _country.name,

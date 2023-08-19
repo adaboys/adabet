@@ -29,6 +29,36 @@ public class BootCommand : BaseService {
 	}
 
 	public async Task<ApiResponse> BootProject() {
+		// return await this._BootProject20221129();
+		// return await this._Update20230812();
+
+		return new ApiSuccessResponse("Done boot project !");
+	}
+
+	private async Task<ApiResponse> _Update20230812() {
+		var createSwapWalletResponse = await this.cardanoNodeRepo.CreateWalletAsync(SystemWalletModelConst.WalletName_Swap);
+		if (createSwapWalletResponse.failed) {
+			return createSwapWalletResponse;
+		}
+
+		var abe = await this.dbContext.currencies.FirstAsync(m => m.network == MstCurrencyModelConst.Network.Cardano && m.name == MstCurrencyModelConst.NAME_ABE);
+		var gem = await this.dbContext.currencies.FirstAsync(m => m.network == MstCurrencyModelConst.Network.Cardano && m.name == MstCurrencyModelConst.NAME_GEM);
+
+		abe.weight = 250;
+		gem.weight = 1000;
+
+		this.dbContext.systemWallets.Attach(new() {
+			type = SystemWalletModelConst.Type.Swap,
+			wallet_address = createSwapWalletResponse.data.wallet_address
+		});
+
+		await this.dbContext.SaveChangesAsync();
+
+		return new ApiSuccessResponse();
+	}
+
+
+	private async Task<ApiResponse> _BootProject20221129() {
 		// Create root user for this project
 		var res1 = await this._CreateRootUserIfNotExist();
 		if (res1.failed) {
@@ -41,14 +71,15 @@ public class BootCommand : BaseService {
 			return res2;
 		}
 
-		// // Upsert system wallets
+		// Upsert system wallets
 		var res3 = await this._UpsertSystemWalletsIfNotExist();
 		if (res3.failed) {
 			return res3;
 		}
 
-		return new ApiSuccessResponse("Done boot project !");
+		return new ApiSuccessResponse();
 	}
+
 
 	private async Task<ApiResponse> _CreateRootUserIfNotExist() {
 		var user = await this.dbContext.users.FirstOrDefaultAsync(m => m.email == this.appSetting.rootUserTemplate.email);
@@ -138,19 +169,19 @@ public class BootCommand : BaseService {
 	private async Task<ApiResponse> _UpsertSystemWalletsIfNotExist() {
 		var shouldSaveChanges = false;
 
-		var mainWallet = await this.dbContext.systemWallets.FirstOrDefaultAsync(m => m.type == SystemWalletModelConst.Type.MainForGame);
+		var mainWallet = await this.dbContext.systemWallets.FirstOrDefaultAsync(m => m.type == SystemWalletModelConst.Type.Game);
 		if (mainWallet != null) {
 			this.logger.InfoDk(this, "Skip upsert ADA wallet since existed");
 		}
 		else {
 			// Create wallet
-			var response = await this.cardanoNodeRepo.CreateWalletAsync(SystemWalletModelConst.WalletName_MainForGame);
+			var response = await this.cardanoNodeRepo.CreateWalletAsync(SystemWalletModelConst.WalletName_Game);
 			if (response.failed) {
 				return response;
 			}
 
 			this.dbContext.systemWallets.Attach(new() {
-				type = SystemWalletModelConst.Type.MainForGame,
+				type = SystemWalletModelConst.Type.Game,
 				wallet_address = response.data.wallet_address
 			});
 

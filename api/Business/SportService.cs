@@ -3,19 +3,19 @@ namespace App;
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Tool.Compet.Core;
 using Tool.Compet.EntityFrameworkCore;
 using Tool.Compet.Json;
 
-public class SportService {
-	private readonly AppDbContext dbContext;
+public class SportService : BaseService {
 	private BetsapiRepo betsapiRepo;
 
 	public SportService(
 		AppDbContext dbContext,
+		IOptionsSnapshot<AppSetting> snapshot,
 		BetsapiRepo betsapiRepo
-	) {
-		this.dbContext = dbContext;
+	) : base(dbContext, snapshot) {
 		this.betsapiRepo = betsapiRepo;
 	}
 
@@ -70,6 +70,7 @@ public class SportService {
 
 			select new Sport_MatchesResponse.Match {
 				id = _match.id,
+				sport_id = _league.sport_id,
 				start_at = _match.start_at,
 				status = (int)_match.status,
 
@@ -143,6 +144,7 @@ public class SportService {
 
 			select new Sport_UpcomingMatchesResponse.Match {
 				id = _match.id,
+				sport_id = _league.sport_id,
 				start_at = _match.start_at,
 				status = (int)_match.status,
 
@@ -219,6 +221,7 @@ public class SportService {
 
 			select new Sport_GetHighlightMatchesResponse.Match {
 				id = _match.id,
+				sport_id = _league.sport_id,
 				start_at = _match.start_at,
 				status = (int)_match.status,
 
@@ -281,6 +284,7 @@ public class SportService {
 
 			select new Sport_GetTopMatchesResponse.Match {
 				id = _match.id,
+				sport_id = _league.sport_id,
 				start_at = _match.start_at,
 				status = (int)_match.status,
 
@@ -356,98 +360,156 @@ public class SportService {
 			return new ApiInternalServerErrorResponse("No data");
 		}
 
-		var last_matches = new Sport_GetMatchHistoryResponse.Matches();
-		var next_matches = new Sport_GetMatchHistoryResponse.Matches();
+		var lastMatches = new Sport_GetMatchHistoryResponse.Matches();
+		var nextMatches = new Sport_GetMatchHistoryResponse.Matches();
 
-		// Build home's matches (last, next)
+		// Build home's last_matches and next_matches
 		for (var index = response.results.home.Count - 1; index >= 0; --index) {
-			var item = response.results.home[index];
-			var status = SportMatchModelConst.ConvertStatusFromBetsapi(item.time_status);
+			var apiItem = response.results.home[index];
+			var status = SportMatchModelConst.ConvertStatusFromBetsapi(apiItem.time_status.ParseIntDk());
 
 			var homeMatch = new Sport_GetMatchHistoryResponse.Home() {
-				league = item.league.name,
-				time = item.time,
+				league = apiItem.league.name,
+				time = apiItem.time,
 				status = (int)status,
-				scores = item.ss,
+				scores = apiItem.ss,
 				home = new() {
-					name = item.home.name,
-					img = item.home.image_id
+					name = apiItem.home.name,
+					img = apiItem.home.image_id
 				},
 				away = new() {
-					name = item.away.name,
-					img = item.away.image_id
+					name = apiItem.away.name,
+					img = apiItem.away.image_id
 				}
 			};
 
 			if (status == SportMatchModelConst.TimeStatus.Ended) {
-				last_matches.homes.Add(homeMatch);
+				lastMatches.homes.Add(homeMatch);
 			}
 			else if (status == SportMatchModelConst.TimeStatus.Upcoming) {
-				next_matches.homes.Add(homeMatch);
+				nextMatches.homes.Add(homeMatch);
+			}
+
+			//todo Just for debug
+			if (this.appSetting.environment != AppSetting.ENV_PRODUCTION) {
+				lastMatches.homes.Add(homeMatch);
+				nextMatches.homes.Add(homeMatch);
 			}
 		}
 
-		// Build away's matches (last, next)
+		// Build away's last_matches and next_matches
 		for (var index = response.results.away.Count - 1; index >= 0; --index) {
-			var item = response.results.away[index];
-			var status = SportMatchModelConst.ConvertStatusFromBetsapi(item.time_status);
+			var apiItem = response.results.away[index];
+			var status = SportMatchModelConst.ConvertStatusFromBetsapi(apiItem.time_status.ParseIntDk());
 
 			var awayMatch = new Sport_GetMatchHistoryResponse.Away() {
-				league = item.league.name,
-				time = item.time,
+				league = apiItem.league.name,
+				time = apiItem.time,
 				status = (int)status,
-				scores = item.ss,
+				scores = apiItem.ss,
 				home = new() {
-					name = item.home.name,
-					img = item.home.image_id
+					name = apiItem.home.name,
+					img = apiItem.home.image_id
 				},
 				away = new() {
-					name = item.away.name,
-					img = item.away.image_id
+					name = apiItem.away.name,
+					img = apiItem.away.image_id
 				}
 			};
 
 			if (status == SportMatchModelConst.TimeStatus.Upcoming) {
-				next_matches.aways.Add(awayMatch);
+				nextMatches.aways.Add(awayMatch);
 			}
 			else if (status == SportMatchModelConst.TimeStatus.Ended) {
-				last_matches.aways.Add(awayMatch);
+				lastMatches.aways.Add(awayMatch);
+			}
+
+			//todo just for debug
+			if (this.appSetting.environment != AppSetting.ENV_PRODUCTION) {
+				nextMatches.aways.Add(awayMatch);
+				lastMatches.aways.Add(awayMatch);
 			}
 		}
 
-		// Build last meetings of 2 teams
-		var last_meetings = new Sport_GetMatchHistoryResponse.last_meetings();
+		// Build last_meetings of 2 teams
+		var lastMeetings = new Sport_GetMatchHistoryResponse.LastMeeting();
+		var betsapi_homeTeamId = matchResult.ref_betsapi_home_team_id;
+		var betsapi_awayTeamId = matchResult.ref_betsapi_away_team_id;
 		for (var index = response.results.home.Count - 1; index >= 0; --index) {
-			var item = response.results.home[index];
+			var apiItem = response.results.home[index];
 
-			if (item.home.id == matchResult.ref_betsapi_home_team_id && item.away.id == matchResult.ref_betsapi_away_team_id) {
-				last_meetings.list.Add(new() {
-					league = item.league.name,
-					scores = item.ss,
-					time = item.time,
+			var isLastMeeting =
+				(apiItem.home.id == betsapi_homeTeamId && apiItem.away.id == betsapi_awayTeamId) ||
+				(this.appSetting.environment != AppSetting.ENV_PRODUCTION)
+			;
+			if (isLastMeeting) {
+				lastMeetings.list.Add(new() {
+					league = apiItem.league.name,
+					scores = apiItem.ss,
+					time = apiItem.time,
 					home = new() {
-						name = item.home.name,
-						img = item.home.image_id,
+						name = apiItem.home.name,
+						img = apiItem.home.image_id,
 					},
 					away = new() {
-						name = item.away.name,
-						img = item.away.image_id
+						name = apiItem.away.name,
+						img = apiItem.away.image_id
+					},
+				});
+			}
+		}
+
+		// Build next_meetings of 2 teams
+		var nextMeetings = new Sport_GetMatchHistoryResponse.NextMeeting();
+		for (var index = response.results.home.Count - 1; index >= 0; --index) {
+			var apiItem = response.results.home[index];
+			var timeStatus = SportMatchModelConst.ConvertStatusFromBetsapi(apiItem.time_status.ParseIntDk());
+
+			var isNextMeeting =
+				(apiItem.home.id == betsapi_homeTeamId && apiItem.away.id == betsapi_awayTeamId && timeStatus == SportMatchModelConst.TimeStatus.Upcoming) ||
+				(this.appSetting.environment != AppSetting.ENV_PRODUCTION)
+			;
+			if (isNextMeeting) {
+				nextMeetings.list.Add(new() {
+					league = apiItem.league.name,
+					scores = apiItem.ss,
+					time = apiItem.time,
+					home = new() {
+						name = apiItem.home.name,
+						img = apiItem.home.image_id,
+					},
+					away = new() {
+						name = apiItem.away.name,
+						img = apiItem.away.image_id
 					},
 				});
 			}
 		}
 
 		// Summary
+		// - Total goals
+		// - Victories
 		var summary = new Sport_GetMatchHistoryResponse.Summary();
 		var s1Max = int.MinValue;
 		var s2WhenS1Max = int.MinValue;
 		var s2Max = int.MinValue;
 		var s1WhenS2Max = int.MinValue;
-		foreach (var item in last_meetings.list) {
+		foreach (var item in lastMeetings.list) {
 			var arr = item.scores.Split('-');
+			// Soccer
 			if (arr.Length == 2) {
 				var s1 = arr[0].ParseIntDk();
 				var s2 = arr[1].ParseIntDk();
+
+				if (s1 > s2) {
+					++summary.home.victories;
+				}
+				else if (s1 < s2) {
+					++summary.away.victories;
+				}
+				else {
+					++summary.draw;
+				}
 
 				if (s1Max < s1) {
 					s1Max = s1;
@@ -462,11 +524,53 @@ public class SportService {
 				summary.away.tt_goals += s2;
 			}
 		}
-		var lastMeetingsCount = last_meetings.list.Count;
+
+		// - Performance
+		foreach (var item in lastMatches.homes) {
+			var scores = item.scores.Split('-');
+			// Soccer
+			if (scores.Length == 2) {
+				var s1 = scores[0].ParseIntDk();
+				var s2 = scores[1].ParseIntDk();
+
+				if (s1 == s2) {
+					summary.home.performance.Add('D');
+				}
+				else if (s1 < s2) {
+					summary.home.performance.Add('L');
+				}
+				else {
+					summary.home.performance.Add('W');
+				}
+			}
+		}
+		foreach (var item in lastMatches.aways) {
+			var scores = item.scores.Split('-');
+			// Soccer
+			if (scores.Length == 2) {
+				var s1 = scores[0].ParseIntDk();
+				var s2 = scores[1].ParseIntDk();
+
+				if (s1 == s2) {
+					summary.away.performance.Add('D');
+				}
+				else if (s1 < s2) {
+					summary.away.performance.Add('L');
+				}
+				else {
+					summary.away.performance.Add('W');
+				}
+			}
+		}
+
+		// - Avg goal
+		var lastMeetingsCount = lastMeetings.list.Count;
 		if (lastMeetingsCount > 0) {
 			summary.home.avg_goal_match = summary.home.tt_goals / lastMeetingsCount;
 			summary.away.avg_goal_match = summary.away.tt_goals / lastMeetingsCount;
 		}
+
+		// - Highest win
 		if (s1Max != int.MinValue) {
 			summary.home.highest_win = $"{s1Max}:{s2WhenS1Max}";
 		}
@@ -474,16 +578,13 @@ public class SportService {
 			summary.away.highest_win = $"{s2Max}:{s1WhenS2Max}";
 		}
 
-		// Next match
-		var next_meetings = new Sport_GetMatchHistoryResponse.Matches();
-
 		return new Sport_GetMatchHistoryResponse {
 			data = new() {
 				summary = summary,
-				next_meetings = next_meetings,
-				last_meetings = last_meetings,
-				last_matches = last_matches,
-				next_matches = next_matches,
+				next_meetings = nextMeetings,
+				last_meetings = lastMeetings,
+				last_matches = lastMatches,
+				next_matches = nextMatches,
 			}
 		};
 	}

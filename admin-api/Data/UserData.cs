@@ -198,23 +198,46 @@ public class GetUserListResponse : ApiSuccessResponse {
 	}
 
 	public class User {
+		[JsonPropertyName(name: "id")]
 		public Guid id { get; set; }
 
+		[JsonPropertyName(name: "avatar")]
 		public string? avatar { get; set; }
 
+		[JsonPropertyName(name: "name")]
 		public string? name { get; set; }
 
+		[JsonPropertyName(name: "player")]
 		public string player { get; set; }
 
+		[JsonPropertyName(name: "wallet")]
 		public string wallet { get; set; }
 
+		[JsonPropertyName(name: "role")]
 		public int role { get; set; }
 
+		[JsonPropertyName(name: "status")]
 		public int status { get; set; }
 
+		[JsonPropertyName(name: "login_locked_until")]
 		public DateTime? login_locked_until { get; set; }
 
+		[JsonPropertyName(name: "created_at")]
 		public DateTime? created_at { get; set; }
+
+		[JsonPropertyName(name: "last_login")]
+		public DateTime? last_login { get; set; }
+
+		[JsonPropertyName(name: "balance")]
+		public List<Balance> balance { get; set; } = new();
+	}
+
+	public class Balance {
+		[JsonPropertyName(name: "coin")]
+		public string coin { get; set; }
+
+		[JsonPropertyName(name: "amount")]
+		public decimal amount { get; set; }
 	}
 }
 

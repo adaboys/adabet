@@ -39,6 +39,9 @@ public class Sport_MatchesResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "id")]
 		public long id { get; set; }
 
+		[JsonPropertyName(name: "sport")]
+		public int sport_id { get; set; }
+
 		[JsonPropertyName(name: "s1")]
 		public int score1 { get; set; }
 
@@ -118,6 +121,9 @@ public class Sport_UpcomingMatchesResponse : ApiSuccessResponse {
 	public class Match {
 		[JsonPropertyName(name: "id")]
 		public long id { get; set; }
+
+		[JsonPropertyName(name: "sport")]
+		public int sport_id { get; set; }
 
 		[JsonPropertyName(name: "s1")]
 		public int score1 { get; set; }
@@ -207,6 +213,9 @@ public class Sport_GetHighlightMatchesResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "id")]
 		public long id { get; set; }
 
+		[JsonPropertyName(name: "sport")]
+		public int sport_id { get; set; }
+
 		[JsonPropertyName(name: "country")]
 		public string? country { get; set; }
 
@@ -274,6 +283,9 @@ public class Sport_GetTopMatchesResponse : ApiSuccessResponse {
 	public class Match {
 		[JsonPropertyName(name: "id")]
 		public long id { get; set; }
+
+		[JsonPropertyName(name: "sport")]
+		public int sport_id { get; set; }
 
 		[JsonPropertyName(name: "country")]
 		public string? country { get; set; }
@@ -343,10 +355,10 @@ public class Sport_GetMatchHistoryResponse : ApiSuccessResponse {
 		public Summary summary { get; set; }
 
 		[JsonPropertyName(name: "next_meetings")]
-		public Matches next_meetings { get; set; }
+		public NextMeeting next_meetings { get; set; }
 
 		[JsonPropertyName(name: "last_meetings")]
-		public last_meetings last_meetings { get; set; }
+		public LastMeeting last_meetings { get; set; }
 
 		[JsonPropertyName(name: "last_matches")]
 		public Matches last_matches { get; set; }
@@ -356,6 +368,9 @@ public class Sport_GetMatchHistoryResponse : ApiSuccessResponse {
 	}
 
 	public class Summary {
+		[JsonPropertyName(name: "draw")]
+		public int draw { get; set; } = new();
+
 		[JsonPropertyName(name: "home")]
 		public SummaryDetail home { get; set; } = new();
 
@@ -363,6 +378,9 @@ public class Sport_GetMatchHistoryResponse : ApiSuccessResponse {
 		public SummaryDetail away { get; set; } = new();
 
 		public class SummaryDetail {
+			[JsonPropertyName(name: "victories")]
+			public int victories { get; set; }
+
 			[JsonPropertyName(name: "tt_goals")]
 			public int tt_goals { get; set; }
 
@@ -373,19 +391,38 @@ public class Sport_GetMatchHistoryResponse : ApiSuccessResponse {
 			public string highest_win { get; set; }
 
 			[JsonPropertyName(name: "performance")]
-			public string performance { get; set; }
+			public List<char> performance { get; set; } = new();
 		}
 	}
 
-	public class last_meetings {
+	public class LastMeeting {
+		[JsonPropertyName(name: "list")]
+		public List<LastMeetingDetail> list { get; set; } = new();
+	}
+
+	public class LastMeetingDetail {
 		[JsonPropertyName(name: "ss")]
 		public string scores { get; set; }
 
-		[JsonPropertyName(name: "list")]
-		public List<last_meetings_detail> list { get; set; } = new();
+		[JsonPropertyName(name: "time")]
+		public string time { get; set; }
+
+		[JsonPropertyName(name: "league")]
+		public string league { get; set; }
+
+		[JsonPropertyName(name: "home")]
+		public Team home { get; set; }
+
+		[JsonPropertyName(name: "away")]
+		public Team away { get; set; }
 	}
 
-	public class last_meetings_detail {
+	public class NextMeeting {
+		[JsonPropertyName(name: "list")]
+		public List<NextMeetingDetail> list { get; set; } = new();
+	}
+
+	public class NextMeetingDetail {
 		[JsonPropertyName(name: "ss")]
 		public string scores { get; set; }
 

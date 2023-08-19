@@ -86,7 +86,7 @@ public class AuthService : BaseService {
 				await this.mailComponent.SendAsync(
 					toEmail: user.email,
 					subject: "Account was locked",
-					body: await MailTemplate.ForBlockLogin(LOCKED_HOUR, this.appSetting.ses.fromEmail, $"{this.appSetting.webBaseUrl}/sports")
+					body: await MailTemplate.ForBlockLogin(LOCKED_HOUR, this.appSetting.ses.fromEmail, this.appSetting.web.baseUrl)
 				);
 
 				return new ApiBadRequestResponse { code = ErrCode.blocked };
@@ -108,7 +108,7 @@ public class AuthService : BaseService {
 		return await this._DoLogin(
 			loginType: UserAuthModelConst.LoginType.IdPwd,
 			clientType: (UserAuthModelConst.ClientType)reqBody.client_type,
-			userId: user.id,
+			user: user,
 			userRole: user.role,
 			ipAddress: ipAddress,
 			userAgent: userAgent
@@ -157,7 +157,7 @@ public class AuthService : BaseService {
 		return await _DoLogin(
 			loginType: UserAuthModelConst.LoginType.Provider,
 			clientType: in_reqBody.client_type,
-			userId: user.id,
+			user: user,
 			userRole: user.role,
 			ipAddress: ipAddress,
 			userAgent: userAgent
@@ -190,8 +190,9 @@ public class AuthService : BaseService {
 		}
 
 		// Check user
-		if (await this.userDao.InvalidUserById(user_id)) {
-			return new ApiBadRequestResponse();
+		var user = await this.userDao.FindValidUserViaIdAsync(user_id);
+		if (user is null) {
+			return new ApiBadRequestResponse("Invalid user");
 		}
 
 		// Replace client_type from current access_token
@@ -205,10 +206,10 @@ public class AuthService : BaseService {
 			}
 		}
 
-		return await this._DoLoginWithClaims(
+		return await this._DoLoginActual(
 			loginType: UserAuthModelConst.LoginType.Token,
 			clientType: (UserAuthModelConst.ClientType)requestBody.client_type,
-			userId: user_id,
+			user: user,
 			claims: newClaims,
 			ipAddress: ipAddress,
 			userAgent: userAgent
@@ -338,7 +339,7 @@ public class AuthService : BaseService {
 		return await _DoLogin(
 			loginType: UserAuthModelConst.LoginType.ExternalWallet,
 			clientType: reqBody.client_type,
-			userId: user.id,
+			user: user,
 			userRole: user.role,
 			ipAddress: ipAddress,
 			userAgent: userAgent
@@ -422,9 +423,9 @@ public class AuthService : BaseService {
 		var clientType = (UserAuthModelConst.ClientType)claimClientType.ParseByteDk();
 
 		if (Guid.TryParse(claimUserId, out var userId)) {
-			// Check user
-			if (await this.userDao.InvalidUserById(userId)) {
-				return new ApiUnauthorizedResponse();
+			var user = await this.userDao.FindValidUserViaIdAsync(userId);
+			if (user is null) {
+				return new ApiUnauthorizedResponse("Invalid user");
 			}
 
 			// Revoke current login for next login session !
@@ -440,10 +441,10 @@ public class AuthService : BaseService {
 				curAuth.revoked_by_token = requestBody.refresh_token;
 				curAuth.revoked_by_agent = userAgent;
 
-				return await this._DoLoginWithClaims(
+				return await this._DoLoginActual(
 					loginType: UserAuthModelConst.LoginType.Silent,
 					clientType: clientType,
-					userId: userId,
+					user: user,
 					claims: claimsPrincipal.Claims,
 					ipAddress: ipAddress,
 					userAgent: userAgent
@@ -486,7 +487,7 @@ public class AuthService : BaseService {
 	private async Task<ApiResponse> _DoLogin(
 		UserAuthModelConst.LoginType loginType,
 		UserAuthModelConst.ClientType clientType,
-		Guid userId,
+		UserModel user,
 		UserModelConst.Role userRole,
 		string? ipAddress,
 		string? userAgent
@@ -499,25 +500,25 @@ public class AuthService : BaseService {
 			// Issued at (must be UtcNow from 1970)
 			new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
 			// Attach our custom claims
-			new Claim(AppConst.jwt.claim_type_user_id, userId.ToStringWithoutHyphen()),
+			new Claim(AppConst.jwt.claim_type_user_id, user.id.ToStringWithoutHyphen()),
 			new Claim(AppConst.jwt.claim_type_user_role, ((int)userRole).ToString()),
 			new Claim(AppConst.jwt.claim_type_client_type, ((int)clientType).ToString()),
 		};
 
-		return await this._DoLoginWithClaims(
+		return await this._DoLoginActual(
 			loginType: loginType,
 			clientType: clientType,
-			userId: userId,
+			user: user,
 			claims: claims,
 			ipAddress: ipAddress,
 			userAgent: userAgent
 		);
 	}
 
-	private async Task<ApiResponse> _DoLoginWithClaims(
+	private async Task<ApiResponse> _DoLoginActual(
 		UserAuthModelConst.LoginType loginType,
 		UserAuthModelConst.ClientType clientType,
-		Guid userId,
+		UserModel user,
 		IEnumerable<Claim> claims,
 		string? ipAddress,
 		string? userAgent
@@ -525,9 +526,9 @@ public class AuthService : BaseService {
 		var refreshToken = this.authTokenService.GenerateRefreshToken();
 		var accessToken = this.authTokenService.GenerateAccessToken(claims);
 
-		// Add login info
+		// Tracking login
 		this.dbContext.userAuths.Attach(new() {
-			user_id = userId,
+			user_id = user.id,
 			login_type = loginType,
 			client_type = clientType,
 			refresh_token = refreshToken,
@@ -535,6 +536,8 @@ public class AuthService : BaseService {
 			created_by_ip = ipAddress,
 			created_by_agent = userAgent,
 		});
+
+		user.last_login_at = DateTime.UtcNow;
 
 		await this.dbContext.SaveChangesAsync();
 
@@ -560,7 +563,7 @@ public class AuthService : BaseService {
 			if (accessToken != null) {
 				// For tokeninfo: var url = $"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={accessToken}";
 				var url = $"https://www.googleapis.com/oauth2/v3/userinfo?access_token={accessToken}";
-				var response = await new DkHttpClient().GetForType<GoogleAccessTokenDecodingResponse>(url);
+				var response = await new DkHttpClient().GetForTypeAsync<GoogleAccessTokenDecodingResponse>(url);
 
 				return (response?.name, response?.email);
 			}
@@ -579,7 +582,7 @@ public class AuthService : BaseService {
 		try {
 			if (accessToken != null) {
 				var url = $"https://graph.facebook.com/me?fields=name,email&access_token={accessToken}";
-				var response = await new DkHttpClient().GetForType<FacebookAccessTokenDecodingResponse>(url);
+				var response = await new DkHttpClient().GetForTypeAsync<FacebookAccessTokenDecodingResponse>(url);
 
 				return (response?.name, response?.email);
 			}

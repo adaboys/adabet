@@ -30,7 +30,7 @@ internal class Program {
 		// Ref: https://www.tutorialsteacher.com/core/aspnet-core-introduction
 		services
 			.AddScoped<BootCommand>()
-			.AddScoped<UserCommand>()
+			.AddScoped<UpdateCommand202304>()
 
 			.AddScoped<AuthService>()
 			.AddScoped<AuthTokenService>()
@@ -40,19 +40,21 @@ internal class Program {
 			.AddScoped<UserWalletService>()
 			.AddScoped<SportService>()
 			.AddScoped<UserSportService>()
-			.AddScoped<SystemWalletDao>()
-			.AddScoped<UserComponent>()
-			.AddScoped<MailComponent>()
-			.AddScoped<RedisComponent>()
-			.AddScoped<ApiNodejsRepo>()
-			.AddScoped<CardanoNodeRepo>()
-			.AddScoped<BetsapiRepo>()
 			.AddScoped<BlockfrostHookService>()
 			.AddScoped<SportPredictionService>()
 			.AddScoped<CurrencyService>()
-			.AddScoped<UserWalletDao>()
 			.AddScoped<UserFavoriteService>()
 			.AddScoped<UserCoinTxService>()
+
+			.AddScoped<UserComponent>()
+			.AddScoped<MailComponent>()
+			.AddScoped<RedisComponent>()
+
+			.AddScoped<SystemDao>()
+			.AddScoped<ApiNodejsRepo>()
+			.AddScoped<CardanoNodeRepo>()
+			.AddScoped<BetsapiRepo>()
+			.AddScoped<BlockfrostRepo>()
 
 			.AddControllers();
 

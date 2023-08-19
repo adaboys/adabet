@@ -24,16 +24,13 @@ public class DecideUserBetResultJob : BaseJob {
 	private const int FulltimeSeconds = 90 * 60;
 
 	private readonly ILogger<DecideUserBetResultJob> logger;
-	private readonly SystemWalletDao systemWalletDao;
 
 	public DecideUserBetResultJob(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<DecideUserBetResultJob> logger,
-		SystemWalletDao systemWalletDao
+		ILogger<DecideUserBetResultJob> logger
 	) : base(dbContext, snapshot) {
 		this.logger = logger;
-		this.systemWalletDao = systemWalletDao;
 	}
 
 	/// Override
@@ -57,8 +54,6 @@ public class DecideUserBetResultJob : BaseJob {
 			}
 		;
 		var matchItems = await query.Take(100).ToArrayAsync();
-
-		var sysAdaWalletAddress = await this.systemWalletDao.GetSystem_MainForGame_AddressAsync();
 
 		foreach (var matchItem in matchItems) {
 			var ubet = matchItem.ubet;
@@ -220,16 +215,6 @@ public class DecideUserBetResultJob : BaseJob {
 				default: {
 					throw new AppSystemException($"Invalid market name: {ubet.bet_market_name}");
 				}
-			}
-
-			// Request send coin-reward to the winner.
-			if (ubet.bet_result == SportUserBetModelConst.BetResult.Won) {
-				this.dbContext.sportWinnerBetRewardTxs.Attach(new() {
-					tx_status = SportWinnerBetRewardTxModelConst.TxStatus.RequestSubmitToChain,
-					sport_user_bet_id = ubet.id,
-					sender_address = sysAdaWalletAddress,
-					receiver_address = ubet.reward_address,
-				});
 			}
 		}
 

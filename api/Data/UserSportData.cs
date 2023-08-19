@@ -4,31 +4,69 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-public class Sport_PlaceBetRequestBody {
+public class Sport_BasePlaceBetPayload {
 	[Required]
 	[MinLength(1)]
 	[JsonPropertyName(name: "bets")]
-	public Bet[] bets { get; set; }
+	public _UserSportDataBet[] bets { get; set; }
 
 	[Required]
 	[JsonPropertyName(name: "bet_currency")]
 	public int bet_currency { get; set; }
+}
 
+public class Sport_PlaceBetPayload : Sport_BasePlaceBetPayload {
 	[JsonPropertyName(name: "reward_address")]
 	public string? reward_address { get; set; } = null;
+}
 
-	public class Bet {
-		[Required]
-		[JsonPropertyName(name: "match_id")]
-		public long match_id { get; set; }
+public class RequestBetViaExtWalletPayload : Sport_BasePlaceBetPayload {
+}
 
-		[Required]
-		[MinLength(1)]
-		[JsonPropertyName(name: "markets")]
-		public Market[] markets { get; set; }
+public class RequestBetViaExtWalletResponse : ApiSuccessResponse {
+	[JsonPropertyName(name: "data")]
+	public Data data { get; set; }
+
+	public class Data {
+		[JsonPropertyName(name: "order_code")]
+		public string order_code { get; set; }
+
+		[JsonPropertyName(name: "timeout")]
+		public int timeout { get; set; }
+
+		[JsonPropertyName(name: "receiver_address")]
+		public string receiver_address { get; set; }
+
+		[JsonPropertyName(name: "total_bet_amount")]
+		public decimal total_bet_amount { get; set; }
 	}
+}
 
-	public class Market {
+public class ReportBetViaExtWalletPayload {
+	[Required]
+	[JsonPropertyName(name: "order_code")]
+	public string order_code { get; set; }
+
+	[Required]
+	[JsonPropertyName(name: "sender_address")]
+	public string sender_address { get; set; }
+
+	[Required]
+	[JsonPropertyName(name: "payment_tx_hash")]
+	public string payment_tx_hash { get; set; }
+}
+
+public class _UserSportDataBet {
+	[Required]
+	[JsonPropertyName(name: "match_id")]
+	public long match_id { get; set; }
+
+	[Required]
+	[MinLength(1)]
+	[JsonPropertyName(name: "markets")]
+	public _Market[] markets { get; set; }
+
+	public class _Market {
 		/// For eg,. result, handicap, home_total, away_total,...
 		[Required]
 		[JsonPropertyName(name: "name")]
@@ -37,10 +75,10 @@ public class Sport_PlaceBetRequestBody {
 		[Required]
 		[MinLength(1)]
 		[JsonPropertyName(name: "odds")]
-		public Odd[] odds { get; set; }
+		public _Odd[] odds { get; set; }
 	}
 
-	public class Odd {
+	public class _Odd {
 		/// For eg,. home_win, over, yes,...
 		[Required]
 		[JsonPropertyName(name: "name")]
@@ -52,7 +90,7 @@ public class Sport_PlaceBetRequestBody {
 		public decimal value { get; set; }
 
 		[Required]
-		[Range(2, 500)]
+		[Range(2, 1000)] //todo need dynamic value from setting or db
 		[JsonPropertyName(name: "bet_amount")]
 		public decimal bet_amount { get; set; }
 	}
@@ -77,6 +115,9 @@ public class Sport_GetBetHistoriesResponse : ApiSuccessResponse {
 	}
 
 	public class Bet {
+		[JsonPropertyName(name: "sport")]
+		public int sport_id { get; set; }
+
 		[JsonPropertyName(name: "country")]
 		public string country { get; set; }
 
@@ -120,10 +161,13 @@ public class Sport_GetBetHistoriesResponse : ApiSuccessResponse {
 		public int bet_result { get; set; }
 
 		[JsonPropertyName(name: "coin")]
-		public string coin { get; set; }
+		public string coin_name { get; set; }
 
 		[JsonPropertyName(name: "staked")]
 		public decimal staked { get; set; }
+
+		[JsonPropertyName(name: "potential_reward")]
+		public decimal potential_reward { get; set; }
 
 		[JsonPropertyName(name: "reward_status")]
 		public int reward_status { get; set; }

@@ -21,7 +21,7 @@ public class UserWalletController : BaseController {
 	/// </param>
 	/// <response code="200"></response>
 	[Authorize]
-	[HttpPost, Route(Routes.user_external_wallet_requestLink)]
+	[HttpPost, Route(Routes.user_extwallet_requestLink)]
 	public async Task<ActionResult<ApiResponse>> RequestLinkExternalWallet([FromRoute] string wallet_address) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
@@ -46,7 +46,7 @@ public class UserWalletController : BaseController {
 	/// </param>
 	/// <response code="200"></response>
 	[Authorize]
-	[HttpPost, Route(Routes.user_external_wallet_link)]
+	[HttpPost, Route(Routes.user_extwallet_link)]
 	public async Task<ActionResult<ApiResponse>> LinkExternalWallet([FromRoute] string wallet_address, [FromBody] LinkExternalWalletRequestBody payload) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
@@ -63,12 +63,27 @@ public class UserWalletController : BaseController {
 	/// - status: 1 (pending), 2 (active), 3 (inactive).
 	/// </response>
 	[Authorize]
-	[HttpGet, Route(Routes.user_external_wallet_linked_wallets)]
-	public async Task<ActionResult<ApiResponse>> GetLinkedExternalWallets() {
+	[HttpGet, Route(Routes.user_extwallet_linked_wallets)]
+	public async Task<ActionResult<ApiResponse>> GetLinkedExternalWallets([FromQuery] bool query_balance = true) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();
 		}
-		return await this.service.GetLinkedExternalWallets(userId.Value);
+		return await this.service.GetLinkedExternalWallets(userId.Value, query_balance);
+	}
+
+	/// <summary>
+	/// Get all wallets of the user.
+	/// </summary>
+	/// <response code="200">
+	/// - status: 1 (pending), 2 (active), 3 (inactive).
+	/// </response>
+	[Authorize]
+	[HttpGet, Route(Routes.user_wallets)]
+	public async Task<ActionResult<ApiResponse>> GetAllWallets([FromQuery] bool query_balance = true) {
+		if (userId is null) {
+			return new ApiForbiddenResponse();
+		}
+		return await this.service.GetAllWallets(userId.Value, query_balance);
 	}
 
 	/// <summary>
@@ -78,7 +93,7 @@ public class UserWalletController : BaseController {
 	/// - code: nfts_mustnot_onsale_or_syncing (All NFTs must NOT be on-sale or syncing)
 	/// </response>
 	[Authorize]
-	[HttpPost, Route(Routes.user_external_wallet_unlink)]
+	[HttpPost, Route(Routes.user_extwallet_unlink)]
 	public async Task<ActionResult<ApiResponse>> UnlinkExternalWallet([FromRoute] string wallet_address) {
 		if (userId is null) {
 			return new ApiForbiddenResponse();

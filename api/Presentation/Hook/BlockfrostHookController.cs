@@ -2,6 +2,7 @@ namespace App;
 
 using Microsoft.AspNetCore.Mvc;
 
+/// This api is at api server (not at api gateway).
 [ApiController, Route("blockfrost/hook")]
 public class BlockfrostHookController : BaseController {
 	private readonly BlockfrostHookService service;
@@ -15,9 +16,9 @@ public class BlockfrostHookController : BaseController {
 	/// </summary>
 	/// <response code="200"></response>
 	[HttpPost, Route("transaction")]
-	public async Task<ActionResult<ApiResponse>> OnNewTransaction([FromBody] OnNewTransactionRequestBody requestBody) {
+	public async Task<ActionResult<object>> OnNewTransaction([FromBody] OnNewTransactionRequestBody requestBody) {
 		if (requestBody.type != "transaction") {
-			return new ApiBadRequestResponse("Field `type` must be `transaction`");
+			return BadRequest("Field `type` must be `transaction`");
 		}
 		return await service.OnNewTransaction(requestBody);
 	}

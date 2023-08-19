@@ -27,15 +27,15 @@ public partial class Routes {
 	public const string user_register_confirm = "user/register/confirm"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string user_password_change = "user/password/change"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string user_profile = "user/profile"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
-	public const string user_balance = "user/balance"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string user_identity_update = "user/identity/update"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string user_avatar_update = "user/avatar/update"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
-	public const string user_external_wallet_requestLink = "user/external_wallet/{wallet_address}/requestLink"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
-	public const string user_external_wallet_link = "user/external_wallet/{wallet_address}/link"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
-	public const string user_external_wallet_linked_wallets = "user/external_wallet/linked_wallets"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
-	public const string user_external_wallet_unlink = "user/external_wallet/{wallet_address}/unlink"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string user_extwallet_requestLink = "user/extwallet/{wallet_address}/requestLink"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string user_extwallet_link = "user/extwallet/{wallet_address}/link"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string user_extwallet_linked_wallets = "user/extwallet/linked_wallets"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
+	public const string user_wallets = "user/wallets"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 10}}
+	public const string user_extwallet_unlink = "user/extwallet/{wallet_address}/unlink"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 
-	public const string user_currency_list = "user/currency/list"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 30}}
+	public const string currency_list = "user/currency/list"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 30}}
 
 	/// [User] -> [Favorite]
 	public const string user_match_favorite_toggle = "user/match/{match_id}/favorite/toggle"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
@@ -50,6 +50,8 @@ public partial class Routes {
 	public const string sport_matches_top = "sport/{sport_id}/matches/top"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_match_history = "sport/match/{match_id}/history"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 60}}
 	public const string sport_bet_place = "sport/{sport_id}/bet/place"; // {"methods":["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string sport_extwallet_bet_request = "sport/{sport_id}/extwallet/bet/request"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string sport_extwallet_bet_report = "sport/{sport_id}/extwallet/bet/report"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string sport_user_bet_histories = "sport/{sport_id}/user/bet/histories"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_user_bet_statistics = "user/bet/statistics"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 
@@ -63,5 +65,8 @@ public partial class Routes {
 
 	public const string coin_withdraw_prepare = "coin/withdraw/prepare"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 	public const string coin_withdraw_actual = "coin/withdraw/actual"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
-	public const string user_coin_tx_history = "coin/tx/history"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
+	public const string coin_tx_history = "coin/tx/history"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
+	public const string all_tx_history = "coin/tx/all_history"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 40}}
+	public const string coin_swap_calc_amount = "coin/swap/calc_amount"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 30}}
+	public const string coin_swap = "coin/swap"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 }

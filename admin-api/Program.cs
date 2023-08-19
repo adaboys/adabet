@@ -32,7 +32,7 @@ internal class Program {
 			.AddScoped<AuthTokenService>()
 			.AddScoped<UserService>()
 			.AddScoped<UserDao>()
-			.AddScoped<SystemWalletDao>()
+			.AddScoped<SystemDao>()
 			.AddScoped<UserComponent>()
 			.AddScoped<MailComponent>()
 			.AddScoped<RedisComponent>()

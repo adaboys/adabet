@@ -27,6 +27,6 @@ public class ExchangeRateRepo : BaseRepo {
 
 	public async Task<ExchangeRateResponse?> Ada2Usd() {
 		var url = $"{this.appSetting.exchangeRate.apiBaseUrl}/v1/exchangerate/ADA/USD";
-		return await this.httpClient.GetForType<ExchangeRateResponse>(url);
+		return await this.httpClient.GetForTypeAsync<ExchangeRateResponse>(url);
 	}
 }

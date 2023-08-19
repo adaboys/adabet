@@ -4,15 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Tool.Compet.Core;
 
-public class UserCommand : BaseService {
-	private readonly ILogger<UserCommand> logger;
+public class UpdateCommand202304 : BaseService {
+	private readonly ILogger<UpdateCommand202304> logger;
 	private readonly UserComponent userComponent;
 	private readonly CardanoNodeRepo cardanoNodeRepo;
 
-	public UserCommand(
+	public UpdateCommand202304(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UserCommand> logger,
+		ILogger<UpdateCommand202304> logger,
 		UserComponent userComponent,
 		CardanoNodeRepo cardanoNodeRepo
 	) : base(dbContext, snapshot) {

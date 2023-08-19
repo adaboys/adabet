@@ -11,13 +11,13 @@ using Tool.Compet.Json;
 
 public class SportPredictionService : BaseService {
 	private readonly CardanoNodeRepo cardanoNodeRepo;
-	private readonly SystemWalletDao systemWalletDao;
+	private readonly SystemDao systemWalletDao;
 
 	public SportPredictionService(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
 		CardanoNodeRepo cardanoNodeRepo,
-		SystemWalletDao systemWalletDao
+		SystemDao systemWalletDao
 	) : base(dbContext, snapshot) {
 		this.cardanoNodeRepo = cardanoNodeRepo;
 		this.systemWalletDao = systemWalletDao;
