@@ -9,6 +9,7 @@ export const actionTypes = {
     LOGIN_SOCIAL: 'account/LOGIN_SOCIAL',
     LOGOUT: 'account/LOGOUT',
     GET_BALANCE: 'account/GET_BALANCE',
+    UPDATE_CURRENCY: 'bet/UPDATE_CURRENCY',
     SEND_CONFIRM_COIN: 'account/SEND_CONFIRM_COIN',
     SEND_ACTUAL_COIN: 'account/SEND_ACTUAL_COIN',
     REQUEST_LOGIN_WALLET: 'account/REQUEST_LOGIN_WALLET',
@@ -19,6 +20,10 @@ export const actionTypes = {
     CHANGE_PASSWORD: 'account/CHANGE_PASSWORD',
     REQUEST_RESET_PASSWORD: 'account/REQUEST_RESET_PASSWORD',
     CONFIRM_RESET_PASSWORD: 'account/CONFIRM_RESET_PASSWORD',
+    UPLOAD_AVATAR: 'account/UPLOAD_AVATAR',
+    GET_STATISTICS: 'account/GET_STATISTICS',
+    GET_COIN_TRANSACTION: 'account/GET_COIN_TRANSACTION',
+    GET_COIN_TRANSACTION_ALL: 'account/GET_COIN_TRANSACTION_ALL',
 }
 
 export const actions = {
@@ -30,6 +35,7 @@ export const actions = {
     getProfile: createAction(actionTypes.GET_PROFILE),
     updateProfile: createAction(actionTypes.UPDATE_PROFILE),
     getBalance: createAction(actionTypes.GET_BALANCE),
+    updateCurrency: createAction(actionTypes.UPDATE_CURRENCY),
     sendConfirmCoin: createAction(actionTypes.SEND_CONFIRM_COIN),
     sendActualCoin: createAction(actionTypes.SEND_ACTUAL_COIN),
     requestLoginWallet: createAction(actionTypes.REQUEST_LOGIN_WALLET),
@@ -40,5 +46,9 @@ export const actions = {
     changePassword: createAction(actionTypes.CHANGE_PASSWORD),
     requestResetPassword: createAction(actionTypes.REQUEST_RESET_PASSWORD),
     confirmResetPassword: createAction(actionTypes.CONFIRM_RESET_PASSWORD),
+    uploadAvatar: createAction(actionTypes.UPLOAD_AVATAR),
+    getStatistics: createAction(actionTypes.GET_STATISTICS),
+    getCoinTransaction: createAction(actionTypes.GET_COIN_TRANSACTION),
+    getCoinTransactionAll: createAction(actionTypes.GET_COIN_TRANSACTION_ALL),
 }
 

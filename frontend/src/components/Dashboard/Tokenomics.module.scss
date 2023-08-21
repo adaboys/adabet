@@ -1,0 +1,70 @@
+@import "@assets/scss/global";
+
+.tokenomics {
+    .title {
+        font-style: normal;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 60px;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .content {
+        margin-top: 56px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 80px 152px;
+        flex-wrap: wrap;
+
+        .pie {
+            flex-shrink: 0;
+            width: 350px;
+        }
+
+        .details {
+            display: flex;
+            flex-direction: row;
+            gap: 80px;
+
+            .col {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                flex: 0 0 224px;
+            }
+
+            .item {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: nowrap;
+
+                .color {
+                    width: 18px;
+                    height: 18px;
+                    flex-shrink: 0;
+                }
+
+                .percent,
+                .name {
+                    font-weight: 300;
+                    font-size: 20px;
+                    line-height: 30px;
+                    color: white;
+                }
+
+                .name {
+                    margin-left: 16px;
+                }
+
+                .percent {
+                    flex: 0 0 48px;
+                    margin-left: 16px;
+                }
+            }
+        }
+    }
+}

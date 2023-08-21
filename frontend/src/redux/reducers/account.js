@@ -3,18 +3,21 @@ import { HYDRATE } from 'next-redux-wrapper';
 
 import { accountActionTypes } from '../actions';
 import { createSuccessActionType, createFailureActionType } from '../helper';
+import { setCookie } from '@utils/localStorage';
+import { storageKeys, CURRENCY_ADA } from '@constants';
 
 const {
     GET_PROFILE,
     GET_BALANCE,
     REFRESHING_TOKEN,
-    UPDATE_COMMON_INFO
-
+    UPDATE_COMMON_INFO,
+    UPDATE_CURRENCY
 } = accountActionTypes;
 
 const initialState = {
     profileData: null,
-    balance: {},
+    balances: [],
+    currency: CURRENCY_ADA,
     isGetTokenForGamePlaySuccess: undefined,
     isRefreshingToken: false,
     isMobile: false,
@@ -44,7 +47,7 @@ const account = handleActions(
         [createSuccessActionType(GET_BALANCE)]: (state, action) => {
             return {
                 ...state,
-                balance: action.payload.data || {}
+                balances: action.payload?.data?.currencies || []
             };
         },
         [REFRESHING_TOKEN]: (state, action) => {
@@ -60,6 +63,14 @@ const account = handleActions(
                 ...payload
             };
         },
+        [UPDATE_CURRENCY]: (state, { payload }) => {
+            const expiredTimsMs = 1000 * 60 * 60 * 24 * 365; // 1 year
+            setCookie(storageKeys.BET_CURRENCY, payload, expiredTimsMs);
+            return {
+                ...state,
+                currency: payload
+            }
+        }
     },
     initialState
 );

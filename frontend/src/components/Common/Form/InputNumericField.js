@@ -83,6 +83,7 @@ const InputNumericField = ({
                     autocomplete={autocomplete}
                     onChange={onChangeValue}
                     autoComplete="off"
+                    onBlur={onBlur}
                 />
                 {iconRight && <span className={styles.iconRight}>{iconRight}</span>}
             </div>

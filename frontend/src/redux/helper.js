@@ -57,6 +57,23 @@ function* sendRequestWithRefreshToken(options, params) {
             canSendRequest = false;
         }
     }
+    else if(options.isMaybeAuth) {
+        const { accessToken } =  yield select(state => state.account);
+        if(accessToken) {
+            let accessTokenExpiredTime = 0;
+            try {
+                const jwtData = jwtDecode(accessToken);
+                accessTokenExpiredTime = (jwtData?.exp || 0) * 1000;
+            }
+            catch(ex) {
+                console.log(ex)
+            }
+            if (accessTokenExpiredTime >= new Date().getTime()) {
+                options.accessToken = accessToken;
+                options.isAuth = true;
+            }
+        }
+    }
 
     if (canSendRequest) {
         const response = yield call(sendRequest, options, params);
@@ -103,22 +120,18 @@ export function* processAction(options, { payload, type }) {
     const SUCCESS = createSuccessActionType(type);
     const FAILURE = createFailureActionType(type);
     try {
-        const response = yield call(sendRequest, options, payload);
-
+        const response = yield* sendRequestWithRefreshToken(options, payload);
         yield put({
-            type: response.success ? SUCCESS : FAILURE,
-            payload: response.responseData
+            type: response?.success ? SUCCESS : FAILURE,
+            payload: response?.responseData
         });
     } catch (e) {
-        console.error(e);
+        console.log(e);
         yield put({
             type: FAILURE,
             payload: e,
             error: true
         });
-    }
-    if (loading) {
-        yield put(finishLoading(type));
     }
 }
 

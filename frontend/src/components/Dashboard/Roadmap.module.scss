@@ -1,0 +1,94 @@
+@import "@assets/scss/global";
+
+.roadmap {
+    .title {
+        font-style: normal;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 60px;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .list {
+        margin-top: 76px;
+
+        .stage {
+            .title {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                font-size: 24px;
+                line-height: 36px;
+                padding: 6px 0;
+
+                .dot {
+                    background: #FFFFFF;
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 100%;
+                    margin-right: 32px;
+                }
+
+                .stage-count {
+                    font-weight: 600;
+                    color: #FFFFFF;
+                }
+
+                .separate {
+                    margin: 0 16px;
+                }
+
+                .separate,
+                .year {
+                    font-weight: 400;
+                    color: rgba(255, 255, 255, 0.5);
+                }
+            }
+
+            .tasks {
+                margin: 12px 0;
+                margin-left: 6px;
+                border-left: 1px solid rgb(120, 127, 158);
+                padding: 8px 0;
+                padding-left: 88px;
+
+                .item {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: flex-start;
+                    font-weight: 300;
+                    font-size: 20px;
+                    line-height: 30px;
+                    gap: 16px;
+                    padding: 10px 0;
+
+                    .check {
+                        width: 18px;
+                        height: 18px;
+                        flex-shrink: 0;
+                        display: flex;
+                        background: rgba(255, 255, 255, 0.2);
+                        margin-top: 6px;
+
+                        svg {
+                            display: block;
+                            margin: auto;
+                            display: none;
+                        }
+                    }
+
+                    &.done {
+                        .check {
+                            background: #32C653;
+
+                            svg {
+                                display: block;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

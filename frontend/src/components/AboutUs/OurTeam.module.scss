@@ -1,0 +1,88 @@
+@import "@assets/scss/global";
+
+.our-team {
+    .title {
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 60px;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .groups {
+        .item {
+            padding: 48px 0;
+
+            &:not(:first-child) {
+                border-top: 1px solid rgba(255, 255, 255, 0.5);
+            }
+
+            .group-name {
+                font-weight: 500;
+                font-size: 18px;
+                line-height: 27px;
+                color: white;
+            }
+
+            .members {
+                margin-top: 48px;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 24px;
+                flex-wrap: wrap;
+
+                .member {
+                    flex: 0 0 calc(50% - 12px);
+                    display: flex;
+                    flex-direction: row;
+                    align-items: flex-start;
+                    gap: 24px;
+
+                    .img {
+                        flex: 0 0 54px;
+                        height: 54px;
+                        border-radius: 100%;
+                        background: linear-gradient(83.14deg, #2766F7 7.9%, #0035AE 98.66%);
+                        display: flex;
+
+                        svg {
+                            display: block;
+                            margin: auto;
+
+                            path {
+                                fill-opacity: 1;
+                            }
+                        }
+
+                        img {
+                            display: block;
+                            width: 100%;
+                            height: 54px;
+                            border-radius: 100%;
+                            object-fit: cover;
+                            object-position: center;
+                        }
+                    }
+
+                    .info {
+                        .name {
+                            font-weight: 500;
+                            font-size: 18px;
+                            line-height: 27px;
+                            color: white;
+                        }
+
+                        .desc {
+                            font-weight: 400;
+                            font-size: 16px;
+                            line-height: 24px;
+                            color: rgba(255, 255, 255, 0.8);
+                            margin-top: 8px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

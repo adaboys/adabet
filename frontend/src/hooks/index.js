@@ -6,3 +6,4 @@ export { default as useScript } from './useScript';
 export { default as useAuth } from './useAuth';
 export { default as useCardano } from './useCardano';
 export { default as useDebouncedCallback } from './useDebouncedCallback';
+export { default as useBetting } from './useBetting';

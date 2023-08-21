@@ -15,7 +15,8 @@ const Button = ({
     loading,
     disabled,
     icon,
-    style
+    style,
+    ...rest
 }) => (
     <button
         disabled={disabled || loading}
@@ -31,6 +32,7 @@ const Button = ({
         style={style}
         type={type}
         onClick={onClick}
+        {...rest}
     >
         {
             icon

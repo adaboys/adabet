@@ -1,0 +1,67 @@
+@import "@/assets/scss/global";
+.account-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .user-info {
+        cursor: pointer;
+        // position: relative;
+    }
+
+    .deposit {
+        border-radius: 4px;
+        background: linear-gradient(86.9deg, #225FED 0%, #712EFF 100%);
+        padding: 6px 12px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        color: white;
+
+        svg {
+            width: 24px;
+            height: auto;
+            display: block;
+        }
+    }
+
+    .balance-info {
+        border-radius: 4px;
+        display: flex;
+        cursor: pointer;
+        .amount {
+            width: 100px;
+            border-radius: 4px;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.3);
+            position: relative;
+            .unit {
+                font-size: 12px;
+                color: #fff;
+                display: flex;
+                gap: 4px;
+                align-items: center;
+                img {
+                    width: 16px;
+                }
+            }
+            .value {
+                font-size: 12px;
+                color: #fff;
+                font-weight: 500;
+                margin-top: 2px;
+            }
+            .arrow-icon {
+                position: absolute;
+                right: 10px;
+                bottom: 10px;
+                &.is-open {
+                    transform: rotate(180deg);
+                }
+            }
+        }
+    }
+}

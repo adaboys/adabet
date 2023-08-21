@@ -16,6 +16,9 @@
         }
         &.active {
             color: $primaryActiveColor;
+            a {
+                color: $primaryActiveColor;
+            }
             svg {
                 path {
                     fill-opacity: 1;

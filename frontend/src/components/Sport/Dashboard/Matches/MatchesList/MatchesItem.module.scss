@@ -1,0 +1,158 @@
+@import "@assets/scss/global";
+
+.matches-item {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    padding: 11px 20px;
+    height: 100%;
+    .match-info {
+        display: flex;
+        width: 50%;
+        .start-time {
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 20px 20px 0;
+            min-width: 110px;
+            span {
+                color: inherit;
+                font-size: 14px;
+            }
+            .time {
+                color: rgba(255, 255, 255, 0.5);;
+                font-weight: 500;
+                font-size: 16px;
+            }
+            .time-left {
+                font-size: 12px;
+            }
+            .score {
+                font-size: 16px;
+                font-weight: 600;
+            }
+        }
+        .info {
+            flex: 1;
+            padding: 20px;
+            gap: 16px;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            .league {
+                flex: 1;
+                .item {
+                    font-size: 14px;
+                    color: rgba(255, 255, 255, 0.5);;
+                    position: relative;
+                    svg {
+                        width: 16px;
+                        height: 16px;
+                        path {
+                            fill: rgba(255, 255, 255, 0.5);;
+                        }
+                    }
+                }
+                .divider {
+                    width: 7px;
+                    height: 5px;
+                    path {
+                        fill: rgba(255, 255, 255, 0.5);;
+                    }
+                }
+            }
+            .teams {
+                flex-grow: 1;
+                .team-item {
+                    &.team1 {
+                        max-width: 48%;
+                        .name {
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                    &.team2 {
+                        flex-grow: 1;
+                    }
+                    .name {
+                        width: 100%;
+                        font-weight: 500;
+                        color: $secondaryTextColor;
+                        font-size: 16px;
+                    }
+                    img {
+                        width: 24px;
+                        height: 24px;
+                    }
+                }
+            }
+            .actions {
+                svg {
+                    width: 18px;
+                    height: 18px;
+                }
+    
+                .star-icon {
+                    cursor: pointer;
+                    path {
+                        fill: $secondaryTextColor;
+                    }
+                }
+            }
+        }
+    }
+    .markets {
+        width: 50%;
+        padding: 9px 0 9px 20px;
+        // margin: 0 12px;
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        overflow: auto;
+        &::-webkit-scrollbar { 
+            display: none;  /* Safari and Chrome */
+        }
+        .name {
+            font-size: 14px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .odds {
+            .odds-item {
+                background: #0E1B5C;
+                font-size: 12px;
+                width: 72px;
+                height: 48px;
+                padding: 4px 8px;
+                justify-content: center;
+                cursor: pointer;
+                &.selected {
+                    background: rgba(238, 74, 41, 0.8);
+                }
+                &:first-child {
+                    border-radius: 8px 0px 0px 8px;
+                }
+                &:last-child {
+                    border-radius: 0px 8px 8px 0px;
+                }
+                .label {
+                    font-weight: 500;
+                    color: rgba(255, 255, 255, 0.5);
+                }
+                .value {
+                    color: $secondaryTextColor;
+                    font-weight: 600;
+                }
+            }
+        }
+        .empty-market {
+            background: #17204c;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    }
+}

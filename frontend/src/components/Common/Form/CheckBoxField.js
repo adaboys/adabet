@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import styles from './CheckBoxField.module.scss';
 
-const CheckboxField = ({
+const CheckBoxField = ({
     children,
     name,
     disabled,
@@ -35,4 +35,4 @@ const CheckboxField = ({
     );
 };
 
-export default CheckboxField;
+export default CheckBoxField;

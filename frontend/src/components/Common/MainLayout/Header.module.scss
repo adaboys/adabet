@@ -1,12 +1,17 @@
 @import "@assets/scss/global";
 
 .header {
-    background: rgba(0, 49, 146, 0.5);
-    backdrop-filter: blur(2px);
+    background: linear-gradient(130.36deg, #020076 0%, #001D48 99.25%);
     height: $headerHeight;
     display: flex;
     align-items: center;
     font-size: 1rem;
+    position: relative;
+    z-index: 2;
+    &.home {
+        background: rgba(0, 49, 146, 0.5);
+        backdrop-filter: blur(2px);
+    }
     [class~="container"] {
         display: flex;
         align-items: center;
@@ -14,9 +19,12 @@
         @include smallLessDesktop {
             justify-content: space-between;
         }
+        @include wideDesktop {
+            max-width: 1340px;
+        }
     }
     .logo {
-        height: 30px;
+        height: 44px;
         width: auto;
         display: flex;
         align-items: center;

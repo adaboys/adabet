@@ -1,0 +1,10 @@
+.coin {
+    display: flex;
+    align-items: center;
+    svg, img {
+        margin-right: 8px;
+    }
+    img {
+        width: 20px;
+    }
+}

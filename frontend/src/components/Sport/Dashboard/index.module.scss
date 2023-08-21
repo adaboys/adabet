@@ -3,6 +3,8 @@
 .dashboard {
     .tab-header {
         display: flex;
+        margin-top: 20px;
+        margin-left: 20px;
         gap: 30px;
         .tab-item {
             display: flex;
@@ -26,5 +28,6 @@
         }
     }
     .tab-content {
+        padding: 20px 0 20px 20px;
     }
 }

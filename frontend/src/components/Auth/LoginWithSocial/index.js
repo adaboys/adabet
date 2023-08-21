@@ -6,12 +6,18 @@ import { Button } from '@components/Common';
 import GoogleLogin from './GoogleLogin';
 import FacebookLogin from './FacebookLogin';
 
+import YoroiIcon from '@assets/icons/yoroi.svg';
+import NamiIcon from '@assets/icons/nami.svg';
+import FlintIcon from '@assets/icons/flint.svg';
+
 import { useNotification, useCardano } from '@hooks';
 import { loadingActions, accountActions } from '@redux/actions';
-import { CLIENT_TYPE } from '@constants';
+import { CLIENT_TYPE, overlayTypes } from '@constants';
 import { externalWallets } from '@constants/wallet';
 
 import styles from './index.module.scss';
+import { useContext } from 'react';
+import { OverlayContext } from '@hocs';
 
 const messages = defineMessages({
     loginSuccess: 'Login successful!',
@@ -19,12 +25,19 @@ const messages = defineMessages({
     wasNotLinkWallet: 'You must connect wallet to login!'
 })
 
-const LoginWithSocial = ({
+const iconsMap = {
+    yoroi: YoroiIcon,
+    nami: NamiIcon,
+    flint: FlintIcon,
+}
 
+const LoginWithSocial = ({
+    hide,
 }) => {
     const dispatch = useDispatch();
     const intl = useIntl();
     const { push } = useRouter();
+    const overlay = useContext(OverlayContext);
 
     const { showSuccess, showError } = useNotification();
     const { enableWallet, getSignData, getChangeAddress, checkNetwordId } = useCardano();
@@ -49,18 +62,25 @@ const LoginWithSocial = ({
 
     const onVerifyLogintWallet = async (wallet, changeAddress, signature) => {
         const signed = await getSignData(wallet.key === 'nami' ? changeAddress.raw : changeAddress.walletAddress, signature);
+        console.log({ signed });
         if (signed?.signature && signed?.key) {
+            const params = {
+                wallet_address: changeAddress.walletAddress,
+                wallet_address_in_hex: changeAddress.raw,
+                wallet_name: wallet.name,
+                signed_key: signed.key,
+                signed_signature: signed.signature,
+                client_type: CLIENT_TYPE
+            };
             dispatch(accountActions.verifyLoginWallet({
-                params: {
-                    wallet_address: changeAddress.walletAddress,
-                    wallet_address_in_hex: changeAddress.raw,
-                    wallet_name: wallet.name,
-                    signed_key: signed.key,
-                    signed_signature: signed.signature,
-                    client_type: CLIENT_TYPE
-                },
+                params,
                 onCompleted: response => {
-                    onLoginCompleted(response);
+                    if(response?.code === 'email_required') {
+                        onShowConfirmEmail(params);
+                    }
+                    else {
+                        onLoginCompleted(response);
+                    }
                     dispatch(loadingActions.hideLoadingFullScreen());
                 },
                 onError: err => {
@@ -135,6 +155,10 @@ const LoginWithSocial = ({
 
     }
 
+    const onShowConfirmEmail = (externalWallet) => {
+        overlay.show(overlayTypes.REGISTER, { externalWallet });
+    }
+
     return (
         <div className={styles.loginWithSocial}>
             <div className={styles.divider}>
@@ -145,18 +169,21 @@ const LoginWithSocial = ({
             <div className={styles.socials}>
                 <FacebookLogin onLogin={onLoginSocial} className={styles.btnLogin} />
                 <GoogleLogin className={styles.btnLogin} onLogin={onLoginSocial} />
-                {/* {
-                    externalWallets.map(externalWallet => (
-                        <Button
-                            className={styles.btnLoginSocial}
-                            key={externalWallet.key}
-                            onClick={() => onLoginWallet(externalWallet.key)}
-                        >
-                            <img src={externalWallet.imgUrl} alt={externalWallet.name} />
-                            <FormattedMessage key="continueWithWallet" defaultMessage="Continue with {walletName}" values={{ walletName: externalWallet.name }} />
-                        </Button>
-                    ))
-                } */}
+                {
+                    externalWallets.map(externalWallet => {
+                        const Icon = iconsMap[externalWallet.key];
+                        return (
+                            <Button
+                                key={externalWallet.key}
+                                onClick={() => onLoginWallet(externalWallet.key)}
+                                secondary
+                                className={styles.btnLogin}
+                            >
+                                <Icon />
+                            </Button>
+                        );
+                    })
+                }
             </div>
         </div>
     )

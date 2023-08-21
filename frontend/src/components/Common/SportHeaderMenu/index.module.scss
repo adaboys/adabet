@@ -1,0 +1,33 @@
+@import "@assets/scss/global";
+
+.sport-header-menu {
+    display: flex;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0;
+    .menu-item {
+        a {
+            position: relative;
+            span {
+                position: absolute;
+                top: -16px;
+                font-size: 12px;
+            }
+        }
+        svg {
+            path {
+                fill: #fff;
+            }
+        }
+        &.active {
+            svg {
+                path {
+                    fill: $primaryActiveColor;
+                }
+            }
+            span {
+                color: $primaryActiveColor;
+            }
+        }
+    }
+}

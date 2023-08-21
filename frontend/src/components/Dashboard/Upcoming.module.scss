@@ -1,0 +1,16 @@
+@import "@assets/scss/global";
+
+.upcoming {
+    .title {
+        font-style: normal;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 60px;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .list {
+        margin-top: 48px;
+    }
+}

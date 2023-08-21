@@ -1,0 +1,53 @@
+@import "@assets/scss/global";
+
+.tab-layout {
+    .title {
+        font-size: 20px;
+        font-weight: 500;
+        margin-bottom: 32px;
+        display: flex;
+        align-items: center;
+        color: $secondaryTextColor;
+
+        svg {
+            width: 32px;
+            height: 32px;
+            margin-right: 16px;
+
+            path {
+                fill-opacity: 1;
+            }
+        }
+    }
+
+    .tabs {
+        margin-top: 24px;
+        gap: 20px;
+
+        .tab-item {
+            font-size: 14px;
+            font-weight: 500;
+            padding-bottom: 6px;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+
+            a {
+                color: rgba(255, 255, 255, 0.50);
+            }
+        }
+
+        .tab-active {
+            border-bottom-color: #F7C927;
+
+            a {
+                color: white;
+            }
+        }
+    }
+
+    .content {
+        display: flex;
+        gap: 32px;
+        margin-top: 24px;
+    }
+}

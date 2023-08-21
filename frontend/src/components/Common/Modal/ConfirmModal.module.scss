@@ -1,7 +1,7 @@
 @import "@assets/scss/global";
 
 .confirm-modal {
-    background: #2F3033 !important;
+    background: linear-gradient(253.1deg,#211f9d 38.39%,#03035f)!important;
     width: 570px;
     text-align: center;
     padding: 24px !important;
@@ -21,9 +21,9 @@
         display: flex;
         gap: 24px;
         .btn-cancel {
-            background: #2F3033;
-            border: 1px solid #F2F2F2;
-            color: #F2F2F2;
+            background: transparent;
+            border: 1px solid #f1f1f1;
+            color: #f1f1f1;
             padding: 16px 0px;
             flex: 1;
         }

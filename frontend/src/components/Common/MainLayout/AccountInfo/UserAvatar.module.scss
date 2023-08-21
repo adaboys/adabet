@@ -1,0 +1,26 @@
+.user-avatar {
+    display: flex;
+    align-items: center;
+    // z-index: 1001;
+    .avatar-img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        object-position: center;
+        border-radius: 50%;
+    }
+    .info {
+        margin-left: 12px;
+    }
+    p {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    .name {
+        font-size: 14px;
+        color: #fff;
+    }
+    .level {
+        font-size: 12px;
+    }
+}

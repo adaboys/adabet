@@ -1,0 +1,92 @@
+@import "@assets/scss/global";
+.betslip {
+    position: fixed;
+    width: 306px;
+    right: 16px;
+    bottom: 0;
+    z-index: 1000;
+    .header {
+        padding: 12px 16px;
+        background: linear-gradient(86.9deg, #225FED 0%, #712EFF 100%);
+        border-radius: 8px 8px 0px 0px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        svg {
+            fill: #fff;
+        }
+        .title {
+            color: #fff;
+            font-weight: 500;
+            margin-left: 8px;
+            margin-right: 11px;
+        }
+        .chevron-down {
+            transform: rotate(-90deg);
+            width: 10px;
+            height: 7px;
+            &.is-open {
+                transform: rotate(90deg);
+            }
+        }
+        .count {
+            font-size: 10px;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+    .content {
+        padding-top: 16px;
+        background: linear-gradient(130.36deg, #020076 0%, #001D48 99.25%);
+        box-shadow: -15px 15px 30px rgba(0, 0, 0, 0.1);
+        max-height: calc(100vh - 122px);
+        overflow-y: auto;
+        &::-webkit-scrollbar-track
+        {
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            // background-color: #F5F5F5;
+        }
+
+        &::-webkit-scrollbar
+        {
+            width: 10px;
+            // background-color: red;
+        }
+
+        &::-webkit-scrollbar-thumb
+        {
+            border-radius: 8px;
+            // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+            // background-color: #555;
+            background-color: rgba(255, 255, 255, 0.15)
+        }
+        .tabs {
+            // margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            justify-content: center;
+            gap: unset;
+            .tab {
+                padding: 0 18px 6px 18px;
+                font-size: 14px;
+                color: #FFFFFF;
+                opacity: 0.5;
+                &.tab-active {
+                    opacity: 1;
+                    font-weight: 500;
+                    border-bottom: 2px solid $primaryActiveColor;;
+                }
+            }
+        }
+        .matches {
+            padding: 16px;
+        }
+    }
+}

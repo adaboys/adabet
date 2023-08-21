@@ -1,10 +1,11 @@
 import { END } from 'redux-saga';
+import { useEffect } from 'react';
 
 import { wrapper } from '../redux/store';
 import { accountActions } from '@redux/actions';
-import { getCookie } from '@utils/localStorage';
-import { isMobileOnUserAgent } from '@utils';
-import { storageKeys } from '@constants';
+import { getCookie, getObjectData, removeItem } from '@utils/localStorage';
+import { getInt, isMobileOnUserAgent } from '@utils';
+import { storageKeys, dataStorageVersion, CURRENCY_ADA } from '@constants';
 
 import { MainLayout } from '../components/Common';
 import { NextQueryParamProvider, OverlayProvider, LanguageProvider, AlertProvider } from '@hocs';
@@ -15,6 +16,21 @@ const App = ({
     Component,
     pageProps
 }) => {
+
+    useEffect(() => {
+        const betData = getObjectData(storageKeys.BET_DATA);
+        if (betData) {
+            try {
+                const currentVersion = betData.version || 0;
+                if (dataStorageVersion > currentVersion) {
+                    removeItem(storageKeys.BET_DATA);
+                }
+            }
+            catch (ex) {
+                console.log(ex);
+            }
+        }
+    }, [])
 
     const getLayout = Component.getLayout || ((page) => <MainLayout>{page}</MainLayout>);
 
@@ -44,6 +60,7 @@ App.getInitialProps = wrapper.getInitialAppProps(store => async ({ Component, ct
             isMobile: isMobileOnUserAgent(ctx.req.headers['user-agent']),
             accessToken: getCookie(storageKeys.ACCESS_TOKEN, ctx.req.headers.cookie),
             refreshToken: getCookie(storageKeys.REFRESH_TOKEN, ctx.req.headers.cookie),
+            currency: getInt(getCookie(storageKeys.BET_CURRENCY, ctx.req.headers.cookie)) || CURRENCY_ADA,
         }))
         await store.dispatch(END);
         await store.sagaTask.toPromise();

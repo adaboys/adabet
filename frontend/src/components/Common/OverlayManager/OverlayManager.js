@@ -5,6 +5,7 @@ import { MessageModal } from '../Modal';
 import OverlayContext from '@hocs/Overlay/OverlayContext';
 import { overlayTypes } from '@constants';
 import ResetPasswordModal from '@components/Auth/ResetPassword/ResetPasswordModal';
+import StatisticsModal from '@components/Account/Statistics';
 
 const OverlayManager = () => (
     <OverlayContext.Consumer>
@@ -18,6 +19,8 @@ const OverlayManager = () => (
                     return <MessageModal overlay={overlay} />;
                 case overlayTypes.RESET_PASSWORD:
                     return <ResetPasswordModal overlay={overlay} />;
+                case overlayTypes.STATISTICS:
+                    return <StatisticsModal overlay={overlay} />;
                 default:
                     return null;
             }

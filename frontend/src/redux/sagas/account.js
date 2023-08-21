@@ -23,6 +23,10 @@ const {
     CHANGE_PASSWORD,
     REQUEST_RESET_PASSWORD,
     CONFIRM_RESET_PASSWORD,
+    UPDATE_PROFILE,
+    GET_STATISTICS,
+    GET_COIN_TRANSACTION,
+    GET_COIN_TRANSACTION_ALL,
 } = accountActionTypes;
 
 const login = (action) => {
@@ -35,8 +39,8 @@ const loginSocial = (action) => {
 
 function* logout() {
     try {
-        const refreshToken = yield select(state => state.account.refreshToken);
-        yield call(sendRequest, apiConfig.account.logout, { refresh_token: refreshToken });
+        const { accessToken, refreshToken } =  yield select(state => state.account);
+        yield call(sendRequest, {...apiConfig.account.logout, accessToken }, { refresh_token: refreshToken });
         eraseCookie(storageKeys.ACCESS_TOKEN);
         eraseCookie(storageKeys.REFRESH_TOKEN);
         yield put(accountActions.updateCommonInfo({ accessToken: null, refreshToken: null, profileData: null }));
@@ -99,6 +103,22 @@ const confirmResetPassword = (action) => {
     return processCallbackAction(apiConfig.account.confirmResetPassword, action);
 }
 
+const updateProfile = (action) => {
+    return processCallbackAction(apiConfig.account.updateProfile, action);
+}
+
+const getStatistics = (action) => {
+    return processCallbackAction(apiConfig.account.statistics, action);
+}
+
+const getCoinTransaction = (action) => {
+    return processCallbackAction(apiConfig.account.coinTransaction, action);
+}
+
+const getCoinTransactionAll = (action) => {
+    return processCallbackAction(apiConfig.account.coinTransactionAll, action);
+}
+
 export default [
     takeLatest(LOGIN, login),
     takeLatest(LOGIN_SOCIAL, loginSocial),
@@ -115,4 +135,8 @@ export default [
     takeLatest(CHANGE_PASSWORD, changePassword),
     takeLatest(REQUEST_RESET_PASSWORD, requestResetPassword),
     takeLatest(CONFIRM_RESET_PASSWORD, confirmResetPassword),
+    takeLatest(UPDATE_PROFILE, updateProfile),
+    takeLatest(GET_STATISTICS, getStatistics),
+    takeLatest(GET_COIN_TRANSACTION, getCoinTransaction),
+    takeLatest(GET_COIN_TRANSACTION_ALL, getCoinTransactionAll),
 ];

@@ -1,4 +1,4 @@
-import { ssrMode } from "@constants";
+import { ssrMode, storageKeys, dataStorageVersion } from "@constants";
 
 export const setObjectData = (key, data) => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -40,6 +40,7 @@ export const removeItem = (key) => {
         window.localStorage.removeItem(key);
     }
 }
+
 // ms -> milliseconds
 export const setCookie = (name, value, ms) => {
     let expires = '';
@@ -48,7 +49,7 @@ export const setCookie = (name, value, ms) => {
         date.setTime(date.getTime() + ms);// ms = (days * 24 * 60 * 60 * 1000)
         expires = `; expires=${date.toUTCString()}`;
     }
-    document.cookie = `${name}=${(value || '')}${expires}; path=/`;
+    document.cookie = `${name}=${(value || '')}${expires}; domain=${process.env.NEXT_PUBLIC_MAIN_DOMAIN}; path=/`;
 }
 
 export const getCookie = (cookieName, cookieStr) => {
@@ -67,5 +68,5 @@ export const getCookie = (cookieName, cookieStr) => {
 }
 
 export const eraseCookie = (name) => {
-    document.cookie = document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/`;
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=${process.env.NEXT_PUBLIC_MAIN_DOMAIN}; path=/`;
 }

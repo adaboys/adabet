@@ -1,0 +1,139 @@
+@import "@assets/scss/global";
+
+.transaction-log {
+    .title {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        font-size: 20px;
+        font-weight: 500;
+        color: white;
+    }
+
+    .filter-action {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+
+        .action-item {
+            flex: 1 0 0;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.10);
+            color: rgba(255, 255, 255, 0.50);
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+
+            &.active {
+                border-color: #F7C927;
+                color: #F7C927;
+            }
+        }
+    }
+
+    .list {
+        margin-top: 40px;
+        overflow-x: auto;
+
+        .loading-container {
+            padding: 60px 0;
+        }
+
+        table {
+            width: 100%;
+            border: 1px solid rgba(37, 99, 243, 0.50);
+            background: rgba(0, 0, 0, 0.50);
+            border-radius: 4px;
+            border-spacing: 0;
+
+            thead {
+                tr {
+                    th {
+                        border-bottom: 1px solid #259CF3;
+                    }
+                }
+            }
+
+            tr {
+                th,
+                td {
+                    padding: 20px 24px;
+                    font-size: 16px;
+                    font-weight: 400;
+                    color: white;
+                    text-align: left;
+
+                    &.succeed {
+                        color: #32C653;
+                    }
+
+                    &.failed {
+                        color: #F64040;
+                    }
+
+                    &:last-child {
+                        text-align: right;
+                    }
+                }
+            }
+
+            .amount {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
+                color: white;
+
+                img {
+                    width: 22px;
+                    height: auto;
+                    display: block;
+                }
+            }
+
+            .btn-view-detail {
+                display: inline-flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
+                color: rgba(255, 255, 255, 0.50);
+                font-size: 16px;
+                font-weight: 400;
+                transition: all .3s;
+
+                svg {
+                    width: 14px;
+                    height: auto;
+                    transform: rotateZ(-90deg);
+
+                    path {
+                        transition: all .3s;
+                        fill: rgba(255, 255, 255, 0.50);
+                    }
+                }
+
+                &:hover {
+                    color: white;
+
+                    svg {
+                        path {
+                            fill: white;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .pagination {
+        margin-top: 24px;
+        display: flex;
+        justify-content: flex-end;
+    }
+}

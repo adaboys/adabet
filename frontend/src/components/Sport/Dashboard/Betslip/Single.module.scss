@@ -1,0 +1,74 @@
+.single {
+    .amount {
+        display: flex;
+
+        .bet-value {
+            padding: 2px 4px;
+            background: rgba(255, 255, 255, 0.1);
+            flex: 1 0 0;
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 12px;
+            line-height: 18px;
+
+            &.active {
+                color: #F7C927;
+                border-color: #F7C927;
+            }
+        }
+    }
+
+    .summary {
+        margin-top: 8px;
+        .total {
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 18px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .potential {
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 21px;
+            margin-top: 4px;
+
+            span {
+                color: white;
+            }
+        }
+
+        .actions {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+            font-size: 10px;
+            line-height: 15px;
+        }
+    }
+
+    .dont-have-account {
+        margin-top: 8px;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 18px;
+        color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+
+        a {
+            text-decoration: underline;
+        }
+    }
+
+    .footer {
+        margin-top: 8px;
+        button {
+            width: 100%;
+        }
+    }
+}
