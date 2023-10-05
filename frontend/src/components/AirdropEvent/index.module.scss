@@ -1,0 +1,30 @@
+@import "@assets/scss/global";
+
+.airdrop-event {
+    $leaderBoardWidth: 480px;
+
+    padding: 28px 0;
+
+    .title {
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 30px;
+        color: white;
+    }
+
+    .content {
+        margin-top: 28px;
+        display: flex;
+        flex-direction: row;
+        gap: 32px;
+
+        .left {
+            width: calc(100% - #{$leaderBoardWidth} - 32px);
+        }
+
+        .right {
+            width: $leaderBoardWidth;
+            flex-shrink: 0;
+        }
+    }
+}

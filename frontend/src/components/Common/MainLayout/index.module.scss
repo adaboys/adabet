@@ -5,13 +5,14 @@
     min-height: 100vh;
     background-color: #1B2028;
     background-image: url('/images/bg.png');
-    background-repeat: no-repeat;
-    background-size: cover;
+    background-repeat: repeat-y;
+    background-size: 100%;
     &.home {
         background-image: url('/images/bg-home.png');
     }
     .content {
         flex-grow: 1;
+        z-index: 1;
         // background: #1B1C20;
     }
 }

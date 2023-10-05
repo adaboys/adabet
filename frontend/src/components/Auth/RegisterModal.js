@@ -18,8 +18,9 @@ import styles from './AuthModal.module.scss';
 const REGISTER_STEP_EMAIL = 'email';
 const REGISTER_STEP_OTP = 'otp';
 
-const RegisterModal = ({ overlay: { hide } }) => {
+const RegisterModal = ({ overlay: { hide, context } }) => {
     const overlay = useContext(OverlayContext);
+    const { externalWallet } = context || {};
     const [step, setStep] = useState(REGISTER_STEP_EMAIL);
     const [email, setEmail] = useState();
 
@@ -31,11 +32,11 @@ const RegisterModal = ({ overlay: { hide } }) => {
     const getRegisterStepForm = () => {
         if (step === REGISTER_STEP_OTP) {
             return (
-                <ConfirmRegisterForm email={email} hide={hide} />
+                <ConfirmRegisterForm externalWallet={externalWallet} email={email} hide={hide} />
             )
         }
         return (
-            <RegisterForm onRegisterSuccess={onRegisterSuccess} />
+            <RegisterForm externalWallet={externalWallet} onRegisterSuccess={onRegisterSuccess} />
         )
     }
 
@@ -71,7 +72,7 @@ const RegisterModal = ({ overlay: { hide } }) => {
                         values={{ a: content => <a onClick={onShowLogin}>{content}</a> }}
                     />
                 </div>
-                <LoginWithSocial/>
+                <LoginWithSocial hide={hide}/>
             </div>
         </BasicModal>
     )

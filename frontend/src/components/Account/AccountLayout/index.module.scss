@@ -1,0 +1,22 @@
+@import "@assets/scss/global";
+
+.account-layout {
+    display: flex;
+    min-height: 500px;
+    @include smallLessDesktop {
+        flex-direction: column;
+        margin: 16px auto;
+    }
+    .left-side {
+        background: rgba(0, 0, 0, 0.4);
+        width: 330px;
+        .sport-menu {
+            padding: 24px 30px;
+        }
+    }
+    .right-content {
+        padding: 24px 40px;
+        flex: 1;
+        overflow: hidden;
+    }
+}

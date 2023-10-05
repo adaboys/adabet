@@ -1,11 +1,12 @@
 @import "@assets/scss/global";
 .matches {
     margin-top: 24px;
+    margin-right: 20px;
     .tab-active {
-        color: white;
+        color: red;
         font-weight: 500;
         a {
-            color: white;
+            color: red;
         }
         svg {
             path {

@@ -6,9 +6,10 @@
     flex: 1;
     margin: 0;
     padding: 0;
-    margin-left: 140px;
+    margin-left: 70px;
     .item {
-        margin-right: 34px;
+        margin-right: 24px;
+
         @include desktop {
             height: 72px;
             display: flex;

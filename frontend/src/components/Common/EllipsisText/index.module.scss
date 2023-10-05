@@ -1,6 +1,7 @@
 .ellipsis-wrapper {
     position: relative;
     max-width: 100%;
+    width: 100%;
     padding: 0 !important;
     display: -webkit-flex;
     display: -moz-flex;
@@ -9,7 +10,7 @@
 }
 .ellipsis-text {
     position: absolute;
-    white-space: nowrap;
+    // white-space: nowrap;
     overflow-y: visible;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -22,6 +23,9 @@
     left: 0;
     color: inherit;
     font-size: inherit;
+    // -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
 }
 .ellipsis-wrapper:after,
 .ellipsis-text:after {

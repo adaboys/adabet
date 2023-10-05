@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Collapse } from 'react-collapse';
 import classNames from 'classnames';
 
-import ArrowDownIcon from '@assets/icons/arrow-down.svg';
+import ArrowDownIcon from '@assets/icons/arrow-menu.svg';
 
 import styles from './index.module.scss';
 

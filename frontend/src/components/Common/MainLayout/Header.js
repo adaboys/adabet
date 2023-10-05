@@ -1,8 +1,8 @@
 import { useState, useContext } from 'react';
-import { FormattedMessage } from 'react-intl';
-import { commonMessages } from '@constants/intl';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import classNames from 'classnames';
+import { useRouter } from 'next/router';
 
 import MobileSideBarMenu from './MobileSideBarMenu';
 import MainMenu from './MainMenu';
@@ -17,11 +17,14 @@ import AvatarIcon from '@assets/icons/avatar.svg';
 
 import styles from './Header.module.scss';
 
+const AccountInfo = dynamic(() => import('./AccountInfo'), { ssr: false });
+
 const Header = () => {
     const [isShowSidebar, setIsShowSidebar] = useState(false);
     const overlay = useContext(OverlayContext);
+    const { pathname } = useRouter();
 
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user, logout } = useAuth();
 
     const onShowLogin = () => {
         overlay.show(overlayTypes.LOGIN);
@@ -32,7 +35,9 @@ const Header = () => {
     }
 
     return (
-        <header className={styles.header}>
+        <header className={classNames(styles.header, {
+            [styles.home]: pathname === paths.home,
+        })}>
             <div className="container">
                 <div className={styles.logo}>
                     <Link href={paths.home}>
@@ -45,7 +50,7 @@ const Header = () => {
                         {
                             isAuthenticated
                                 ?
-                                <Link href={paths.accountDeposit}><a><AvatarIcon /></a></Link>
+                                <AccountInfo user={user} logout={logout}/>
                                 :
                                 <>
                                     <a onClick={onShowLogin} className={styles.btnLogin}>Login</a>
@@ -61,7 +66,7 @@ const Header = () => {
                         isAuthenticated
                             ?
                             <Mobile>
-                                <Link href={paths.accountDeposit}><AvatarIcon className="cursor-pointer" /></Link>
+                                <Link href={paths.account}><AvatarIcon className="cursor-pointer" /></Link>
                             </Mobile>
                             :
                             null

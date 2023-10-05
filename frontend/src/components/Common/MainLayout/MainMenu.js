@@ -1,15 +1,25 @@
 import Link from 'next/link';
 import classNames from 'classnames';
-import { paths } from '@constants';
+import { casinoURL, overlayTypes, paths } from '@constants';
+import { useContext } from 'react';
+import { useRouter } from 'next/router';
+
+import { useAuth } from '@hooks';
+import { OverlayContext } from '@hocs';
 
 import styles from './MainMenu.module.scss';
-import { useRouter } from 'next/router';
-import { useAuth } from '@hooks';
 
 const MainMenu = () => {
 
     const { pathname } = useRouter();
     const { isAuthenticated } = useAuth();
+    const overlay = useContext(OverlayContext);
+
+    const onShowStatistics = e => {
+        e.preventDefault();
+        overlay.show(overlayTypes.STATISTICS);
+    }
+
     const isMarketplacePath = [
         paths.marketplace,
         paths.nftDetail
@@ -30,21 +40,33 @@ const MainMenu = () => {
                 </Link>
             </li>
             <li className={classNames(styles.item, { [styles.active]: pathname === paths.sport })}>
-                <Link href={paths.sport}>
+                <Link href={paths.topMatches}>
                     <a>Inplay</a>
                 </Link>
             </li>
-            <li className={classNames(styles.item, { [styles.active]: false })}>
+            {/* <li className={classNames(styles.item, { [styles.active]: false })}>
                 <a>Promotion</a>
-            </li>
-            <li className={classNames(styles.item, { [styles.active]: false })}>
-                <a>Statistics</a>
-            </li>
-            <li className={classNames(styles.item, { [styles.active]: false })}>
+            </li> */}
+            {isAuthenticated && (
+                <li className={classNames(styles.item, { [styles.active]: false })}>
+                    <a onClick={onShowStatistics}>Statistics</a>
+                </li>
+            )}
+            {/* <li className={classNames(styles.item, { [styles.active]: false })}>
                 <a>Result</a>
+            </li> */}
+            <li className={classNames(styles.item, { [styles.active]: pathname === paths.aboutUs })}>
+                <Link href={paths.aboutUs}>
+                    <a>About</a>
+                </Link>
+            </li>
+            <li className={classNames(styles.item, { [styles.active]: pathname.includes('airdrop-event') })}>
+                <Link href={paths.highlightMatches}>
+                    <a>Airdrop Event</a>
+                </Link>
             </li>
             <li className={classNames(styles.item, { [styles.active]: false })}>
-                <a>Blog</a>
+                <a href={casinoURL}>Casino</a>
             </li>
 
         </ul>

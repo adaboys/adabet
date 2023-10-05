@@ -1,0 +1,40 @@
+@import "@assets/scss/global";
+
+.start-prediction {
+    .title {
+        font-style: normal;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 60px;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+    .prediction {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 40px;
+        margin-top: 60px;
+
+        >div {
+            flex: 1 0 0;
+        }
+    }
+
+    .actions {
+        margin-top: 24px;
+
+        button {
+            margin-top: 24px;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 21px;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: auto;
+        }
+    }
+}

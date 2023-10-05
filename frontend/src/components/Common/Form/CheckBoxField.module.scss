@@ -3,15 +3,17 @@
 .pc-checkbox-field {
     display: block;
     position: relative;
-    padding-left: 24px;
+    padding-left: 26px;
     cursor: pointer;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
     font-weight: normal;
-    font-size: $font-size-14;
+    font-size: 14px;
     line-height: 18px;
+    margin-bottom: 24px;
+    width: fit-content;
 
     input {
         position: absolute;
@@ -26,8 +28,8 @@
         top: 50%;
         transform: translateY(-50%);
         left: 0;
-        height: 16px;
-        width: 16px;
+        height: 18px;
+        width: 18px;
         border: 1px solid #8E9AAB;
         border-radius: 4px;
         transition: all .3s;
@@ -44,8 +46,8 @@
     }
 
     & input:checked ~ .checkmark {
-        background-color: $blue-main;
-        border-color: $blue-main;
+        // background-color: $blue-main;
+        // border-color: $blue-main;
     }
 
     & input:checked ~ .checkmark:after {

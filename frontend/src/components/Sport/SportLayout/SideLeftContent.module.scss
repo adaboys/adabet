@@ -1,0 +1,61 @@
+@import "@assets/scss/global";
+
+.side-left-content {
+    .title {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+    }
+    .menus {
+        margin-top: 20px;
+        .item {
+            .group-name {
+                font-size: 14px;
+                display: flex;
+                justify-content: space-between;
+                flex: 1;
+                .name {
+                    font-weight: 500;
+                    display: flex;
+                    svg {
+                        margin-right: 18px;
+                        path {
+                            fill: #fff;
+                            fill-opacity: 0.5;
+                        }
+                    }
+                }
+                .count {
+                    font-weight: 400;
+                    opacity: 0.5;
+                }
+            }
+            &.active {
+                .group-name {
+                    .name {
+                        color: #2563F3;
+                        svg {
+                            path {
+                                fill: #2563F3;
+                                fill-opacity: 1;
+                            }
+                        }
+                    }
+                    .count {
+                        color: #2563F3;
+                    }
+                }
+                svg {
+                    path {
+                        fill: #2563F3;
+                    }
+                }
+            }
+        }
+    }
+}

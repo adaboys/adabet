@@ -3,20 +3,30 @@ const Flexbox = ({
     spacing,
     justify,
     align,
+    children,
+    disabled,
+    style={},
+    onClick,
     ...props
-}) => (
-    <div
-        style={{
-            display: 'flex',
-            flexDirection: direction,
-            ...(spacing && { gap: spacing }),
-            ...(justify && { justifyContent: justify }),
-            ...(align && { alignItems: align })
-        }}
-        {...props}
-    >
-
-    </div>
-)
+}) => {
+    
+    return (
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: direction,
+                ...(spacing && { gap: spacing }),
+                ...(justify && { justifyContent: justify }),
+                ...(align && { alignItems: align }),
+                ...(disabled && { cursor: 'not-allowed' }),
+                ...style
+            }}
+            onClick={disabled ? null : onClick}
+            {...props}
+        >
+            {children}
+        </div>
+    )
+}
 
 export default Flexbox;

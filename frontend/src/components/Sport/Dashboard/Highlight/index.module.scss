@@ -1,15 +1,31 @@
 @import "@assets/scss/global";
 .highlight {
-    margin-top: 24px;
+    // margin-top: 24px;
     max-width: 100%;
     display: block;
     .matches-slider {
+        ul li {
+            &:nth-child(odd) {
+                .match-box {
+                    background-image: url('/images/matches-card.png');
+                }
+            }
+            &:nth-child(even) {
+                .match-box {
+                    background-image: url('/images/matches-card-night.png');
+                }
+            }
+        }
         .match-box {
-            background: linear-gradient(86.9deg, rgba(34, 95, 237, 0.8) 0%, rgba(113, 46, 255, 0.8) 100%);
+            // background: linear-gradient(86.9deg, rgba(34, 95, 237, 0.8) 0%, rgba(113, 46, 255, 0.8) 100%);
+            background-color: rgba(0, 0, 0, 0.5);
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-blend-mode: multiply;
             width: 340px;
             height: 150px;
             padding: 12px;
-            border-radius: 4px;
+            border-radius: 8px;
             color: $secondaryTextColor;
             display: flex;
             flex-direction: column;
@@ -74,6 +90,10 @@
                     background: rgba(0, 0, 0, 0.3);
                     border-radius: 2px;
                     font-size: 12px;
+                    cursor: pointer;
+                    &.selected {
+                        background: rgba(238, 74, 41, 0.8);
+                    }
                 }
             }
         }

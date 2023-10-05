@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { defineMessages, useIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
@@ -24,7 +24,7 @@ const messages = defineMessages({
     wasNotLinkWallet: 'You must connect wallet to login!'
 })
 
-const LoginModal = ({ overlay: { hide, show } }) => {
+const LoginModal = ({ overlay: { hide, show, context } }) => {
     const [isSubmitting, setIsSubmitting] = useState();
     const dispatch = useDispatch();
     const intl = useIntl();
@@ -33,24 +33,6 @@ const LoginModal = ({ overlay: { hide, show } }) => {
     const { showSuccess, showError } = useNotification();
     const { enableWallet, getSignData, getChangeAddress, checkNetwordId } = useCardano();
 
-    const onLoginSocial = (provider, access_token) => {
-        dispatch(loadingActions.showLoadingFullScreen());
-        dispatch(accountActions.loginSocial({
-            params: {
-                provider,
-                access_token: access_token,
-                client_type: CLIENT_TYPE
-            },
-            onCompleted: (response) => {
-                onLoginCompleted(response);
-                dispatch(loadingActions.hideLoadingFullScreen());
-            },
-            onError: () => {
-                onLoginFail();
-            }
-        }));
-    }
-
     const onLogin = (values) => {
         setIsSubmitting(true);
         dispatch(accountActions.login({
@@ -58,6 +40,7 @@ const LoginModal = ({ overlay: { hide, show } }) => {
             onCompleted: (response) => {
                 onLoginCompleted(response);
                 setIsSubmitting(false);
+                context?.callback && context.callback();
             },
             onError: () => {
                 setIsSubmitting(false);
@@ -181,7 +164,7 @@ const LoginModal = ({ overlay: { hide, show } }) => {
                     Don’t have an account?
                     <a onClick={onShowRegister}>Sign up</a>
                 </div>
-                <LoginWithSocial />
+                <LoginWithSocial hide={hide}/>
             </div>
 
         </BasicModal>

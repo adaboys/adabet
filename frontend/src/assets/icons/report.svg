@@ -1,0 +1,14 @@
+<svg class="bt1571" data-cy="stat" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="fill: currentcolor; color: rgb(255, 255, 255); width: auto; height: 24px;">
+    <g clip-path="url(#clip0)">
+        <g opacity="1">
+        <rect x="3" y="7" width="2" height="5" rx="1"></rect>
+        <rect x="7" y="3" width="2" height="9" rx="1"></rect>
+        <rect x="11" y="5" width="2" height="7" rx="1"></rect>
+    </g>
+    </g>
+    <defs>
+        <clipPath id="clip0">
+        <rect width="16" height="16"></rect>
+        </clipPath>
+    </defs>
+</svg>

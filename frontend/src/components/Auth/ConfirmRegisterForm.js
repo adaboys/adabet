@@ -27,7 +27,7 @@ const messages = defineMessages({
     playerNameSameValueEmail: 'The email and player name must be not same value'
 });
 
-const ConfirmRegisterForm = ({ email, hide }) => {
+const ConfirmRegisterForm = ({ email, hide, externalWallet }) => {
     const intl = useIntl();
     const dispatch = useDispatch();
     const [isSubmitting, setIsSubmitting] = useState();
@@ -35,10 +35,11 @@ const ConfirmRegisterForm = ({ email, hide }) => {
 
     const onSubmitConfirmRegister = (values) => {
         setIsSubmitting(true);
-        dispatch(accountActions.confirmRegister({
+        const confirmRegisterAction = externalWallet ? accountActions.verifyLoginWallet : accountActions.confirmRegister;
+        dispatch(confirmRegisterAction({
             params: {
                 email,
-                otp_code: values.otpCode
+                ...(externalWallet ? { ...externalWallet, request_otp: false, otp: values.otpCode, } : { otp_code: values.otpCode })
             },
             onCompleted: (response) => {
                 if (response?.status === 200) {

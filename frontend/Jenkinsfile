@@ -1,0 +1,111 @@
+_BUILD_NUMBER = env.BUILD_NUMBER
+_BRANCH_NAME = scm.branches[0].name
+
+TIMEZONE = "GMT+7"
+// SLACK_CHANNEL_NAME = "C0179LQ5N82"
+
+HOST_SSH_PORT= 22
+
+node{
+    env.NODEJS_HOME = "${tool 'node16'}"
+    // on linux / mac
+    env.PATH="${env.NODEJS_HOME}/bin:${env.PATH}"
+    // sh 'npm --version'
+    try {
+            stage ("Checkout source") {
+                checkout scm
+            }
+
+            stage ("Install dependency") {
+                sh "npm install"
+            }
+
+            stage ("Build source") {
+                configFileProvider([configFile(fileId: ENV_FILE_ID, targetLocation : './.env')]) {
+                    sh "npm run build"
+                    ARCHIVE_COMMAND = """
+                        ls ./
+                        tar -zcvf build.tar.gz ./.next ./public package.json package-lock.json ecosystem.config.js next.config.js deploy.sh
+                    """
+                    sh """
+                        ${ARCHIVE_COMMAND}
+                    """
+                }
+            }
+
+            stage("Deploy build to ${_BRANCH_NAME}") {
+                // def remote = [:]
+                // remote.allowAnyHosts = true
+                // remote.port = HOST_SSH_PORT
+                // remote.name = DEPLOY_HOST
+                // remote.host = HOST_SSH_IP
+
+                // withCredentials([sshUserPrivateKey(credentialsId: 'ssh-ironsky-stg', keyFileVariable: 'identity', passphraseVariable: '', usernameVariable: 'userName')]) {
+                //     remote.user = userName
+                //     remote.identityFile = identity
+                //     sshCommand remote: remote, sudo: true, command: "rm -rf ${TARGET_FOLDER}/*"
+                //     sshPut remote: remote, from: './build.tar.gz', into: "${TARGET_FOLDER}"
+                //     sshCommand remote: remote, command: "tar -zxvf ${TARGET_FOLDER}/build.tar.gz -C ${TARGET_FOLDER}"
+                // }
+
+                // def sshRun = "sudo rm -rf ${TARGET_FOLDER}/* && \
+                //     tar -zxvf ${TARGET_FOLDER}/build.tar.gz -C ${TARGET_FOLDER}"
+                // def sshRun = "mkdir -p ${TARGET_FOLDER}/deploy && \
+                //     tar -zxvf ${TARGET_FOLDER}/build/build.tar.gz -C ${TARGET_FOLDER}/deploy && \
+                //     cd ${TARGET_FOLDER}/deploy && \
+                //     npm install --omit=dev && cd .. \
+                //     sudo rm -rf build && mv deploy build && \
+                //     cd build && pm2 startOrReload ecosystem.config.js --update-env"
+                 def sshRun = "mkdir -p ${TARGET_FOLDER}/deploy && \
+                    tar -zxvf ${TARGET_FOLDER}/build/build.tar.gz -C ${TARGET_FOLDER}/deploy && \
+                    cd ${TARGET_FOLDER}/deploy && \
+                    chmod +x deploy.sh && ./deploy.sh"
+                        
+                sshagent([SSH_CREDENTIAL]) {
+                    sh "scp -o StrictHostKeyChecking=no ./build.tar.gz ${SSH_USER}@${DEPLOY_HOST}:${TARGET_FOLDER}/build"
+                    sh "ssh -o StrictHostKeyChecking=no ${SSH_USER}@${DEPLOY_HOST} '${sshRun}' "
+                }
+            }
+
+        currentBuild.result = "SUCCESS"
+    } catch (e) {
+        currentBuild.result = "FAILURE"
+        throw e
+    } finally {
+        def time = formatMilisecondTime(currentBuild.timeInMillis, TIMEZONE)
+        def duration = durationFormat(currentBuild.duration)
+        def buildDetail = "\n————————————————————" +
+                            "\n*Build Time:* ${time}" +
+                            "\n*Duration:* ${duration}" +
+                            "\n*Change Log (DESC):*\n${getChangeLog()}"
+
+        echo buildDetail
+    }
+}
+
+
+def getChangeLog() {
+    def changeLogSets = currentBuild.changeSets
+    if (changeLogSets.isEmpty()) {
+        return "    (No changes)"
+    }
+
+    def text = ""
+    for (int i = changeLogSets.size() - 1; i >= 0; i--) {
+        for (def entry in changeLogSets[i].items) {
+            text += ":white_small_square: ${entry.author} - ${entry.msg}\n"
+        }
+    }
+    return text
+}
+
+def formatMilisecondTime(timeInMillis, timeZone) {
+    return new Date(timeInMillis).format("MMM dd, yyyy HH:mm:ss", TimeZone.getTimeZone(timeZone))
+}
+
+def durationFormat(long milisecond) {
+    def min = milisecond.intdiv(1000).intdiv(60)
+    def sec = milisecond.intdiv(1000) % 60
+    def result = (min > 0 ? "${min}m " : "") + (sec > 0 ? "${sec}s" : "")
+    return result
+}

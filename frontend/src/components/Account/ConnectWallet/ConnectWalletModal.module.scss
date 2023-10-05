@@ -1,0 +1,57 @@
+@import "@assets/scss/global";
+
+.connect-wallet-modal {
+    background: linear-gradient(253.1deg,#211f9d 38.39%,#03035f)!important;
+    width: 470px;
+    text-align: center;
+    padding: 24px !important;
+    border-radius: 8px;
+    @include smallLessDesktop {
+        padding: 16px !important;
+    }
+    .title {
+        font-size: 32px;
+        font-weight: $fontWeightNormal;
+        color: #E0E0E0;
+        margin-bottom: 24px;
+    }
+    .wallets {
+        margin: 0 auto;
+        margin-bottom: 20px;
+        width: fit-content;
+        .wallet-item {
+            display: flex;
+            align-items: center;
+            color: $secondaryTextColor;
+            margin-bottom: 8px;
+            .connected {
+                margin-left: 6px;
+                color: $secondaryTextColor;
+            }
+            &.active {
+                color: $primaryTextColor;
+            }
+            img {
+                margin-right: 8px;
+            }
+        }
+    }
+    .actions {
+        display: flex;
+        gap: 24px;
+        @include smallLessDesktop {
+            gap: 16px;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid #f1f1f1;
+            color: #f1f1f1;
+            padding: 12px 0px;
+            flex: 1;
+        }
+        .btn-ok {
+            flex: 1;
+            padding: 12px 0px;
+        }
+    }
+}

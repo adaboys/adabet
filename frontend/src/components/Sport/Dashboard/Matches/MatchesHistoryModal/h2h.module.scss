@@ -1,0 +1,344 @@
+@import "@assets/scss/global";
+.h2h {
+    .summary {
+        border: 0.5px solid rgba(255, 255, 255, 0.20);
+        background: #021625;
+        margin: 16px 0;
+
+        .header {
+            padding: 16px;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.20);
+        }
+
+        .content {
+            padding: 36px 16px;
+
+            .team {
+                gap: 16px;
+                flex-grow: 1;
+                align-items: center;
+                img {
+                    height: 60px;
+                    width: auto;
+                }
+                .name {
+                    font-size: 18px;
+                    color: #fff;
+                }
+            }
+
+            .info {
+                .time-start {
+                    font-size: 12px;
+                }
+
+                .time-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+
+    .next-match {
+        border: 0.5px solid rgba(255, 255, 255, 0.20);
+        background: #021625;
+
+        .header {
+            padding: 16px;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.20);
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .info {
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+
+            .col {
+                font-size: 14px;
+                flex-direction: column;
+
+                .title {
+                    color: #fff;
+                }
+            }
+        }
+
+        .statistics {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 20px;
+
+            .victories {
+                background: var(--popup, linear-gradient(45deg, #211F9D 0%, #211F9D 100%));
+                padding: 8px 15px;
+
+                .total {
+                    font-size: 18px;
+                    line-height: 18px;
+                    font-weight: 600;
+                    color: #fff;
+                }
+
+                .lable {
+                    font-size: 12px;
+                }
+            }
+
+            .general-info {
+                .label {
+                    font-size: 12px;
+                }
+
+                .value {
+                    font-size: 14px;
+                    color: #fff;
+                }
+            }
+
+            .sum-meeting {
+                .win {
+                    position: relative;
+                    width: 140px;
+                    height: 140px;
+                    border-radius: 50%;
+                    margin-bottom: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-direction: column;
+
+                    .total {
+                        margin: 0;
+                        color: #fff;
+                        font-size: 28px;
+                        line-height: 30px;
+                        margin-bottom: 12px;
+                    }
+
+                    .played {
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 16px;
+                        color: rgba(255, 255, 255, 0.50)
+                    }
+
+                    .home {
+                        position: absolute;
+                        transform: rotateY(180deg);
+                        z-index: 1;
+                        width: 144px;
+                        height: 144px;
+                    }
+
+                    .away {
+                        position: absolute;
+                        z-index: 1;
+                        width: 144px;
+                        height: 144px;
+                    }
+                }
+
+                .draw {
+                    span {
+                        color: #fff;
+                    }
+
+                    .label {
+                        font-size: 14px;
+                    }
+
+                    .value {
+                        font-size: 24px;
+                        font-weight: 600;
+                    }
+                }
+            }
+
+            .sum-team {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+
+                .chart {
+                    position: relative;
+                    width: 140px;
+                    height: 140px;
+                    border-radius: 50%;
+                    border: 1px solid rgba(255, 255, 255, 0.50);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-direction: column;
+                    color: #fff;
+
+                    .circle {
+                        position: absolute;
+                        z-index: 1;
+                        width: 144px;
+                        height: 144px;
+                    }
+
+                    .total {
+                        margin: 0;
+                        font-size: 18px;
+                        line-height: 20px;
+                        color: #fff;
+                        font-weight: 600;
+                        margin-bottom: 12px;
+                    }
+
+                    .label {
+                        font-size: 14px;
+                        line-height: 16px;
+                        color: #fff;
+                    }
+                }
+
+                .per-title {
+                    margin-bottom: 0px;
+                    text-align: center;
+                    font-size: 12px;
+                }
+
+                .performance {
+                    display: flex;
+                    align-items: center;
+
+                    .item {
+                        color: #fff;
+                        font-size: 14px;
+                        line-height: 14px;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 24px;
+                        height: 24px;
+                    }
+
+                    .draw {
+                        background: rgba(56, 53, 232, 0.50);
+                    }
+
+                    .lose {
+                        background: rgba(246, 64, 64, 0.50);
+                    }
+
+                    .win {
+                        background: rgba(247, 201, 39, 0.50)
+                    }
+
+                    .divider {
+                        width: 10px;
+                        height: 1px;
+                        background: rgba(255, 255, 255, 0.50);
+                    }
+                }
+            }
+        }
+    }
+    .last-meetings {
+        border: 0.5px solid rgba(255, 255, 255, 0.20);
+        background: #021625;
+
+        .header {
+            padding: 16px;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.20);
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .info {
+            font-size: 14px;
+            width: calc(100% - 32px);
+            margin: 16px 16px 0 16px;
+            border-collapse: collapse;
+            td {
+                padding: 8px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.20);
+                color: #fff;
+                span {
+                    color: #fff;
+                }
+                .active {
+                    color: $primaryActiveColor;
+                    span {
+                        color: $primaryActiveColor;
+                    }
+                }
+                img {
+                    height: 22px;
+                    width: auto;
+                }
+            }
+        }
+    }
+
+    .matches {
+        border: 0.5px solid rgba(255, 255, 255, 0.20);
+        background: #021625;
+        // padding: 16px;
+        .header {
+            padding: 16px;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.20);
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .match-table {
+            font-size: 14px;
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid rgba(255, 255, 255, 0.20);
+            height: fit-content;
+            // &:first-child {
+            //     margin: 16px 0px 16px 16px;
+            // }
+            // &:last-child {
+            //     margin: 16px 16px 16px 0px;
+            // }
+            td {
+                padding: 8px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.20);
+                color: #fff;
+                span {
+                    color: #fff;
+                }
+                .active {
+                    color: $primaryActiveColor;
+                    span {
+                        color: $primaryActiveColor;
+                    }
+                }
+                img {
+                    height: 22px;
+                    width: auto;
+                }
+            }
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: center;
+        margin: 16px 0;
+        .btn-view-more {
+            padding: 4px 100px;
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.20);
+            color: #fff;
+            // margin: 16px 0;
+        }
+    }
+
+}

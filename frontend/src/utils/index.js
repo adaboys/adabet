@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { SPORT_DEFAULT_ID, matcheTypes, oddsNameMapping, paths } from '@constants';
 
 export const isEmptyObject = (obj) => {
     return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
@@ -55,13 +56,13 @@ export const isMobileOnUserAgent = (userAgent) => {
     });
 }
 
-export const getStartTime = (dateStr) => {
+export const getStartTime = (utcTime) => {
     let result = {};
     try {
-        const date = moment(dateStr);
+        const date = moment.utc(utcTime).local();
         const time = date.format('HH:mm');
         let shortDate;
-        if(Math.abs(moment().diff(date, 'days')) >= 2) {
+        if (Math.abs(moment().diff(date, 'days')) >= 2) {
             shortDate = date.format('ll').split(',')[0];
         }
         else {
@@ -71,8 +72,49 @@ export const getStartTime = (dateStr) => {
             date: shortDate,
             time
         };
-    } catch(ex) {
+    } catch (ex) {
 
     }
     return result;
+}
+
+export const resolveTeamImgPathById = (id) => {
+    if (id) {
+        return `https://assets.b365api.com/images/team/s/${id}.png`
+    }
+}
+
+export const groupBy = (items, key) => items.reduce(
+    (result, item) => ({
+        ...result,
+        [item[key]]: [
+            ...(result[item[key]] || []),
+            item,
+        ],
+    }),
+    {},
+);
+
+export const converOddsNames = (name, sportType) => {
+    return oddsNameMapping[sportType]?.[name] || name;
+}
+
+export const getInt = value => {
+    try {
+        return parseInt(value);
+    }
+    catch(err) {console.log(err);
+        return 0;
+    }
+}
+
+export const checkMatchEnded = match => {
+    const time = match?.start_at ? moment.utc(match.start_at).local() : null;
+
+    return !time || time <= moment();
+}
+
+export const generateSportUrl = (queryStr) => {
+    const { matchType, id } = queryStr || { matchType: matcheTypes.TOP, id };
+    return `${paths.sport.replace('[matchType]', matchType || matcheTypes.TOP)}?id=${id || SPORT_DEFAULT_ID}`;
 }

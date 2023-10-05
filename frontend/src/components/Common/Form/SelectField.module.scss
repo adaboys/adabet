@@ -4,7 +4,6 @@ $input-font-size: 14px;
 $input-line-hight: 22px;
 
 .select-field {
-    margin-bottom: 1rem;
     label {
         color: #7D7D7D;
         line-height: 18px;
@@ -46,5 +45,11 @@ $input-line-hight: 22px;
                 stroke-width: 3;
             }
         }
+    }
+
+    .indicator {
+        transform: rotateZ(90deg);
+        width: 8px;
+        height: auto;
     }
 }

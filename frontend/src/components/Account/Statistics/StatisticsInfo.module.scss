@@ -1,0 +1,142 @@
+.statistics-info {
+    margin-top: 24px;
+
+    .header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+
+        .title {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.80);
+
+            svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        .filter {
+            width: 140px;
+        }
+    }
+
+    .summary {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        align-items: stretch;
+        margin-top: 16px;
+
+        .item {
+            padding: 8px;
+            border-radius: 6px;
+            background: #0D1333;
+            flex: 1 0 0;
+            overflow: hidden;
+
+            .title {
+                font-size: 14px;
+                font-weight: 500;
+                color: rgba(255, 255, 255, 0.80);
+                display: flex;
+                justify-content: center;
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
+
+                svg {
+                    width: 16px;
+                    height: auto;
+                }
+            }
+
+            .value {
+                font-size: 24px;
+                font-weight: 600;
+                color: white;
+                margin-top: 10px;
+                text-align: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+
+    .details {
+        border-radius: 6px;
+        background: #0D1333;
+        padding: 16px;
+        margin-top: 24px;
+
+        table {
+            width: 100%;
+
+            .currency {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+
+                img {
+                    width: 16px;
+                    height: 16px;
+                }
+            }
+
+            th,
+            td {
+                font-size: 14px;
+                font-weight: 500;
+                padding: 5px;
+            }
+
+            th {
+                color: rgba(255, 255, 255, 0.80);
+                padding-top: 0;
+            }
+
+            td {
+                color: white;
+            }
+
+            tr {
+
+                th,
+                td {
+                    text-align: right;
+
+                    &:first-child {
+                        padding-left: 0;
+                        text-align: left;
+                    }
+
+                    &:last-child {
+                        padding-right: 0;
+                    }
+                }
+
+                &:last-child {
+                    td {
+                        padding-bottom: 0;
+                    }
+                }
+            }
+
+            .empty {
+                padding: 8px 0;
+
+                img {
+                    width: 80px;
+                }
+            }
+        }
+    }
+}

@@ -26,7 +26,6 @@
 
 @media (min-width: 1200px) {
     .container {
-        /* max-width: 1140px; */
         max-width: 1248px;
     }
 }
@@ -796,3 +795,7 @@
     width: 100% !important;
 }
 /* End width */
+
+.text-align-left {
+    text-align: left;
+}

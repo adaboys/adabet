@@ -1,0 +1,52 @@
+@import "@assets/scss/global";
+
+.pagination-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+
+    .total {
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 21px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .pagination-next-prev {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 21px;
+
+        button {
+            padding: 8px 10px;
+            background: #27256B;
+            border-radius: 2px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            &:first-child {
+                svg {
+                    transform: rotateZ(180deg);
+                }
+            }
+
+            &:disabled {
+                cursor: not-allowed;
+                opacity: .6;
+            }
+
+            svg {
+                width: 7px;
+                height: auto;
+            }
+        }
+    }
+}

@@ -7,7 +7,7 @@ import Select, { components } from "react-select";
 import styles from './SelectField.module.scss';
 
 import IconClose from '../../../assets/icons/close.svg';
-import ChevronDownIcon from '@assets/icons/chevron-down.svg';
+import DividerIcon from '@assets/icons/breadcrumb-divider.svg';
 
 const ClearIndicator = props => {
     const {
@@ -30,7 +30,7 @@ const ClearIndicator = props => {
 const DropdownIndicator = props => {
     return (
       <components.DropdownIndicator {...props}>
-        <ChevronDownIcon style={{marginRight: '14px'}} />
+        <DividerIcon className={styles.indicator} />
       </components.DropdownIndicator>
     );
 };
@@ -44,6 +44,9 @@ const customStyles = (isError, outsideStyles = {}) => {
         loadingIndicator,
         indicatorsContainer,
         clearIndicator,
+        menu,
+        option,
+        singleValue,
         ...rest
     } = outsideStyles
 
@@ -55,31 +58,40 @@ const customStyles = (isError, outsideStyles = {}) => {
 
     return {
         placeholder: mergeStyles(placeholder, _ => ({
-            fontSize: '0.938rem',
-            lineHeight: '22px',
-            color: '#B2BAC6'
+            fontSize: '14px',
+            lineHeight: '21px',
+            color: 'white'
         })),
         control: mergeStyles(control, ({ isFocused }) => ({
-            border: '1px solid rgb(242, 242, 242)',
-            borderRadius: 0,
-            borderBottomColor: isError ? '#FD5A14' : 'gb(242, 242, 242)',
+            backgroundColor: 'rgba(16, 20, 43)',
+            border: 'none',
+            borderRadius: 32,
             boxShadow: 'none',
-            '&:hover': {
-                borderBottomColor: isError ? '#FD5A14' : 'gb(242, 242, 242)',
-            }
         })),
         valueContainer: mergeStyles(valueContainer, _ => ({
-            padding: '12px',
+            padding: '7px 24px',
         })),
-        // dropdownIndicator: mergeStyles(dropdownIndicator, ({ isFocused }) => ({
-        //     color: isError ? '#f33060' : isFocused ? '#0F62F9' : '#E5E5E5'
-        // })),
+        menu: mergeStyles(menu, _ => ({
+            backgroundColor: 'rgba(16, 20, 43)',
+        })),
+        option: mergeStyles(option, _ => ({
+            backgroundColor: 'transparent',
+            '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            },
+            padding: '7px 24px',
+        })),
+        singleValue: mergeStyles(singleValue, _ => ({
+            fontSize: '14px',
+            lineHeight: '21px',
+            color: 'white'
+        })),
         loadingIndicator: mergeStyles(loadingIndicator, _ => ({
             color: '#0F62F9'
         })),
         indicatorsContainer: mergeStyles(indicatorsContainer, _ => ({
             '> *': {
-                padding: '8px 5px !important'
+                paddingRight: '24px'
             }
         })),
         clearIndicator: mergeStyles(clearIndicator, ({ isFocused }) => ({
@@ -106,6 +118,7 @@ const SelectField = ({
     onChange,
     hideErrorMessage,
     selectStyles,
+    customComponents,
     ...rest
 }) => {
     const [field, meta, helpers] = useField({ name });
@@ -137,7 +150,8 @@ const SelectField = ({
                     ...components,
                     IndicatorSeparator: () => null,
                     ClearIndicator,
-                    DropdownIndicator
+                    DropdownIndicator,
+                    ...customComponents,
                 }}
                 {...field}
                 options={preparedOptions}
@@ -153,5 +167,7 @@ const SelectField = ({
     )
 
 }
+
+SelectField.components = components;
 
 export default SelectField;

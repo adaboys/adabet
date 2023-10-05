@@ -1,8 +1,16 @@
+body {
+  &::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
+    /* Optional: show position indicator in red */
+  }
+}
+
 body, html {
   margin: 0;
   font-weight: $fontWeightNormal;
   font-size: $fontSizeNormal;
-  font-family: $primaryFontFamily;;
+  font-family: $primaryFontFamily;
 }
 
 * {
@@ -87,6 +95,10 @@ h6, .h6 {
     text-align: center;
 }
 
+.text-right {
+  text-align: right;
+}
+
 button {
   border: none;
   background-color: transparent;
@@ -106,4 +118,8 @@ button {
 
 .ReactModalPortal, .ReactModal__Overlay {
   z-index: 5;
+}
+
+.uppercase {
+  text-transform: uppercase;
 }

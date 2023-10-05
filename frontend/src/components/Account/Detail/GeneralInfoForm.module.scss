@@ -1,0 +1,10 @@
+.general-info-form {
+    flex: 1;
+    .btn-update {
+        width: 100%;
+        // @include smallLessDesktop {
+        //     width: 100%;
+        //     margin-bottom: 16px;
+        // }
+    }
+}

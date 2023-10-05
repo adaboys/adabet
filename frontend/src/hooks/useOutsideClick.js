@@ -4,13 +4,14 @@ import { useEffect, useRef } from 'react';
 // Rule:
 // onClose: function onClose trigger function of parent
 // flag: enable or disable function click outside
-const useOutsideClick = (handler) => {
+const useOutsideClick = (handler, activeRef) => {
   const ref = useRef(null);
   useEffect(
     () => {
       const listener = (event) => {
         // Do nothing if clicking ref's element or descendent elements
-        if (!ref.current || ref.current.contains(event.target)) {
+        if (!ref.current || ref.current.contains(event.target)
+        || (activeRef && activeRef.current.contains(event.target))) {
           return;
         }
         handler(event);

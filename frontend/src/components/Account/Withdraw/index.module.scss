@@ -1,0 +1,20 @@
+@import "@assets/scss/global";
+
+.withdraw {
+    margin-top: 24px;
+
+    @include smallLessDesktop {
+        margin-top: 24px;
+    }
+    .title {
+        font-size: 20px;
+        margin-bottom: 32px;
+    }
+    .btn-update {
+        width: 228px;
+        @include smallLessDesktop {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+    }
+}

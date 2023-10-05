@@ -83,7 +83,8 @@ $input-line-hight: 20px;
                 font-family: inherit;
             }
             &:disabled {
-                background: #f8f8f8;
+                // background: #f8f8f8;
+                cursor: not-allowed;
             }
         }
         textarea {

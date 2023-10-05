@@ -67,7 +67,7 @@ const ResetPasswordModal = ({ overlay: { hide } }) => {
                         values={{ a: content => <a onClick={onShowLogin}>{content}</a> }}
                     />
                 </div>
-                <LoginWithSocial/>
+                <LoginWithSocial hide={hide}/>
             </div>
         </BasicModal>
     )

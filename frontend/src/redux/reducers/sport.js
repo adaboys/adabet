@@ -8,7 +8,10 @@ const {
     GET_MATCHES_HIGHLIGHT,
     GET_MATCHES_TOP,
     GET_MATCHES_LIVE,
-    GET_MATCHES_UPCOMING
+    GET_MATCHES_UPCOMING,
+    GET_MATCHES_FAVORITE,
+    UPDATE_FAVORITE_LOCAL,
+    GET_TOTAL_BADGES
 } = sportActionTypes;
 
 const initialState = {
@@ -16,13 +19,15 @@ const initialState = {
     matchesHighlight: [],
     matchesTop: [],
     matchesLive: [],
-    matchesUpcoming: []
+    matchesUpcoming: [],
+    matchesFavorite: [],
+    totalBadges: {}
 };
 
 const sport = handleActions(
     {
         [HYDRATE]: (state, action) => {
-            return { ...state, ...action.payload.sport }
+            return { ...state, ...action.payload?.sport }
         },
         [createSuccessActionType(GET_SPORT_LIST)]: (state, { payload }) => {
             return {
@@ -52,6 +57,34 @@ const sport = handleActions(
             return {
                 ...state,
                 matchesUpcoming: payload.data?.matches || []
+            };
+        },
+        [createSuccessActionType(GET_MATCHES_FAVORITE)]: (state, { payload }) => {
+            return {
+                ...state,
+                matchesFavorite: payload.data?.matches || []
+            };
+        },
+        [UPDATE_FAVORITE_LOCAL]: (state, { payload }) => {
+            const { dataKey, toggleOn, matchId } = payload;
+            const matchList = state[dataKey] || [];
+            matchList.forEach(match => {
+                if(match.id === matchId) {
+                    console.log(toggleOn)
+                    console.log(match);
+                    match.favorited = toggleOn;
+                }
+            })
+            console.log(dataKey);
+            return {
+                ...state,
+                [dataKey]: [...matchList]
+            };
+        },
+        [createSuccessActionType(GET_TOTAL_BADGES)]: (state, { payload }) => {
+            return {
+                ...state,
+                totalBadges: payload.data || {}
             };
         },
     },

@@ -1,0 +1,14 @@
+@import "@assets/scss/global";
+
+.change-password {
+    flex: 1;
+    max-width: 740px;
+
+    .form {
+        width: 100%;
+
+        button {
+            width: 100%;
+        }
+    }
+}

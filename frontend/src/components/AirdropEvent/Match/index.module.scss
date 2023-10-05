@@ -1,0 +1,33 @@
+@import "@assets/scss/global";
+
+.match {
+    .tab-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        font-weight: 600;
+
+        .tab-item {
+            a {
+                color: rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .tab-active {
+            a {
+                color: #F7C927;
+            }
+
+            svg {
+                path {
+                    fill: #F7C927;
+                    fill-opacity: 1;
+                }
+            }
+        }
+    }
+
+    .content {
+        margin-top: 24px;
+    }
+}

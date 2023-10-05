@@ -1,0 +1,71 @@
+@import "@assets/scss/global";
+
+.match-item {
+    border-radius: 16px;
+
+    .content {
+        background: linear-gradient(130.36deg, #101062 0%, rgba(37, 35, 141, 0.8) 99.25%);
+        padding: 16px 24px;
+        border-radius: 16px;
+    }
+
+    &:hover {
+        background-image: var(--background);
+
+        .content {
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: inset 0px 0px 0px 2px #593af4;
+        }
+
+        .actions {
+            .quick-bet {
+                background: linear-gradient(86.9deg, #225FED 0%, #712EFF 100%);
+            }
+        }
+    }
+
+    .custom {
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+    }
+
+    .actions {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+
+        .quick-bet {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            padding: 6px 12px;
+        }
+
+        .btn-show-more {
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 21px;
+            color: rgba(255, 255, 255, 0.5);
+            background: transparent;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            padding-right: 0;
+
+            svg {
+                width: 12px;
+                height: auto;
+                transform: rotateZ(-90deg);
+
+                path {
+                    fill: rgba(255, 255, 255, 0.5);;
+                }
+            }
+        }
+    }
+}

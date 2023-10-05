@@ -1,0 +1,181 @@
+@import "@assets/scss/global";
+
+.highlight-details {
+    padding: 32px 0;
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: transparent;
+        outline: none;
+        gap: 8px;
+
+        svg {
+            transform: rotateZ(180deg);
+        }
+    }
+
+    main {
+        max-width: 740px;
+        margin: auto;
+
+        .match {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+            gap: 24px;
+            flex-wrap: wrap;
+
+            .info-box {
+                flex: 1 0 0;
+            }
+
+            .actions {
+                flex: 0 0 180px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                text-align: center;
+                font-weight: 500;
+                font-size: 14px;
+                line-height: 21px;
+                margin: auto;
+                margin-bottom: 0;
+
+                .label {
+                    color: #2563F3;
+                }
+
+                button {
+                    width: 100%;
+                }
+
+                .fee {
+                    color: rgba(255, 255, 255, 0.8);
+                }
+            }
+        }
+
+        .separate {
+            height: 1px;
+            background-image: linear-gradient(to right, #2563F3 0%, #2563F3 50%, transparent 50%);
+            background-size: 16px 1px;
+            background-repeat: repeat-x;
+            margin: 32px 0;
+        }
+
+        .bet-history {
+            .filter {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 16px;
+
+                form {
+                    width: 160px;
+                }
+
+                .pagination {
+                    margin-left: auto;
+                }
+            }
+
+            .list {
+                margin-top: 24px;
+
+                .status {
+                    padding: 3px 10px;
+                    display: block;
+                    border: 1px solid #32C653;
+                    border-radius: 20px;
+                    font-weight: 600;
+                    font-size: 10px;
+                    line-height: 15px;
+                    color: #32C653;
+
+                    &.lost {
+                        color: #F74040;
+                        border-color: #F74040;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.confirm-bet {
+    padding: 32px 20px !important;
+    background: linear-gradient(101.69deg, #211F9D 17.15%, #211F9D 82.85%) !important;
+    border-radius: 8px;
+    width: calc(100% - 32px);
+    max-width: 440px !important;
+    text-align: center;
+
+    .title {
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 30px;
+        color: white;
+    }
+
+    .desc {
+        margin-top: 20px;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 21px;
+    }
+
+    .actions {
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        align-items: center;
+        margin-top: 20px;
+
+        button {
+            flex: 1;
+
+            &.btn-cancel {
+                border: 1px solid white;
+                color: white;
+                background: transparent;
+            }
+        }
+    }
+
+    .fee {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-style: italic;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 21px;
+        margin-top: 20px;
+    }
+}
+
+.success-bet {
+    padding: 32px 80px !important;
+    background: linear-gradient(101.69deg, #211F9D 17.15%, #211F9D 82.85%) !important;
+    border-radius: 8px;
+    width: calc(100% - 32px);
+    max-width: 440px !important;
+    text-align: center;
+
+    .mes {
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 21px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 20px;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 20px;
+    }
+}

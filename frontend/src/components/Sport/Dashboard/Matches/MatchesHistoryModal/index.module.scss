@@ -1,0 +1,46 @@
+@import "@assets/scss/global";
+.matches-history-modal {
+    .wrapper {
+        width: 1024px;
+        // width: 936px;
+        min-height: 90vh;
+        overflow-y: auto;
+        max-height: 100vh;
+        padding: 24px !important;
+        background: var(--bgpu, linear-gradient(135deg, #020076 0%, #001D48 100%)) !important;
+        border-radius: 4px;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            .breadcrumb {
+                display: flex;
+                align-items: center;
+                .menu-icon {
+                    margin-right: 24px;
+                }
+                span {
+                    font-size: 14px;
+                    margin-left: 4px;
+                }
+            }
+            .btn-close {
+                cursor: pointer;
+            }
+        }
+        .tabs {
+            margin-top: 24px;
+            .tab {
+                // padding: 0 6px 6px 6px;
+                padding-bottom: 4px;
+                font-size: 14px;
+                color: #FFFFFF;
+                opacity: 0.5;
+                &.tab-active {
+                    opacity: 1;
+                    font-weight: 500;
+                    border-bottom: 2px solid $primaryActiveColor;;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,39 @@
+@import "@assets/scss/global";
+
+.numeric-stepper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+    width: 120px;
+
+    span {
+        display: block;
+        text-align: center;
+        margin: auto;
+        font-weight: 600;
+        font-size: 18px;
+        line-height: 27px;
+        color: white;
+    }
+
+    button {
+        padding: 4px;
+
+        svg {
+            display: block;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+
+            svg {
+                path {
+                    fill: rgba(255, 255, 255, 0.5);
+                }
+            }
+        }
+    }
+}

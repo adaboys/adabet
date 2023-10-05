@@ -1,0 +1,44 @@
+@import "@/assets/scss/global";
+
+.dropdown-balance-menu {
+    right: 146px;
+    top: 78px;
+    padding: 8px 0;
+    width: 160px;
+    border-radius: 8px;
+    animation: slideRightOpen .4s;
+    background: linear-gradient(130.36deg, #020076 0%, #001D48 99.25%);
+    // z-index: 1009;
+    .menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 12px;
+            padding: 4px 10px;
+            color: $secondaryTextColor;
+            font-weight: 500;
+            .currency {
+                display: flex;
+                gap: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                color: $secondaryTextColor;
+                svg {
+                    width: 24px;
+                    height: 24px;
+                }
+                img {
+                    width: 24px;
+                }
+            }
+            &.active {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+    }
+}

@@ -1,0 +1,168 @@
+@import "@assets/scss/global";
+
+.match-short-info {
+    padding: 22px 26px;
+    background: linear-gradient(101.69deg, #211F9D 17.15%, #211F9D 82.85%);
+    border-radius: 16px;
+
+    .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+
+        .match-types {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            span {
+                color: rgba(255, 255, 255, 0.5);
+                font-weight: 400;
+                font-size: 14px;
+                line-height: 21px;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            svg {
+                width: 8px;
+                height: auto;
+                flex-shrink: 0;
+
+                &:first-child {
+                    width: 19px;
+                }
+
+                path {
+                    fill: rgba(255, 255, 255, 0.5);
+                }
+            }
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 21px;
+        }
+    }
+
+    .content {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: row;
+
+        .time {
+            flex: 1;
+            text-align: center;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 21px;
+            flex: 0 0 100px;
+
+            .day {
+                font-style: italic;
+            }
+
+            .hour {
+                font-style: italic;
+                font-weight: 600;
+                margin-top: 4px;
+            }
+
+            .score {
+                margin-top: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                font-weight: 600;
+                font-size: 20px;
+                line-height: 30px;
+
+                svg {
+                    flex-shrink: 0;
+                }
+            }
+        }
+
+        .team {
+            width: calc(50% - 50px);
+            text-align: left;
+
+            &:last-child {
+                text-align: right;
+
+
+                .numeric-stepper {
+                    margin-left: auto;
+                }
+            }
+
+            .flag {
+                img {
+                    width: 32px;
+                    height: 32px;
+                    object-fit: contain;
+                }
+            }
+
+            .name {
+                font-weight: 600;
+                font-size: 16px;
+                line-height: 24px;
+                margin: 0;
+                color: white;
+                margin-top: 16px;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            .numeric-stepper {
+                margin-top: 20px;
+            }
+        }
+    }
+
+    &.small {
+        .head {
+            .match-types {
+                span {
+                    font-weight: 400;
+                    font-size: 14px;
+                    line-height: 21px;
+                }
+            }
+
+            .user {
+                font-weight: 500;
+                font-size: 14px;
+                line-height: 21px;
+            }
+        }
+
+        .content {
+            .team {
+                .name {
+                    font-weight: 500;
+                    font-size: 14px;
+                    line-height: 21px;
+                }
+            }
+
+            .time {
+                .score {
+                    font-size: 18px;
+                }
+            }
+        }
+    }
+}

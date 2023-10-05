@@ -1,0 +1,107 @@
+@import "@assets/scss/global";
+
+.about-us-page {
+    padding: 80px 0;
+
+    [class~='container'] {
+        >* {
+            &:not(:first-child) {
+                margin-top: 156px;
+            }
+        }
+    }
+
+    .about-us {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 88px;
+
+        .banner {
+            flex: 6 0 0;
+
+            img {
+                width: 100%;
+            }
+        }
+
+        .info {
+            flex: 4 0 0;
+
+            h3 {
+                font-weight: 600;
+                font-size: 40px;
+                line-height: 60px;
+                color: white;
+            }
+
+            p {
+                margin: 0;
+                margin-top: 16px;
+                color: white;
+
+                &:first-child {
+                    margin-top: 20px;
+                }
+
+                .hightlight {
+                    color: #2563F3;
+                }
+            }
+        }
+    }
+
+    .operation {
+        .title {
+            font-weight: 600;
+            font-size: 40px;
+            line-height: 60px;
+            color: white;
+            text-align: center;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            padding-left: 20px;
+            margin-top: 48px;
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 24px;
+            list-style: disc;
+
+            li {
+                color: white;
+
+                &:not(:first-child) {
+                    margin-top: 48px;
+                }
+            }
+        }
+    }
+
+    .backer {
+        .title {
+            font-weight: 600;
+            font-size: 40px;
+            line-height: 60px;
+            color: white;
+            text-align: center;
+        }
+
+        .list {
+            margin-top: 48px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 160px 48px;
+
+            img {
+                width: 390px;
+                height: auto;
+            }
+        }
+    }
+}

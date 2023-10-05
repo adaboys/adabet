@@ -1,0 +1,33 @@
+@import "@assets/scss/global";
+
+.nav-menu {
+    margin-top: 0;
+    padding: 30px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.8);
+    .menu-item {
+        &:not(:last-child) {
+            margin-bottom: 22px;
+        }
+        a {
+            color: $secondaryTextColor;
+            display: flex;
+            align-items: center;
+            svg {
+                margin-right: 28px;
+                width: 24px;
+                height: 24px;
+                path {
+                    fill-opacity: 0.8;
+                }
+            }
+            &.active {
+                color: $primaryActiveColor;
+                svg {
+                    path {
+                        fill: $primaryActiveColor;
+                    }
+                }
+            }
+        }
+    }
+}

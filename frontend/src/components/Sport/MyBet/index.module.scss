@@ -1,0 +1,45 @@
+@import "@assets/scss/global";
+
+.my-bet {
+    .header {
+        margin-top: 20px;
+        margin-left: 20px;
+        color: $secondaryTextColor;
+        font-size: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        svg {
+            path {
+                fill: $secondaryTextColor;
+            }
+        }
+    }
+    .filter {
+        padding: 20px;
+        .tags {
+            display: flex;
+            gap: 14px;
+            .item {
+                border: none;
+                border-radius: 4px;
+                padding: 4px 8px;
+                background: rgba(255, 255, 255, 0.1);
+                font-size: 14px;
+                color: #fff;
+                opacity: 0.6;
+                &.active {
+                    opacity: 1;
+                    background: linear-gradient(86.9deg, #225FED 0%, #712EFF 100%);
+                }
+            }
+        }
+    }
+    .bet-list {
+        padding: 20px;
+        display: grid;
+        gap: 22px;
+        grid-template-columns: 1fr 1fr;
+    }
+}

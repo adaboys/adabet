@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import classNames from 'classnames';
 
 import Header from './Header';
-// import Footer from './Footer';
+import Footer from './Footer';
 import { FullScreenLoading } from '..';
 
 import { accountActions, loadingActions } from '@redux/actions';
@@ -48,12 +48,16 @@ const MainLayout = ({ children }) => {
     }, [isGetTokenForGamePlaySuccess])
 
     return (
-        <main className={classNames(styles.mainLayout, {[styles.home]: pathname === paths.home})}>
+        <main className={classNames(styles.mainLayout,{
+                [styles.home]: pathname === paths.home,
+                [styles.account]: pathname.includes(paths.account)
+            })}
+        >
             <Header />
             <div className={styles.content}>
                 {children}
             </div>
-            {/* <Footer /> */}
+            <Footer />
             <FullScreenLoading />
         </main>
     )

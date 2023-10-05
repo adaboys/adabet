@@ -1,0 +1,50 @@
+@import "@/assets/scss/global";
+
+.dropdown-account-menu {
+    right: 60px;
+    top: 78px;
+    padding: 20px;
+    width: 362px;
+    border-radius: 8px;
+    animation: slideRightOpen .4s;
+    background: linear-gradient(130.36deg, #020076 0%, #001D48 99.25%);
+    display: flex;
+    flex-direction: column;
+    // z-index: 1009;
+    .menu-list {
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        padding: 14px;
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 1fr;
+        .menu-item {
+            display: flex;
+            font-size: 14px;
+            svg {
+                margin-right: 12px;
+                path {
+                    fill-opacity: 0.5;
+                }
+            }
+        }
+    }
+
+    .actions {
+        margin-top: 18px;
+        .logout {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            cursor: pointer;
+            width: fit-content;
+            svg {
+                margin-right: 10px;
+                path {
+                    fill-opacity: 0.5;
+                }
+            }
+        }
+    }
+}

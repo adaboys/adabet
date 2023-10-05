@@ -1,9 +1,9 @@
 @import "@assets/scss/global";
 
 .what-we-do {
-    margin-top: 160px;
-    min-height: 700px;
+    margin-top: 80px;
     position: relative;
+
     .description {
         color: $secondaryTextColor;
         font-size: 16px;
@@ -29,10 +29,12 @@
                 }
             }
         }
+
+        .video {
+            max-width: 100%;
+        }
     }
     .sport-banner {
-        position: absolute;
-        right: 0;
-        top: -76px;
+        width: 100%;
     }
 }

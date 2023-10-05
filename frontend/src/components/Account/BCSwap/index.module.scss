@@ -1,0 +1,190 @@
+@import "@assets/scss/global";
+
+.bc-swap {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    max-width: 512px;
+
+    .header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        font-size: 16px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.80);
+
+        .title {
+            font-weight: 500;
+            color: white;
+        }
+    }
+
+    .swap-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+
+        .swap-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+
+            .swap-item {
+                padding: 12px;
+                border-radius: 8px;
+                background: linear-gradient(45deg, #211F9D 0%, #211F9D 100%);
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 16px;
+
+                .select {
+                    width: 180px;
+                    border-radius: 4px;
+                }
+
+                .badge {
+                    padding: 4px 8px;
+                    font-size: 14px;
+                    font-weight: 400;
+                    color: rgba(255, 255, 255, 0.80);
+                    background-color: rgba(0, 0, 0, 0.30);
+                }
+
+                .swap-value {
+                    flex: 1;
+
+                    label {
+                        font-size: 14px;
+                        font-weight: 400;
+                        color: rgba(255, 255, 255, 0.80);
+                        text-align: right;
+                        display: block;
+                    }
+
+                    .input-amount {
+                        margin-bottom: 0;
+
+                        input {
+                            border: none;
+                            text-align: right;
+                            font-size: 16px;
+                            font-weight: 500;
+                            color: white;
+                            padding-right: 0;
+                        }
+                    }
+
+                    .value-to {
+                        font-size: 16px;
+                        font-weight: 500;
+                        color: white;
+                        min-height: 36px;
+                        display: flex;
+                        justify-content: flex-end;
+                        align-items: center;
+                    }
+                }
+
+                .coin-item {
+                    padding: 8px 0;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    gap: 12px;
+                    font-size: 20px;
+                    font-weight: 600;
+                    color: white;
+
+                    &.option {
+                        padding: 8px 16px;
+                    }
+
+                    img {
+                        display: block;
+                        width: 32px;
+                        height: auto;
+                    }
+                }
+            }
+        }
+
+        .btn-swap-coin-type {
+            flex-shrink: 0;
+
+            svg {
+                display: block;
+            }
+        }
+    }
+
+    .withdraw {
+        margin-top: 24px;
+
+        .title {
+            font-size: 16px;
+            font-weight: 500;
+            color: white;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+
+            svg {
+                width: 18px;
+                height: auto;
+                cursor: pointer;
+            }
+        }
+
+        .input {
+            margin: 0;
+            margin-top: 8px;
+        }
+    }
+
+    .tips {
+        padding: 12px 24px;
+        border-radius: 4px;
+        background: var(--black-30, rgba(0, 0, 0, 0.30));
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.80);
+        margin-right: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        b {
+            color: white;
+        }
+
+        p {
+            margin: 0;
+        }
+    }
+
+    .btn-swap {
+        width: 100%;
+    }
+
+    .hint-receiver-address {
+        max-width: 280px;
+    }
+
+    .swap-hint {
+        font-size: 13px;
+        line-height: 18px;
+        color: white;
+        margin-top: 8px;
+        font-style: italic;
+    }
+}

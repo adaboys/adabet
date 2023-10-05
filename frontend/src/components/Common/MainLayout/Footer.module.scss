@@ -1,55 +1,79 @@
 @import "@assets/scss/global";
 
 .footer {
-    background: #1e1f23;
-    font-size: 20px;
-    .nav {
-        padding: 48px 0 36px 0;
-        display: flex;
-        justify-content: space-between;
-        gap: 24px;
-        @include smallLessDesktop {
-            padding: 36px 16px;
-        }
+    background: linear-gradient(130.36deg, #020076 0%, #001D48 99.25%);
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+
+    .content {
+        padding: 48px 0;
+
         .logo {
-            padding-left: 0;
-            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
             img {
-                width: auto;
-                height: 82px;
-                @include smallLessDesktop {
-                    height: 62px;
-                }
+                max-width: 90%;
             }
         }
-        .menu {
-            column-count: 2;
-            margin: 0;
-            padding: 0;
-            flex: 1;
-            &-item {
-                &:not(:last-child) {
-                    margin-bottom: 24px;
-                }
-                a:hover {
-                    color: #137cb4;
-                }
-            }
-        }
-        .marketing {
-            flex: 1;
-            .social {
+
+        .footer-menu {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+
+            .menu-col {
                 display: flex;
-                align-items: center;
+                flex-direction: column;
+                gap: 12px;
+                flex: 1 0 0;
+
+                h3 {
+                    margin: 0;
+                    font-weight: 600;
+                    font-size: 16px;
+                    line-height: 24px;
+                    color: white;
+                }
+
+                a {
+                    display: inline-block;
+                    padding: 6px 0;
+                    font-weight: 400;
+                    font-size: 16px;
+                    line-height: 24px;
+                    color: white;
+                }
+            }
+        }
+
+        .social {
+            h4 {
+                font-weight: 400;
+                font-size: 14px;
+                line-height: 21px;
+                color: white;
+            }
+
+            .list {
+                margin-top: 20px;
+                display: flex;
+                flex-direction: row;
                 gap: 16px;
+                flex-wrap: wrap;
             }
         }
     }
+
     .copyright {
         background: #4f4f4f;
-        padding: 16px 0;
-        font-size: 20px;
+        padding: 16px;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 21px;
         text-align: center;
+        background: #18123E;
+
         @include smallLessDesktop {
             font-size: 14px;
         }

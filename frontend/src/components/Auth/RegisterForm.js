@@ -26,7 +26,7 @@ const messages = defineMessages({
     errorUserExisted: 'User existed'
 });
 
-const RegisterForm = ({ onRegisterSuccess }) => {
+const RegisterForm = ({ onRegisterSuccess, externalWallet }) => {
     const intl = useIntl();
     const dispatch = useDispatch();
     const [isSubmitting, setIsSubmitting] = useState();
@@ -35,8 +35,12 @@ const RegisterForm = ({ onRegisterSuccess }) => {
 
     const onSubmitRegister = (values) => {
         setIsSubmitting(true);
-        dispatch(accountActions.register({
-            params: values,
+        const registerAction = externalWallet ? accountActions.verifyLoginWallet : accountActions.register;
+        dispatch(registerAction({
+            params: {
+                ...values,
+                ...(externalWallet && { ...externalWallet, request_otp: true })
+            },
             onCompleted: (response) => {
                 if (response?.status === 200 || response?.code === 'duplicated_register') {
                     onRegisterSuccess(values.email);
@@ -65,7 +69,11 @@ const RegisterForm = ({ onRegisterSuccess }) => {
                 password: '',
                 rePassword: ''
             }}
-            validationSchema={Yup.object().shape({
+            validationSchema={Yup.object().shape(externalWallet ? {
+                email: Yup.string()
+                    .required(intl.formatMessage(validationMessages.required))
+                    .email(intl.formatMessage(messages.emailValidationFailed)),
+            } : {
                 name: Yup.string()
                 .required(intl.formatMessage(validationMessages.required)),
                 email: Yup.string()
@@ -80,18 +88,28 @@ const RegisterForm = ({ onRegisterSuccess }) => {
             className={styles.registerForm}
         >
             <div className={styles.content}>
-                <InputTextField
-                    placeholder={intl.formatMessage(messages.yourName)}
-                    name="name"
-                    iconLeft={<UserIcon />}
-                />
-                <InputTextField
-                    placeholder={intl.formatMessage(messages.emailAddress)}
-                    name="email"
-                    iconLeft={<EmailIcon />}
-                />
-                <PasswordField placeholder={intl.formatMessage(commonMessages.password)} name="password" />
-                <PasswordField placeholder={intl.formatMessage(messages.retypePassword)} name="rePassword" />
+                {externalWallet ? (
+                    <InputTextField
+                        placeholder={intl.formatMessage(messages.emailAddress)}
+                        name="email"
+                        iconLeft={<EmailIcon />}
+                    />
+                ) : (
+                    <>
+                        <InputTextField
+                            placeholder={intl.formatMessage(messages.yourName)}
+                            name="name"
+                            iconLeft={<UserIcon />}
+                        />
+                        <InputTextField
+                            placeholder={intl.formatMessage(messages.emailAddress)}
+                            name="email"
+                            iconLeft={<EmailIcon />}
+                        />
+                        <PasswordField placeholder={intl.formatMessage(commonMessages.password)} name="password" />
+                        <PasswordField placeholder={intl.formatMessage(messages.retypePassword)} name="rePassword" />
+                    </>
+                )}
                 <p className={styles.terms}>
                     <Checkbox checked={acceptTerm} onChange={() => setIsAcceptTerm((pre) => !pre)}>
                         <span className={styles.termsContent}>

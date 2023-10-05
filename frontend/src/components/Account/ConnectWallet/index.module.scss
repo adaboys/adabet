@@ -1,0 +1,108 @@
+@import "@assets/scss/global";
+
+.connect-wallet {
+    @include smallLessDesktop {
+        margin-top: 24px;
+    }
+    .title {
+        font-size: 20px;
+        margin-bottom: 32px;
+        @include smallLessDesktop {
+            margin-bottom: 24px;
+        }
+    }
+    .divider {
+        height: 1px;
+        width: 100%;
+        background: #4F4F4F;
+    }
+    .my-wallets {
+        margin-bottom: 24px;
+        .wallet-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-top: 1px rgba(255, 255, 255, 0.8) solid;
+            border-bottom: 1px rgba(255, 255, 255, 0.8) solid;
+            justify-content: space-between;
+            @include smallLessDesktop {
+                padding: 8px 0;
+            }
+            .info {
+                display: flex;
+                align-items: center;
+                flex-grow: 1;
+                color: #bdbdbd;
+                img {
+                    margin-right: 16px;
+                }
+                .content-box {
+                    flex-grow: 1;
+                    padding-right: 32px;
+                    @include smallLessDesktop {
+                        padding-right: 8px;
+                    }
+                    .wallet-address {
+                        font-size: 14px;
+                        display: flex;
+                        // flex-grow: 1;
+                        .content {
+                            // width: 80%;
+                            // flex-grow: 1;
+                            padding-right: 8px !important;
+                        }
+                        span {
+                            color: #bdbdbd;
+                        }
+                    }
+                    .balance {
+                        display: flex;
+                        gap: 4px;
+                        color: #bdbdbd;
+                        .coin {
+                            font-size: 16px;
+                            color: #bdbdbd;
+                            svg, img {
+                                margin-right: 8px;
+                            }
+                            svg {
+                                height: 24px;
+                                width: 24px;
+                            }
+                            img {
+                                height: 24px; width: auto;
+                            }
+                        }
+                    }
+                }
+            }
+            .unlink {
+                color: #bdbdbd;
+                display: flex;
+                align-items: center;
+                @include smallLessDesktop {
+                    font-size: 16px;
+                }
+                svg {
+                    margin-right: 8px;
+                    path{
+                        stroke: #bdbdbd;;
+                    }
+                }
+            }
+        }
+    }
+    .btn-connect-wallet {
+        border: 1px solid #f1f1f1;
+        padding: 8px 42px;
+        align-items: center;
+        @include smallLessDesktop {
+            width: 100%;
+        }
+        svg {
+            path {
+                fill: #f1f1f1;
+            }
+        }
+    }
+}
