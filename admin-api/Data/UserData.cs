@@ -109,16 +109,6 @@ public class GetUserProfileResponse : ApiSuccessResponse {
 	}
 }
 
-public class GetUserBalanceResponse : ApiSuccessResponse {
-	[JsonPropertyName(name: "data")]
-	public Data data { get; set; }
-
-	public class Data {
-		[JsonPropertyName(name: "ada_balance")]
-		public decimal ada_balance { get; set; }
-	}
-}
-
 public class RequestLinkExternalWalletResponse : ApiSuccessResponse {
 	[JsonPropertyName(name: "data")]
 	public Data data { get; set; }
@@ -211,7 +201,10 @@ public class GetUserListResponse : ApiSuccessResponse {
 		public string player { get; set; }
 
 		[JsonPropertyName(name: "wallet")]
-		public string wallet { get; set; }
+		public string wallet_address { get; set; }
+
+		[JsonPropertyName(name: "balance")]
+		public List<UserWalletBalance>? wallet_balance { get; set; } = null;
 
 		[JsonPropertyName(name: "role")]
 		public int role { get; set; }
@@ -227,17 +220,11 @@ public class GetUserListResponse : ApiSuccessResponse {
 
 		[JsonPropertyName(name: "last_login")]
 		public DateTime? last_login { get; set; }
-
-		[JsonPropertyName(name: "balance")]
-		public List<Balance> balance { get; set; } = new();
 	}
 
-	public class Balance {
-		[JsonPropertyName(name: "coin")]
-		public string coin { get; set; }
-
-		[JsonPropertyName(name: "amount")]
-		public decimal amount { get; set; }
+	public class UserWalletBalance : WalletBalance {
+		[JsonPropertyName(name: "coin_name")]
+		public string coin_name { get; set; }
 	}
 }
 

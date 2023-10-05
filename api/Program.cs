@@ -45,6 +45,7 @@ internal class Program {
 			.AddScoped<CurrencyService>()
 			.AddScoped<UserFavoriteService>()
 			.AddScoped<UserCoinTxService>()
+			.AddScoped<EventService>()
 
 			.AddScoped<UserComponent>()
 			.AddScoped<MailComponent>()
@@ -153,7 +154,7 @@ internal class Program {
 			app.UseDeveloperExceptionPage();
 		}
 
-		// Customize api response for unhandled exception
+		// Customize api response for unhandled exception (see Base/Presentation/Middleware/UnhandledExceptionHandlerController.cs)
 		if (isProduction) {
 			app.UseExceptionHandler("/api/error");
 		}

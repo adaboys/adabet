@@ -33,8 +33,9 @@ public class UserFavoriteService : BaseService {
 	}
 
 	public async Task<ApiResponse> ToggleFavoriteMatch(Guid user_id, long match_id, bool toggle_on) {
-		// Validate match
-		if (!(await this.dbContext.sportMatches.AnyAsync(m => m.id == match_id))) {
+		// Get match
+		var match = await this.dbContext.sportMatches.FirstOrDefaultAsync(m => m.id == match_id);
+		if (match is null) {
 			return new ApiBadRequestResponse("Invalid match");
 		}
 
@@ -57,6 +58,10 @@ public class UserFavoriteService : BaseService {
 		}
 
 		favoriteMatch.toggled = toggle_on;
+
+		// It is useful to let us know how the match is favorited
+		match.favorite_count = toggle_on ? match.favorite_count + 1 : match.favorite_count - 1;
+
 		await this.dbContext.SaveChangesAsync();
 
 		return new ApiSuccessResponse(toggle_on ? "Toggled" : "Untoggled");

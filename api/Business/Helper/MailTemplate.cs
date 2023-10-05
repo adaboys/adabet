@@ -59,4 +59,14 @@ public class MailTemplate {
 			.Replace("{{tx_fee}}", tx_fee.ToString())
 		;
 	}
+
+	public static async Task<string> ForSentGiftOfEventAsync(string event_name, decimal gift_ada_amount, decimal gift_abe_amount) {
+		var mailContent = await File.ReadAllTextAsync("./Assets/MailTemplate/event-delivery-gift-noti.html");
+
+		return mailContent
+			.Replace("{{event_name}}", event_name)
+			.Replace("{{gift_ada_amount}}", $"{gift_ada_amount}")
+			.Replace("{{gift_abe_amount}}", $"{gift_abe_amount}")
+		;
+	}
 }

@@ -17,8 +17,8 @@ public class UpdateTennisOdds_LiveJob_Betsapi : Base_UpdateTennisOddsJob_Betsapi
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /1 * * * ?" : // Should run at every minute
-				"0 /10 * * * ?"
+				"0 /1 * * * ?" : // Should at 30s
+				"0 /5 * * * ?"
 			)
 			.WithDescription(JOB_NAME)
 		);
@@ -28,19 +28,25 @@ public class UpdateTennisOdds_LiveJob_Betsapi : Base_UpdateTennisOddsJob_Betsapi
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
 		ILogger<UpdateTennisOdds_LiveJob_Betsapi> logger,
+		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot, logger, betsapiRepo) {
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
 	}
 
-	/// Override
+	/// It consumes at most 300 requests.
 	public override async Task Run(IJobExecutionContext context) {
 		// We prior to matches that has long time from previous updated
 		var query =
 			from _match in this.dbContext.sportMatches
+
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
+
 			where _league.sport_id == MstSportModelConst.Id_Tennis
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
+
+			// We prior to matches that has long time from previous updated
 			orderby _match.updated_at
+
 			select new {
 				_match
 			}
@@ -61,8 +67,8 @@ public class UpdateTennisOdds_UpcomingJob_Betsapi : Base_UpdateTennisOddsJob_Bet
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /2 * * * ?" : // Should run at every minute
-				"0 /10 * * * ?"
+				"0 /2 * * * ?" : // Should at 30s
+				"0 /5 * * * ?"
 			)
 			.WithDescription(JOB_NAME)
 		);
@@ -72,40 +78,44 @@ public class UpdateTennisOdds_UpcomingJob_Betsapi : Base_UpdateTennisOddsJob_Bet
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
 		ILogger<UpdateTennisOdds_UpcomingJob_Betsapi> logger,
+		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot, logger, betsapiRepo) {
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
 	}
 
-	/// Override
+	/// It consumes at most 30 requests.
 	public override async Task Run(IJobExecutionContext context) {
-		// １０試合ずつを順次に更新していく
 		var query =
 			from _match in this.dbContext.sportMatches
+
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
+
 			where _league.sport_id == MstSportModelConst.Id_Tennis
 			where _match.status == SportMatchModelConst.TimeStatus.Upcoming
+
+			// We prior to matches that has long time from previous updated
 			orderby _match.updated_at
+
 			select new {
 				_match
 			}
 		;
-		var sysMatches = await query.Select(m => m._match).Take(10).ToArrayAsync();
+		var sysMatches = await query.Select(m => m._match).Take(30).ToArrayAsync();
 
 		await this.UpdateMatchOddsAsync(sysMatches);
 	}
 }
 
-public abstract class Base_UpdateTennisOddsJob_Betsapi<T> : BaseJob where T : class {
-	protected readonly ILogger<T> logger;
+public abstract class Base_UpdateTennisOddsJob_Betsapi<T> : BaseJob<T> where T : class {
 	protected readonly BetsapiRepo betsapiRepo;
 
 	public Base_UpdateTennisOddsJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
 		ILogger<T> logger,
+		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
 		this.betsapiRepo = betsapiRepo;
 	}
 
@@ -129,6 +139,11 @@ public abstract class Base_UpdateTennisOddsJob_Betsapi<T> : BaseJob where T : cl
 	private async Task _UpdateMatchOddAsync(SportMatchModel sysMatch) {
 		var apiResult = await this.betsapiRepo.FetchMatchOddsSummary<Betsapi_TennisOddsSummaryData>(sysMatch.ref_betsapi_match_id);
 		if (apiResult is null || apiResult.failed) {
+			this.logger.ErrorDk(this, $"Fetch tennis match odds failed", $"sysMatchId: {sysMatch.id}, apiResult: {apiResult}");
+
+			// Try remap match id
+			await BetsapiHelper.RemapMatchIdAsync(sysMatch: sysMatch, betsapiRepo: this.betsapiRepo, logger: logger, caller: this);
+
 			return;
 		}
 
@@ -140,7 +155,7 @@ public abstract class Base_UpdateTennisOddsJob_Betsapi<T> : BaseJob where T : cl
 		this._UpdateOdd_MainFullTime(name2market, apiResult);
 
 		// Write back markets
-		sysMatch.markets = DkJsons.ToJson(name2market.Select(m => m.Value).ToArray());
+		sysMatch.markets = DkJsons.ToJson(name2market.Values);
 	}
 
 	/// Update odds by choose lowest result from providers.

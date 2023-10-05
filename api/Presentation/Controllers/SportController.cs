@@ -21,15 +21,6 @@ public class SportController : BaseController {
 	}
 
 	/// <summary>
-	/// Get quick access links for leagues.
-	/// </summary>
-	/// <response code="200"></response>
-	[HttpGet, Route(Routes.sport_league_quick_links)]
-	public async Task<ActionResult<ApiResponse>> GetQuickLinkOfLeagues() {
-		return await service.GetQuickLinkOfLeagues();
-	}
-
-	/// <summary>
 	/// Get all highlight matches.
 	/// </summary>
 	/// <response code="200">
@@ -39,8 +30,8 @@ public class SportController : BaseController {
 	///   - For large: https://assets.b365api.com/images/team/b/{img_id_here}.png
 	/// </response>
 	[HttpGet, Route(Routes.sport_matches_highlight)]
-	public async Task<ActionResult<ApiResponse>> GetHighlightMatches([FromRoute] int sport_id) {
-		return await service.GetHighlightMatches(sport_id);
+	public async Task<ActionResult<ApiResponse>> GetHighlightMatches([FromRoute] int sport_id, [FromQuery] int league) {
+		return await service.GetHighlightMatches(sport_id, league);
 	}
 
 	/// <summary>
@@ -53,8 +44,8 @@ public class SportController : BaseController {
 	///   - For large: https://assets.b365api.com/images/team/b/{img_id_here}.png
 	/// </response>
 	[HttpGet, Route(Routes.sport_matches_top)]
-	public async Task<ActionResult<ApiResponse>> GetTopMatches([FromRoute] int sport_id) {
-		return await service.GetTopMatches(userId, sport_id);
+	public async Task<ActionResult<ApiResponse>> GetTopMatches([FromRoute] int sport_id, [FromQuery] int league) {
+		return await service.GetTopMatches(userId, sport_id, league);
 	}
 
 	/// <summary>
@@ -67,8 +58,8 @@ public class SportController : BaseController {
 	///   - For large: https://assets.b365api.com/images/team/b/{img_id_here}.png
 	/// </response>
 	[HttpGet, Route(Routes.sport_matches_live)]
-	public async Task<ActionResult<ApiResponse>> GetLiveMatches([FromRoute] int sport_id) {
-		return await service.GetLiveMatches(userId, sport_id);
+	public async Task<ActionResult<ApiResponse>> GetLiveMatches([FromRoute] int sport_id, [FromQuery] int league) {
+		return await service.GetLiveMatches(userId, sport_id, league);
 	}
 
 	/// <summary>
@@ -81,12 +72,12 @@ public class SportController : BaseController {
 	///   - For large: https://assets.b365api.com/images/team/b/{img_id_here}.png
 	/// </response>
 	[HttpGet, Route(Routes.sport_matches_upcoming)]
-	public async Task<ActionResult<ApiResponse>> GetUpcomingMatches([FromRoute] int sport_id, [FromQuery] int page, [FromQuery] int item) {
+	public async Task<ActionResult<ApiResponse>> GetUpcomingMatches([FromRoute] int sport_id, [FromQuery] int league, [FromQuery] int page, [FromQuery] int item) {
 		// Restricts range to avoid spam
 		if (page < 1 || item < 1 || item > 100) {
 			return new ApiBadRequestResponse("Invalid range");
 		}
-		return await service.GetUpcomingMatches(userId, sport_id, page, item);
+		return await service.GetUpcomingMatches(userId, sport_id, league, page, item);
 	}
 
 	/// <summary>

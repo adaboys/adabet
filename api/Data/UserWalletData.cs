@@ -38,6 +38,9 @@ public class GetWalletsResponse : ApiSuccessResponse {
 
 		[JsonPropertyName(name: "amount")]
 		public decimal amount { get; set; }
+
+		[JsonPropertyName(name: "decimals")]
+		public int decimals { get; set; }
 	}
 }
 

@@ -9,28 +9,24 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class DecideUserBetResultJob : BaseJob {
+public class DecideUserBetResultJob : BaseJob<DecideUserBetResultJob> {
 	private const string JOB_NAME = nameof(DecideUserBetResultJob);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
 		quartzConfig.ScheduleJob<DecideUserBetResultJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /2 * * * ?")
+			.WithCronSchedule("0 /3 * * * ?")
 			.WithDescription(JOB_NAME)
 		);
 	}
 
-	private const int FulltimeSeconds = 90 * 60;
-
-	private readonly ILogger<DecideUserBetResultJob> logger;
-
 	public DecideUserBetResultJob(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<DecideUserBetResultJob> logger
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
+		ILogger<DecideUserBetResultJob> logger,
+		MailComponent mailComponent
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
 	}
 
 	/// Override
@@ -47,6 +43,7 @@ public class DecideUserBetResultJob : BaseJob {
 			select new SelectResult {
 				match_status = _match.status,
 				cur_play_time = _match.timer,
+				fulltime_seconds = _match.total_timer,
 				home_score = _match.home_score,
 				away_score = _match.away_score,
 
@@ -68,7 +65,7 @@ public class DecideUserBetResultJob : BaseJob {
 					break;
 				}
 				case MarketConst.BothToScore: {
-					var matchEnded = matchItem.cur_play_time >= FulltimeSeconds;
+					var matchEnded = matchItem.cur_play_time >= matchItem.fulltime_seconds;
 
 					if (matchEnded) {
 						var bothToScore = (matchItem.home_score > 0 && matchItem.away_score > 0);
@@ -83,7 +80,7 @@ public class DecideUserBetResultJob : BaseJob {
 					break;
 				}
 				case MarketConst.HomeTotals: {
-					var matchEnded = matchItem.cur_play_time >= FulltimeSeconds;
+					var matchEnded = matchItem.cur_play_time >= matchItem.fulltime_seconds;
 
 					// For eg,. over_2.5
 					var arr = ubet.bet_odd_name.Split('_');
@@ -115,7 +112,7 @@ public class DecideUserBetResultJob : BaseJob {
 					break;
 				}
 				case MarketConst.AwayTotals: {
-					var matchEnded = matchItem.cur_play_time >= FulltimeSeconds;
+					var matchEnded = matchItem.cur_play_time >= matchItem.fulltime_seconds;
 
 					// For eg,. over_2.5
 					var arr = ubet.bet_odd_name.Split('_');
@@ -147,7 +144,7 @@ public class DecideUserBetResultJob : BaseJob {
 					break;
 				}
 				case MarketConst.Totals: {
-					var matchEnded = matchItem.cur_play_time >= FulltimeSeconds;
+					var matchEnded = matchItem.cur_play_time >= matchItem.fulltime_seconds;
 
 					// For eg,. over_2.5, under_1.5
 					var arr = ubet.bet_odd_name.Split('_');
@@ -175,7 +172,7 @@ public class DecideUserBetResultJob : BaseJob {
 					break;
 				}
 				case MarketConst.AsianTotals: {
-					var matchEnded = matchItem.cur_play_time >= FulltimeSeconds;
+					var matchEnded = matchItem.cur_play_time >= matchItem.fulltime_seconds;
 
 					// For eg,. over_2.5, under_1.5
 					var arr = ubet.bet_odd_name.Split('_');
@@ -226,17 +223,16 @@ public class DecideUserBetResultJob : BaseJob {
 
 		//fixme We can also check and update result while play is in progress
 		if (matchItem.match_status == SportMatchModelConst.TimeStatus.Ended) {
-			var homeWin = (matchItem.home_score > matchItem.away_score);
-			var draw = (matchItem.home_score == matchItem.away_score);
-			var awayWin = (matchItem.home_score < matchItem.away_score);
-
 			if (ubet.bet_odd_name == OddConst.HomeWin) {
+				var homeWin = (matchItem.home_score > matchItem.away_score);
 				ubet.bet_result = homeWin ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
 			}
 			else if (ubet.bet_odd_name == OddConst.Draw) {
+				var draw = (matchItem.home_score == matchItem.away_score);
 				ubet.bet_result = draw ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
 			}
 			else if (ubet.bet_odd_name == OddConst.AwayWin) {
+				var awayWin = (matchItem.home_score < matchItem.away_score);
 				ubet.bet_result = awayWin ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
 			}
 		}
@@ -251,23 +247,27 @@ public class DecideUserBetResultJob : BaseJob {
 			var draw = (matchItem.home_score == matchItem.away_score);
 			var awayWin = (matchItem.home_score < matchItem.away_score);
 
-			if (homeWin || draw) {
-				ubet.bet_result = ubet.bet_odd_name == OddConst.HomeOrDraw ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			if (ubet.bet_odd_name == OddConst.HomeOrDraw) {
+				ubet.bet_result = (homeWin || draw) ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
 			}
-			else if (awayWin || draw) {
-				ubet.bet_result = ubet.bet_odd_name == OddConst.AwayOrDraw ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			else if (ubet.bet_odd_name == OddConst.AwayOrDraw) {
+				ubet.bet_result = (awayWin || draw) ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
 			}
-			else if (homeWin || awayWin) {
-				ubet.bet_result = ubet.bet_odd_name == OddConst.HomeOrAway ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			else if (ubet.bet_odd_name == OddConst.HomeOrAway) {
+				ubet.bet_result = (homeWin || awayWin) ? SportUserBetModelConst.BetResult.Won : SportUserBetModelConst.BetResult.Losed;
+			}
+			else {
+				this.logger.WarningDk(this, $"---> Invalid bet_odd_name: {ubet.bet_odd_name}, pls check it !");
 			}
 		}
 	}
 
 	private class SelectResult {
-		public SportMatchModelConst.TimeStatus match_status { get; set; }
-		public short cur_play_time { get; set; }
-		public short home_score { get; set; }
-		public short away_score { get; set; }
-		public SportUserBetModel ubet { get; set; }
+		internal SportMatchModelConst.TimeStatus match_status;
+		internal short cur_play_time;
+		internal short fulltime_seconds;
+		internal short home_score;
+		internal short away_score;
+		internal SportUserBetModel ubet;
 	}
 }

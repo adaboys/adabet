@@ -14,14 +14,26 @@ public class Sport_ListResponse : ApiSuccessResponse {
 	}
 
 	public class Sport {
+		internal int _tmpOrder;
+
 		[JsonPropertyName(name: "id")]
 		public int id { get; set; }
 
 		[JsonPropertyName(name: "name")]
 		public string name { get; set; }
 
-		[JsonPropertyName(name: "country_count")]
-		public int country_count { get; set; }
+		[JsonPropertyName(name: "leagues")]
+		public List<League> leagues { get; set; } = new();
+	}
+
+	public class League {
+		internal int _tmpSportId;
+
+		[JsonPropertyName(name: "id")]
+		public long id { get; set; }
+
+		[JsonPropertyName(name: "name")]
+		public string name { get; set; }
 	}
 }
 
@@ -391,7 +403,18 @@ public class Sport_GetMatchHistoryResponse : ApiSuccessResponse {
 			public string highest_win { get; set; }
 
 			[JsonPropertyName(name: "performance")]
-			public List<char> performance { get; set; } = new();
+			public List<Performance> performance { get; set; } = new();
+		}
+
+		public class Performance {
+			[JsonPropertyName(name: "s1")]
+			public int s1 { get; set; }
+
+			[JsonPropertyName(name: "s2")]
+			public int s2 { get; set; }
+
+			[JsonPropertyName(name: "time")]
+			public string time { get; set; }
 		}
 	}
 

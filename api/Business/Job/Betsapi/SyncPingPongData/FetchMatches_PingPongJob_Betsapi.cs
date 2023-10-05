@@ -9,38 +9,34 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class FetchTennisLiveMatchesJob_Betsapi : BaseJob {
-	private const string JOB_NAME = nameof(FetchTennisLiveMatchesJob_Betsapi);
+public class FetchMatches_Live_PingPongJob_Betsapi : BaseFetchMatches_PingPongJob_Betsapi<FetchMatches_Live_PingPongJob_Betsapi> {
+	private const string JOB_NAME = nameof(FetchMatches_Live_PingPongJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<FetchTennisLiveMatchesJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<FetchMatches_Live_PingPongJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /1 * * * ?" :
-				"0 /10 * * * ?"
+				"0 /2 * * * ?" : // Should at 30s
+				"0 /5 * * * ?"
 			)
 			.WithDescription(JOB_NAME)
 		);
 	}
 
-	private readonly ILogger<FetchTennisLiveMatchesJob_Betsapi> logger;
-	private readonly BetsapiRepo betsapiRepo;
-
-	public FetchTennisLiveMatchesJob_Betsapi(
+	public FetchMatches_Live_PingPongJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<FetchTennisLiveMatchesJob_Betsapi> logger,
+		ILogger<FetchMatches_Live_PingPongJob_Betsapi> logger,
+		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
-		this.betsapiRepo = betsapiRepo;
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
 	}
 
-	/// Override
+	/// It consumes 1 request per call.
 	public override async Task Run(IJobExecutionContext context) {
 		// Onetime fetch
-		var apiResult = await this.betsapiRepo.FetchInplayMatches<Betsapi_TennisInplayMatchesData>(MstSportModelConst.Id_Tennis_betsapi);
+		var apiResult = await this.betsapiRepo.FetchInplayMatches<Betsapi_PingPongMatchesData>(MstSportModelConst.Id_PingPong_betsapi);
 		if (apiResult is null || apiResult.failed) {
 			return;
 		}
@@ -52,138 +48,71 @@ public class FetchTennisLiveMatchesJob_Betsapi : BaseJob {
 
 			// Register new match with apiMatch info
 			if (sysMatches.Length == 0) {
-				sysMatches = new SportMatchModel[] { await this._RegisterNewMatch(MstSportModelConst.Id_Tennis, apiMatch) };
+				sysMatches = new SportMatchModel[] {
+					await this.RegisterNewMatchAsync(
+						sport_id: MstSportModelConst.Id_PingPong,
+						apiMatch: apiMatch,
+						timeStatus: SportMatchModelConst.TimeStatus.InPlay
+					)
+				};
 			}
 
 			// Update matches info: scores, timer, ...
 			foreach (var sysMatch in sysMatches) {
-				// Current point (point will make score when touch to 40 or Ace) in each set
-				sysMatch.points = apiMatch.points;
-				sysMatch.playing_indicator = apiMatch.playing_indicator;
-
-				// Scores, for eg,. "7-6,5-7,2-3"
+				// Scores, for eg,. "7-6"
 				if (apiMatch.ss != null) {
-					sysMatch.scores = apiMatch.ss;
-
 					// Current score
 					var scores = (apiMatch.ss ?? string.Empty).Split(',');
+
 					if (scores.Length > 0) {
-						var curScores = scores.Last().Split('-');
-						if (curScores.Length == 2) {
-							sysMatch.home_score = curScores[0].ParseShortDk();
-							sysMatch.away_score = curScores[1].ParseShortDk();
+						var curScore = scores.Last().Split('-');
+
+						if (curScore.Length == 2) {
+							sysMatch.home_score = curScore[0].ParseShortDk();
+							sysMatch.away_score = curScore[1].ParseShortDk();
 						}
 					}
 				}
+
+				// Scores upToNow
+				//fixme use scores instead of ss (but it is object for now, so it is hard to parse all elems)
+				sysMatch.scores = apiMatch.ss;
 			}
 		}
 
 		// Save all matches
 		await this.dbContext.SaveChangesAsync();
 	}
-
-	private async Task<SportMatchModel> _RegisterNewMatch(int sport_id, Betsapi_TennisInplayMatchesData.Result apiMatch) {
-		var targetLeague = await this.dbContext.sportLeagues.FirstOrDefaultAsync(m =>
-			m.ref_betsapi_league_id == apiMatch.league.id
-		);
-		var homeTeam = await this.dbContext.sportTeams.FirstOrDefaultAsync(m =>
-			m.ref_betsapi_home_team_id == apiMatch.home.id
-		);
-		var awayTeam = await this.dbContext.sportTeams.FirstOrDefaultAsync(m =>
-			m.ref_betsapi_away_team_id == apiMatch.away.id
-		);
-
-		// Save league and Get id
-		if (targetLeague is null) {
-			targetLeague = new() {
-				sport_id = sport_id,
-				name = apiMatch.league.name
-			};
-			this.dbContext.sportLeagues.Attach(targetLeague);
-			await this.dbContext.SaveChangesAsync();
-		}
-
-		// Save home team and Get id
-		if (homeTeam is null) {
-			var image_id = await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id.ToString());
-
-			homeTeam = new() {
-				name = apiMatch.home.name,
-				flag_image_name = image_id,
-				flag_image_src = SportTeamModelConst.FlagImageSource.Betsapi,
-				ref_betsapi_home_team_id = apiMatch.home.id
-			};
-			this.dbContext.sportTeams.Attach(homeTeam);
-			await this.dbContext.SaveChangesAsync();
-		}
-
-		// Save away team and Get id
-		if (awayTeam is null) {
-			var image_id = await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id.ToString());
-
-			awayTeam = new() {
-				name = apiMatch.away.name,
-				flag_image_name = image_id,
-				flag_image_src = SportTeamModelConst.FlagImageSource.Betsapi,
-				ref_betsapi_away_team_id = apiMatch.away.id
-			};
-			this.dbContext.sportTeams.Attach(awayTeam);
-			await this.dbContext.SaveChangesAsync();
-		}
-
-		// Attach new match
-		var targetMatch = new SportMatchModel() {
-			league_id = targetLeague.id,
-			home_team_id = homeTeam.id,
-			away_team_id = awayTeam.id,
-
-			status = SportMatchModelConst.TimeStatus.InPlay,
-			start_at = DateTimeOffset.FromUnixTimeSeconds(apiMatch.time).UtcDateTime,
-
-			ref_betsapi_match_id = apiMatch.id,
-			ref_betsapi_home_team_id = apiMatch.home.id,
-			ref_betsapi_away_team_id = apiMatch.away.id,
-		};
-
-		this.dbContext.sportMatches.Attach(targetMatch);
-
-		return targetMatch;
-	}
 }
 
 [DisallowConcurrentExecution]
-public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
-	private const string JOB_NAME = nameof(FetchTennisUpcomingMatchesJob_Betsapi);
+public class FetchMatches_Upcoming_PingPongJob_Betsapi : BaseFetchMatches_PingPongJob_Betsapi<FetchMatches_Upcoming_PingPongJob_Betsapi> {
+	private const string JOB_NAME = nameof(FetchMatches_Upcoming_PingPongJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<FetchTennisUpcomingMatchesJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<FetchMatches_Upcoming_PingPongJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 0 2 /1 * ?") // Every day
+			.WithCronSchedule("0 0 3 /1 * ?") // Every day
 			.WithDescription(JOB_NAME)
 		);
 	}
 
-	private readonly ILogger<FetchTennisUpcomingMatchesJob_Betsapi> logger;
-	private readonly BetsapiRepo betsapiRepo;
-
-	public FetchTennisUpcomingMatchesJob_Betsapi(
+	public FetchMatches_Upcoming_PingPongJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<FetchTennisUpcomingMatchesJob_Betsapi> logger,
+		ILogger<FetchMatches_Upcoming_PingPongJob_Betsapi> logger,
+		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
-		this.betsapiRepo = betsapiRepo;
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
 	}
 
-	/// Override
+	/// It consumes about 100 requests. And max 300 requests.
 	public override async Task Run(IJobExecutionContext context) {
 		var now = DateTime.UtcNow;
-		var moreDay = 3;
 
-		// Fetch next 3 days from today
-		while (moreDay-- > 0) {
+		// Fetch 3 days from today, that is: 今日、明日、明後日
+		for (var index = 1; index <= 3; ++index) {
 			// Padding 0: https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 			var day = $"{(now.Year):D4}{(now.Month):D2}{(now.Day):D2}";
 
@@ -195,8 +124,10 @@ public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
 	}
 
 	private async Task _RecursiveFetchUpcomingMatches(string day, int page) {
-		var apiResult = await this.betsapiRepo.FetchUpcomingMatches<Betsapi_TennisUpcomingMatchesData>(MstSportModelConst.Id_Tennis_betsapi, day, page);
+		// Note that, betsapi requires page must <= 100
+		var apiResult = await this.betsapiRepo.FetchUpcomingMatches<Betsapi_PingPongMatchesData>(MstSportModelConst.Id_PingPong_betsapi, day, page);
 		if (apiResult is null || apiResult.failed) {
+			this.logger.ErrorDk(this, "Fetch upcoming pingpong failed. Api response: {@data}", apiResult);
 			return;
 		}
 
@@ -207,7 +138,11 @@ public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
 
 			// Register new match with its info (league, team,...)
 			if (sysMatches.Length == 0) {
-				await this._RegisterNewMatch(MstSportModelConst.Id_Soccer, apiMatch);
+				await this.RegisterNewMatchAsync(
+					sport_id: MstSportModelConst.Id_PingPong,
+					apiMatch: apiMatch,
+					timeStatus: SportMatchModelConst.TimeStatus.Upcoming
+				);
 			}
 		}
 
@@ -219,8 +154,26 @@ public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
 			await this._RecursiveFetchUpcomingMatches(day, apiResult.pager.page + 1);
 		}
 	}
+}
 
-	private async Task<SportMatchModel> _RegisterNewMatch(int sport_id, Betsapi_TennisUpcomingMatchesData.Result apiMatch) {
+public abstract class BaseFetchMatches_PingPongJob_Betsapi<T> : BaseJob<T> where T : class {
+	protected readonly BetsapiRepo betsapiRepo;
+
+	public BaseFetchMatches_PingPongJob_Betsapi(
+		AppDbContext dbContext,
+		IOptionsSnapshot<AppSetting> snapshot,
+		ILogger<T> logger,
+		MailComponent mailComponent,
+		BetsapiRepo betsapiRepo
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
+		this.betsapiRepo = betsapiRepo;
+	}
+
+	protected async Task<SportMatchModel> RegisterNewMatchAsync(
+		int sport_id,
+		Betsapi_PingPongMatchesData.Result apiMatch,
+		SportMatchModelConst.TimeStatus timeStatus
+	) {
 		var targetLeague = await this.dbContext.sportLeagues.FirstOrDefaultAsync(m =>
 			m.ref_betsapi_league_id == apiMatch.league.id
 		);
@@ -231,17 +184,19 @@ public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
 			m.ref_betsapi_away_team_id == apiMatch.away.id
 		);
 
-		// Save league and Get id
+		// Save league to get id
 		if (targetLeague is null) {
 			targetLeague = new() {
 				sport_id = sport_id,
-				name = apiMatch.league.name
+				name = apiMatch.league.name,
+				ref_betsapi_league_id = apiMatch.league.id,
 			};
 			this.dbContext.sportLeagues.Attach(targetLeague);
 			await this.dbContext.SaveChangesAsync();
 		}
+		++targetLeague.match_count;
 
-		// Save home team and Get id
+		// Save home team to get id
 		if (homeTeam is null) {
 			var image_id = apiMatch.home.image_id == 0 ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id.ToString());
 
@@ -255,7 +210,7 @@ public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
 			await this.dbContext.SaveChangesAsync();
 		}
 
-		// Save away team and Get id
+		// Save away team to get id
 		if (awayTeam is null) {
 			var image_id = apiMatch.away.image_id == 0 ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id.ToString());
 
@@ -275,7 +230,7 @@ public class FetchTennisUpcomingMatchesJob_Betsapi : BaseJob {
 			home_team_id = homeTeam.id,
 			away_team_id = awayTeam.id,
 
-			status = SportMatchModelConst.TimeStatus.Upcoming,
+			status = timeStatus,
 			start_at = DateTimeOffset.FromUnixTimeSeconds(apiMatch.time).UtcDateTime,
 
 			ref_betsapi_match_id = apiMatch.id,

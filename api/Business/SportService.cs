@@ -20,15 +20,38 @@ public class SportService : BaseService {
 	}
 
 	public async Task<ApiResponse> GetSportList() {
+		// Get sport list
 		var sports = await this.dbContext.sports.AsNoTracking()
 			.Select(m => new Sport_ListResponse.Sport {
 				id = m.id,
 				name = m.name,
-				//todo impl it
-				country_count = Random.Shared.Next(100)
+				_tmpOrder = m.order,
+			})
+			.OrderBy(m => m._tmpOrder)
+			.ToArrayAsync()
+		;
+		var id2sport = sports.ToDictionary(m => m.id);
+
+		// Because league list contains Dummy league (=1), we need query active sports
+		// to get valid leagues.
+		var sportIds = sports.Select(m => m.id).ToArray();
+		var leagues = await this.dbContext.sportLeagues.AsNoTracking()
+			.Where(m => sportIds.Contains(m.sport_id))
+			.OrderByDescending(m => m.match_count)
+			.Select(m => new Sport_ListResponse.League {
+				id = m.id,
+				name = m.name,
+				_tmpSportId = m.sport_id,
 			})
 			.ToArrayAsync()
 		;
+		// Get at most 20 leagues on each sport
+		foreach (var league in leagues) {
+			var sportLeagues = id2sport[league._tmpSportId].leagues;
+			if (sportLeagues.Count < 20) {
+				sportLeagues.Add(league);
+			}
+		}
 
 		return new Sport_ListResponse {
 			data = new() {
@@ -37,22 +60,7 @@ public class SportService : BaseService {
 		};
 	}
 
-	public async Task<ApiResponse> GetQuickLinkOfLeagues() {
-		return new Sport_GetQuickLinksResponse {
-			data = new() {
-				links = new Sport_GetQuickLinksResponse.Link[] {
-					new() { name = "World Cup" },
-					new() { name = "Premier League" },
-					new() { name = "LaLiga" },
-					new() { name = "Serie A" },
-					new() { name = "NBA" },
-					new() { name = "Seagame" },
-				}
-			}
-		};
-	}
-
-	public async Task<ApiResponse> GetLiveMatches(Guid? user_id, int sport_id) {
+	public async Task<ApiResponse> GetLiveMatches(Guid? user_id, int sport_id, int league_id) {
 		var query =
 			from _match in this.dbContext.sportMatches
 
@@ -63,6 +71,7 @@ public class SportService : BaseService {
 			from _country in _left_countries.DefaultIfEmpty()
 
 			where _league.sport_id == sport_id
+			where league_id == 0 || _league.id == league_id
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
 			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 
@@ -125,7 +134,7 @@ public class SportService : BaseService {
 		};
 	}
 
-	public async Task<ApiResponse> GetUpcomingMatches(Guid? user_id, int sport_id, int pagePos, int pageSize) {
+	public async Task<ApiResponse> GetUpcomingMatches(Guid? user_id, int sport_id, int league_id, int pagePos, int pageSize) {
 		var query =
 			from _match in this.dbContext.sportMatches
 
@@ -136,6 +145,7 @@ public class SportService : BaseService {
 			from _country in _left_countries.DefaultIfEmpty()
 
 			where _league.sport_id == sport_id
+			where league_id == 0 || _league.id == league_id
 			where _match.status == SportMatchModelConst.TimeStatus.Upcoming
 			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 			where _match.markets != null // Ignore matches that does not ready for betting
@@ -203,7 +213,7 @@ public class SportService : BaseService {
 		};
 	}
 
-	public async Task<ApiResponse> GetHighlightMatches(int sport_id) {
+	public async Task<ApiResponse> GetHighlightMatches(int sport_id, int league_id) {
 		var query =
 			from _match in this.dbContext.sportMatches
 
@@ -214,6 +224,7 @@ public class SportService : BaseService {
 			from _country in _left_countries.DefaultIfEmpty()
 
 			where ((int)_league.sport_id) == sport_id
+			where league_id == 0 || _league.id == league_id
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
 			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 
@@ -266,7 +277,7 @@ public class SportService : BaseService {
 		};
 	}
 
-	public async Task<ApiResponse> GetTopMatches(Guid? user_id, int sport_id) {
+	public async Task<ApiResponse> GetTopMatches(Guid? user_id, int sport_id, int league_id) {
 		var query =
 			from _match in this.dbContext.sportMatches
 
@@ -277,6 +288,7 @@ public class SportService : BaseService {
 			from _country in _left_countries.DefaultIfEmpty()
 
 			where _league.sport_id == sport_id
+			where league_id == 0 || _league.id == league_id
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
 			where _match.lock_mode == SportMatchModelConst.LockMode.Nothing
 
@@ -389,12 +401,6 @@ public class SportService : BaseService {
 			else if (status == SportMatchModelConst.TimeStatus.Upcoming) {
 				nextMatches.homes.Add(homeMatch);
 			}
-
-			//todo Just for debug
-			if (this.appSetting.environment != AppSetting.ENV_PRODUCTION) {
-				lastMatches.homes.Add(homeMatch);
-				nextMatches.homes.Add(homeMatch);
-			}
 		}
 
 		// Build away's last_matches and next_matches
@@ -421,12 +427,6 @@ public class SportService : BaseService {
 				nextMatches.aways.Add(awayMatch);
 			}
 			else if (status == SportMatchModelConst.TimeStatus.Ended) {
-				lastMatches.aways.Add(awayMatch);
-			}
-
-			//todo just for debug
-			if (this.appSetting.environment != AppSetting.ENV_PRODUCTION) {
-				nextMatches.aways.Add(awayMatch);
 				lastMatches.aways.Add(awayMatch);
 			}
 		}
@@ -530,36 +530,22 @@ public class SportService : BaseService {
 			var scores = item.scores.Split('-');
 			// Soccer
 			if (scores.Length == 2) {
-				var s1 = scores[0].ParseIntDk();
-				var s2 = scores[1].ParseIntDk();
-
-				if (s1 == s2) {
-					summary.home.performance.Add('D');
-				}
-				else if (s1 < s2) {
-					summary.home.performance.Add('L');
-				}
-				else {
-					summary.home.performance.Add('W');
-				}
+				summary.home.performance.Add(new() {
+					s1 = scores[0].ParseIntDk(),
+					s2 = scores[1].ParseIntDk(),
+					time = item.time,
+				});
 			}
 		}
 		foreach (var item in lastMatches.aways) {
 			var scores = item.scores.Split('-');
 			// Soccer
 			if (scores.Length == 2) {
-				var s1 = scores[0].ParseIntDk();
-				var s2 = scores[1].ParseIntDk();
-
-				if (s1 == s2) {
-					summary.away.performance.Add('D');
-				}
-				else if (s1 < s2) {
-					summary.away.performance.Add('L');
-				}
-				else {
-					summary.away.performance.Add('W');
-				}
+				summary.home.performance.Add(new() {
+					s1 = scores[0].ParseIntDk(),
+					s2 = scores[1].ParseIntDk(),
+					time = item.time,
+				});
 			}
 		}
 

@@ -9,7 +9,7 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class VerifyPlaceBetPaymentJob : BaseJob {
+public class VerifyPlaceBetPaymentJob : BaseJob<VerifyPlaceBetPaymentJob> {
 	private const string JOB_NAME = nameof(VerifyPlaceBetPaymentJob);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
@@ -21,7 +21,6 @@ public class VerifyPlaceBetPaymentJob : BaseJob {
 		);
 	}
 
-	private readonly ILogger<VerifyPlaceBetPaymentJob> logger;
 	private readonly BlockfrostRepo blockfrostRepo;
 
 	public VerifyPlaceBetPaymentJob(
@@ -30,8 +29,7 @@ public class VerifyPlaceBetPaymentJob : BaseJob {
 		ILogger<VerifyPlaceBetPaymentJob> logger,
 		CardanoNodeRepo cardanoNodeRepo,
 		BlockfrostRepo blockfrostRepo
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger) {
 		this.blockfrostRepo = blockfrostRepo;
 	}
 

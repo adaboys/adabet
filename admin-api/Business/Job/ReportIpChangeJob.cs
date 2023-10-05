@@ -18,7 +18,7 @@ public class ReportIpChangeJob : BaseJob {
 		quartzConfig.ScheduleJob<ReportIpChangeJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /30 * * * ?") // Every 30 minutes
+			.WithCronSchedule("0 /10 * * * ?") // Every 10 minutes
 			.WithDescription(JOB_NAME)
 		);
 	}

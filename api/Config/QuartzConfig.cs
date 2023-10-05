@@ -46,26 +46,46 @@ public static class QuartzConfig {
 		SendPredictionRewardJob.Register(quartzConfig);
 
 		// Soccer
-		FetchSoccerLiveMatchesJob_Betsapi.Register(quartzConfig, appSetting);
-		FetchSoccerUpcomingMatchesJob_Betsapi.Register(quartzConfig, appSetting);
+		FetchLiveMatches_ForSoccerJob_Betsapi.Register(quartzConfig, appSetting);
+		FetchUpcomingMatches_ForSoccerJob_Betsapi.Register(quartzConfig, appSetting);
 
 		UpdateSoccerOdds_LiveJob_Betsapi.Register(quartzConfig, appSetting);
 		UpdateSoccerOdds_UpcomingJob_Betsapi.Register(quartzConfig, appSetting);
 
-		UpdateSoccerMatchStatus_LiveJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateMatchStatus_LiveSoccerJob_Betsapi.Register(quartzConfig, appSetting);
 		UpdateSoccerMatchStatus_UpcomingJob_Betsapi.Register(quartzConfig, appSetting);
 		UpdateSoccerMatchStatus_ComingSoonJob_Betsapi.Register(quartzConfig, appSetting);
 
 		// Tennis
-		FetchTennisLiveMatchesJob_Betsapi.Register(quartzConfig, appSetting);
-		FetchTennisUpcomingMatchesJob_Betsapi.Register(quartzConfig, appSetting);
+		FetchLiveMatches_TennisJob_Betsapi.Register(quartzConfig, appSetting);
+		FetchUpcomingMatches_TennisJob_Betsapi.Register(quartzConfig, appSetting);
 
 		UpdateTennisOdds_LiveJob_Betsapi.Register(quartzConfig, appSetting);
 		UpdateTennisOdds_UpcomingJob_Betsapi.Register(quartzConfig, appSetting);
 
 		UpdateTennisMatchStatus_LiveJob_Betsapi.Register(quartzConfig, appSetting);
 		UpdateTennisMatchStatus_UpcomingJob_Betsapi.Register(quartzConfig, appSetting);
-		UpdateTennisMatchStatus_ComingSoonJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateTennisMatchStatus_TmpPendingJob_Betsapi.Register(quartzConfig, appSetting);
+
+		// PingPong
+		FetchMatches_Live_PingPongJob_Betsapi.Register(quartzConfig, appSetting);
+		FetchMatches_Upcoming_PingPongJob_Betsapi.Register(quartzConfig, appSetting);
+
+		UpdateOdds_Live_PingPongJob_Betsapi.Register(quartzConfig, appSetting);
+		UpdateOdds_Upcoming_PingPongJob_Betsapi.Register(quartzConfig, appSetting);
+
+		UpdateMatchStatus_LiveJob_PingPongBetsapi.Register(quartzConfig, appSetting);
+		UpdateMatchStatus_UpcomingJob_PingPong_Betsapi.Register(quartzConfig, appSetting);
+		UpdateMatchStatus_TmpPendingJob_PingPongBetsapi.Register(quartzConfig, appSetting);
+
+		// Sync user wallet balance
+		SyncUserWalletBalanceJob.Register(quartzConfig);
+
+		// Transaction -> Swap
+		SubmitSwapToChainJob.Register(quartzConfig);
+
+		// Event
+		DeliverEventGiftJob.Register(quartzConfig);
 	}
 }
 

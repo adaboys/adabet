@@ -9,19 +9,18 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class SendPredictionRewardJob : BaseJob {
+public class SendPredictionRewardJob : BaseJob<SendPredictionRewardJob> {
 	private const string JOB_NAME = nameof(SendPredictionRewardJob);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
 		quartzConfig.ScheduleJob<SendPredictionRewardJob>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule("0 /1 * * * ?") // Run every minute
+			.WithCronSchedule("0 /2 * * * ?") // Run every 2 minutes
 			.WithDescription(JOB_NAME)
 		);
 	}
 
-	private readonly ILogger<SendPredictionRewardJob> logger;
 	private readonly CardanoNodeRepo cardanoNodeRepo;
 	private readonly SystemDao systemWalletDao;
 
@@ -36,8 +35,7 @@ public class SendPredictionRewardJob : BaseJob {
 		ILogger<SendPredictionRewardJob> logger,
 		CardanoNodeRepo cardanoNodeRepo,
 		SystemDao systemWalletDao
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger) {
 		this.cardanoNodeRepo = cardanoNodeRepo;
 		this.systemWalletDao = systemWalletDao;
 	}

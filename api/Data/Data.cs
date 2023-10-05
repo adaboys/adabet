@@ -24,4 +24,7 @@ public class ErrCode {
 	public const string not_found_odd = "not_found_odd";
 	public const string odd_changed = "odd_changed";
 	public const string invalid_match = "invalid_match";
+
+	public const string room_full = "room_full";
+	public const string already_registered = "already_registered";
 }

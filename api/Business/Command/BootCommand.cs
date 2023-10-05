@@ -30,9 +30,7 @@ public class BootCommand : BaseService {
 
 	public async Task<ApiResponse> BootProject() {
 		// return await this._BootProject20221129();
-		// return await this._Update20230812();
-
-		return new ApiSuccessResponse("Done boot project !");
+		return await this._Update20230812();
 	}
 
 	private async Task<ApiResponse> _Update20230812() {
@@ -54,7 +52,7 @@ public class BootCommand : BaseService {
 
 		await this.dbContext.SaveChangesAsync();
 
-		return new ApiSuccessResponse();
+		return new ApiSuccessResponse($"Swap address: {createSwapWalletResponse.data.wallet_address}");
 	}
 
 

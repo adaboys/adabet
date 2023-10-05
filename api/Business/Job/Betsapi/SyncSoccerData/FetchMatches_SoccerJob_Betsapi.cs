@@ -9,38 +9,34 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class FetchSoccerLiveMatchesJob_Betsapi : BaseJob {
-	private const string JOB_NAME = nameof(FetchSoccerLiveMatchesJob_Betsapi);
+public class FetchLiveMatches_ForSoccerJob_Betsapi : Base_FetchSoccerMatchesJob_Betsapi<FetchLiveMatches_ForSoccerJob_Betsapi> {
+	private const string JOB_NAME = nameof(FetchLiveMatches_ForSoccerJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<FetchSoccerLiveMatchesJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<FetchLiveMatches_ForSoccerJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /1 * * * ?" :
-				"0 /10 * * * ?"
+				"0 /1 * * * ?" : // Should at 30s
+				"0 /5 * * * ?"
 			)
 			.WithDescription(JOB_NAME)
 		);
 	}
 
-	private readonly ILogger<FetchSoccerLiveMatchesJob_Betsapi> logger;
-	private readonly BetsapiRepo betsapiRepo;
-
-	public FetchSoccerLiveMatchesJob_Betsapi(
+	public FetchLiveMatches_ForSoccerJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<FetchSoccerLiveMatchesJob_Betsapi> logger,
+		ILogger<FetchLiveMatches_ForSoccerJob_Betsapi> logger,
+		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
-		this.betsapiRepo = betsapiRepo;
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
 	}
 
-	/// Override
+	/// It consumes just 1 request per call.
 	public override async Task Run(IJobExecutionContext context) {
 		// Onetime fetch
-		var apiResult = await this.betsapiRepo.FetchInplayMatches<Betsapi_SoccerInplayMatchesData>(MstSportModelConst.Id_Soccer_betsapi);
+		var apiResult = await this.betsapiRepo.FetchInplayMatches<Betsapi_SoccerMatchesData>(MstSportModelConst.Id_Soccer_betsapi);
 		if (apiResult is null || apiResult.failed) {
 			return;
 		}
@@ -52,12 +48,23 @@ public class FetchSoccerLiveMatchesJob_Betsapi : BaseJob {
 
 			// Register new match with apiMatch info
 			if (sysMatches.Length == 0) {
-				sysMatches = new SportMatchModel[] { await this._RegisterNewMatch(MstSportModelConst.Id_Soccer, apiMatch) };
+				var leagueName = apiMatch.league.name;
+				var mySportId = (leagueName != null && leagueName.StartsWithDk("Esoccer")) ?
+					MstSportModelConst.Id_Esoccer :
+					MstSportModelConst.Id_Soccer
+				;
+				sysMatches = new SportMatchModel[] {
+					await this.RegisterNewMatchAsync(
+						sport_id: mySportId,
+						apiMatch: apiMatch,
+						timeStatus: SportMatchModelConst.TimeStatus.InPlay
+					)
+				};
 			}
 
 			// Update matches info
 			foreach (var sysMatch in sysMatches) {
-				// Current play time
+				// Update current play time
 				var timer = apiMatch.timer;
 				if (timer != null) {
 					sysMatch.timer = (short)(timer.tm * 60 + timer.ts);
@@ -65,21 +72,7 @@ public class FetchSoccerLiveMatchesJob_Betsapi : BaseJob {
 					sysMatch.timer_injury = (short)(timer.ta * 60);
 				}
 
-				// Update total timer.
-				// Check esport: Esoccer Battle - 8 mins play
-				var leagueName = apiMatch.league.name;
-				if (leagueName != null && leagueName.StartsWithDk("Esoccer")) {
-					var arr = apiMatch.league.name.Split('-');
-					if (arr.Length >= 2) {
-						arr = arr.Last().Trim().Split(' ');
-						if (arr.Length > 0) {
-							sysMatch.is_esport = true;
-							sysMatch.total_timer = (short)(arr[0].Trim().ParseShortDk() * 60);
-						}
-					}
-				}
-
-				// Current scores
+				// Update current score
 				if (apiMatch.ss != null) {
 					var scores = apiMatch.ss.Split('-');
 					if (scores.Length == 2) {
@@ -93,82 +86,14 @@ public class FetchSoccerLiveMatchesJob_Betsapi : BaseJob {
 		// Save all matches
 		await this.dbContext.SaveChangesAsync();
 	}
-
-	private async Task<SportMatchModel> _RegisterNewMatch(int sport_id, Betsapi_SoccerInplayMatchesData.Result apiMatch) {
-		var targetLeague = await this.dbContext.sportLeagues.FirstOrDefaultAsync(m =>
-			m.ref_betsapi_league_id == apiMatch.league.id
-		);
-		var homeTeam = await this.dbContext.sportTeams.FirstOrDefaultAsync(m =>
-			m.ref_betsapi_home_team_id == apiMatch.home.id
-		);
-		var awayTeam = await this.dbContext.sportTeams.FirstOrDefaultAsync(m =>
-			m.ref_betsapi_away_team_id == apiMatch.away.id
-		);
-
-		// Save league and Get id
-		if (targetLeague is null) {
-			targetLeague = new() {
-				sport_id = sport_id,
-				name = apiMatch.league.name
-			};
-			this.dbContext.sportLeagues.Attach(targetLeague);
-			await this.dbContext.SaveChangesAsync();
-		}
-
-		// Save home team and Get id
-		if (homeTeam is null) {
-			var image_id = await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id);
-
-			homeTeam = new() {
-				name = apiMatch.home.name,
-				flag_image_name = image_id,
-				flag_image_src = SportTeamModelConst.FlagImageSource.Betsapi,
-				ref_betsapi_home_team_id = apiMatch.home.id
-			};
-			this.dbContext.sportTeams.Attach(homeTeam);
-			await this.dbContext.SaveChangesAsync();
-		}
-
-		// Save away team and Get id
-		if (awayTeam is null) {
-			var image_id = await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id);
-
-			awayTeam = new() {
-				name = apiMatch.away.name,
-				flag_image_name = image_id,
-				flag_image_src = SportTeamModelConst.FlagImageSource.Betsapi,
-				ref_betsapi_away_team_id = apiMatch.away.id
-			};
-			this.dbContext.sportTeams.Attach(awayTeam);
-			await this.dbContext.SaveChangesAsync();
-		}
-
-		// Attach new match
-		var targetMatch = new SportMatchModel() {
-			league_id = targetLeague.id,
-			home_team_id = homeTeam.id,
-			away_team_id = awayTeam.id,
-
-			status = SportMatchModelConst.TimeStatus.InPlay,
-			start_at = DateTimeOffset.FromUnixTimeSeconds(apiMatch.time).UtcDateTime,
-
-			ref_betsapi_match_id = apiMatch.id,
-			ref_betsapi_home_team_id = apiMatch.home.id,
-			ref_betsapi_away_team_id = apiMatch.away.id,
-		};
-
-		this.dbContext.sportMatches.Attach(targetMatch);
-
-		return targetMatch;
-	}
 }
 
 [DisallowConcurrentExecution]
-public class FetchSoccerUpcomingMatchesJob_Betsapi : BaseJob {
-	private const string JOB_NAME = nameof(FetchSoccerUpcomingMatchesJob_Betsapi);
+public class FetchUpcomingMatches_ForSoccerJob_Betsapi : Base_FetchSoccerMatchesJob_Betsapi<FetchUpcomingMatches_ForSoccerJob_Betsapi> {
+	private const string JOB_NAME = nameof(FetchUpcomingMatches_ForSoccerJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<FetchSoccerUpcomingMatchesJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<FetchUpcomingMatches_ForSoccerJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule("0 0 1 /1 * ?") // Every day
@@ -176,26 +101,21 @@ public class FetchSoccerUpcomingMatchesJob_Betsapi : BaseJob {
 		);
 	}
 
-	private readonly ILogger<FetchSoccerUpcomingMatchesJob_Betsapi> logger;
-	private readonly BetsapiRepo betsapiRepo;
-
-	public FetchSoccerUpcomingMatchesJob_Betsapi(
+	public FetchUpcomingMatches_ForSoccerJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<FetchSoccerUpcomingMatchesJob_Betsapi> logger,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
-		this.betsapiRepo = betsapiRepo;
+		ILogger<FetchUpcomingMatches_ForSoccerJob_Betsapi> logger,
+		BetsapiRepo betsapiRepo,
+		MailComponent mailComponent
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
 	}
 
-	/// Override
+	/// It consumes about 100 requests. And max 300 requests.
 	public override async Task Run(IJobExecutionContext context) {
 		var now = DateTime.UtcNow;
-		var moreDay = 3;
 
-		// Fetch next 3 days from today
-		while (moreDay-- > 0) {
+		// Fetch 3 days from today, that is: 今日、明日、明後日
+		for (var index = 1; index <= 3; ++index) {
 			// Padding 0: https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 			var day = $"{(now.Year):D4}{(now.Month):D2}{(now.Day):D2}";
 
@@ -207,19 +127,30 @@ public class FetchSoccerUpcomingMatchesJob_Betsapi : BaseJob {
 	}
 
 	private async Task _RecursiveFetchUpcomingMatches(string day, int page) {
-		var apiResult = await this.betsapiRepo.FetchUpcomingMatches<Betsapi_UpcomingMatchesData>(MstSportModelConst.Id_Soccer_betsapi, day, page);
+		// Note that, betsapi requires page must <= 100
+		var apiResult = await this.betsapiRepo.FetchUpcomingMatches<Betsapi_SoccerMatchesData>(MstSportModelConst.Id_Soccer_betsapi, day, page);
 		if (apiResult is null || apiResult.failed) {
+			this.logger.ErrorDk(this, "Fetch upcoming soccer failed. Api response: {@data}", apiResult);
 			return;
 		}
 
 		var apiMatches = apiResult.results;
 
 		foreach (var apiMatch in apiMatches) {
-			var sysMatches = await this.dbContext.sportMatches.Where(m => m.ref_betsapi_match_id == apiMatch.id).ToArrayAsync();
+			var hasSysMatch = await this.dbContext.sportMatches.AnyAsync(m => m.ref_betsapi_match_id == apiMatch.id);
 
 			// Register new match with its info (league, team,...)
-			if (sysMatches.Length == 0) {
-				await this._RegisterNewMatch(MstSportModelConst.Id_Soccer, apiMatch);
+			if (!hasSysMatch) {
+				var leagueName = apiMatch.league.name;
+				var mySportId = (leagueName != null && leagueName.StartsWithDk("Esoccer")) ?
+					MstSportModelConst.Id_Esoccer :
+					MstSportModelConst.Id_Soccer
+				;
+				await this.RegisterNewMatchAsync(
+					sport_id: mySportId,
+					apiMatch: apiMatch,
+					timeStatus: SportMatchModelConst.TimeStatus.InPlay
+				);
 			}
 		}
 
@@ -231,8 +162,26 @@ public class FetchSoccerUpcomingMatchesJob_Betsapi : BaseJob {
 			await this._RecursiveFetchUpcomingMatches(day, apiResult.pager.page + 1);
 		}
 	}
+}
 
-	private async Task<SportMatchModel> _RegisterNewMatch(int sport_id, Betsapi_UpcomingMatchesData.Result apiMatch) {
+public abstract class Base_FetchSoccerMatchesJob_Betsapi<T> : BaseJob<T> where T : class {
+	protected readonly BetsapiRepo betsapiRepo;
+
+	public Base_FetchSoccerMatchesJob_Betsapi(
+		AppDbContext dbContext,
+		IOptionsSnapshot<AppSetting> snapshot,
+		ILogger<T> logger,
+		MailComponent mailComponent,
+		BetsapiRepo betsapiRepo
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
+		this.betsapiRepo = betsapiRepo;
+	}
+
+	protected async Task<SportMatchModel> RegisterNewMatchAsync(
+		int sport_id,
+		Betsapi_SoccerMatchesData.Result apiMatch,
+		SportMatchModelConst.TimeStatus timeStatus
+	) {
 		var targetLeague = await this.dbContext.sportLeagues.FirstOrDefaultAsync(m =>
 			m.ref_betsapi_league_id == apiMatch.league.id
 		);
@@ -247,11 +196,13 @@ public class FetchSoccerUpcomingMatchesJob_Betsapi : BaseJob {
 		if (targetLeague is null) {
 			targetLeague = new() {
 				sport_id = sport_id,
-				name = apiMatch.league.name
+				name = apiMatch.league.name,
+				ref_betsapi_league_id = apiMatch.league.id
 			};
 			this.dbContext.sportLeagues.Attach(targetLeague);
 			await this.dbContext.SaveChangesAsync();
 		}
+		++targetLeague.match_count;
 
 		// Save home team and Get id
 		if (homeTeam is null) {
@@ -287,13 +238,26 @@ public class FetchSoccerUpcomingMatchesJob_Betsapi : BaseJob {
 			home_team_id = homeTeam.id,
 			away_team_id = awayTeam.id,
 
-			status = SportMatchModelConst.TimeStatus.Upcoming,
+			status = timeStatus,
 			start_at = DateTimeOffset.FromUnixTimeSeconds(apiMatch.time).UtcDateTime,
 
 			ref_betsapi_match_id = apiMatch.id,
 			ref_betsapi_home_team_id = apiMatch.home.id,
 			ref_betsapi_away_team_id = apiMatch.away.id,
 		};
+		// Mark if the match is esoccer (Esoccer Battle - 8 mins play).
+		// And calculate total timer for esoccer.
+		if (sport_id == MstSportModelConst.Id_Esoccer) {
+			targetMatch.is_esport = true;
+
+			var name2time = apiMatch.league.name.Split('-');
+			if (name2time.Length >= 2) {
+				var times = name2time.Last().Trim().Split(' ');
+				if (times.Length > 0) {
+					targetMatch.total_timer = (short)(times[0].Trim().ParseShortDk() * 60);
+				}
+			}
+		}
 
 		this.dbContext.sportMatches.Attach(targetMatch);
 

@@ -81,11 +81,6 @@ public class BetsapiRepo : BaseRepo {
 		return await this.httpClient.GetForTypeOrThrowAsync<T>(url);
 	}
 
-	public async Task<T?> FetchMatchDetail_Upcoming<T>(params long[] match_ids) where T : class {
-		var url = MatchApiUrl("/v1/event/view", $"event_id={string.Join(',', match_ids)}");
-		return await this.httpClient.GetForTypeOrThrowAsync<T>(url);
-	}
-
 	/// <param name="page">Max 100</param>
 	public async Task<BetsapiData_MergeHistory?> FetchMatchMergeHistory(long match_id, long since_time, int page) {
 		if (page < 1 || page > 100) {

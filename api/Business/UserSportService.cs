@@ -28,10 +28,12 @@ public class UserSportService : BaseService {
 	public async Task<ApiResponse> PlaceBet(Guid user_id, int sport_id, Sport_PlaceBetPayload payload) {
 		// Validate req-bets (market + odds)
 		// Target on each match -> target on each market -> target on each odd.
-		var (req_totalBetCurrencyAmount, failureResponse) = await this._ValidateBets(sport_id, payload);
-		if (failureResponse != null && failureResponse.failed) {
-			return failureResponse;
+		var validationResult = await this._ValidateRequestBets(sport_id, payload);
+		if (validationResult.response != null && validationResult.response.failed) {
+			return validationResult.response;
 		}
+
+		var totalBetCurrencyAmountOfRequest = validationResult.totalBetCurrencyAmountOfRequest;
 
 		// Since user will bet with internal wallet,
 		// so first, we soft validate user balance.
@@ -58,7 +60,7 @@ public class UserSportService : BaseService {
 			return balanceResponse;
 		}
 		var holdCoinAmount = CardanoHelper.CalcCoinAmountFromAssets(betWithCoin, balanceResponse.data.assets);
-		if (holdCoinAmount < req_totalBetCurrencyAmount) {
+		if (holdCoinAmount < totalBetCurrencyAmountOfRequest) {
 			return new ApiBadRequestResponse("User's balance does not enough to bet") { code = ErrCode.balance_not_enough };
 		}
 
@@ -109,10 +111,12 @@ public class UserSportService : BaseService {
 	public async Task<ApiResponse> RequestPlaceBetViaExtWallet(Guid user_id, int sport_id, RequestBetViaExtWalletPayload payload) {
 		// Validate req-bets (market + odds)
 		// Target on each match -> target on each market -> target on each odd.
-		var (req_totalBetCurrencyAmount, failureResponse) = await this._ValidateBets(sport_id, payload);
-		if (failureResponse != null && failureResponse.failed) {
-			return failureResponse;
+		var validationResult = await this._ValidateRequestBets(sport_id, payload);
+		if (validationResult.response != null && validationResult.response.failed) {
+			return validationResult.response;
 		}
+
+		var totalBetCurrencyAmountOfRequest = validationResult.totalBetCurrencyAmountOfRequest;
 
 		// Cache request
 		var orderCode = Guid.NewGuid().ToStringWithoutHyphen();
@@ -138,7 +142,7 @@ public class UserSportService : BaseService {
 				order_code = orderCode,
 				timeout = ((int)timeout.TotalSeconds),
 				receiver_address = sysGameAddress,
-				total_bet_amount = req_totalBetCurrencyAmount
+				total_bet_amount = totalBetCurrencyAmountOfRequest
 			}
 		};
 	}
@@ -211,8 +215,8 @@ public class UserSportService : BaseService {
 		return new ApiSuccessResponse("Placed bet");
 	}
 
-	private async Task<(decimal, ApiResponse?)> _ValidateBets(int sport_id, Sport_BasePlaceBetPayload payload) {
-		var req_totalBetCurrencyAmount = 0m;
+	private async Task<BetValidationResult> _ValidateRequestBets(int sport_id, Sport_BasePlaceBetPayload payload) {
+		var validationResult = new BetValidationResult();
 
 		// Get target matches
 		var targetMatchIds = payload.bets.Select(m => m.match_id).ToArray();
@@ -235,18 +239,20 @@ public class UserSportService : BaseService {
 		;
 		var matches = await queryMatches.AsNoTracking().ToDictionaryAsync(m => m.match_id);
 		if (matches.Count != payload.bets.Length) {
-			return (req_totalBetCurrencyAmount, new ApiBadRequestResponse("The request contains invalid match status") { code = ErrCode.invalid_match });
+			validationResult.response = new ApiBadRequestResponse("The request contains invalid match status") { code = ErrCode.invalid_match };
+			return validationResult;
 		}
 
 		foreach (var requestBet in payload.bets) {
 			var match = matches.GetValueOrDefault(requestBet.match_id);
 			if (match is null) {
-				return (req_totalBetCurrencyAmount, new ApiBadRequestResponse($"Not found match {requestBet.match_id}") { code = ErrCode.not_found_match });
+				return validationResult.WithResponse(new ApiBadRequestResponse($"Not found match {requestBet.match_id}") { code = ErrCode.not_found_match });
 			}
 			var markets = DkJsons.ToObj<List<Market>>(match.markets) ?? new();
 			var name2market = markets.ToDictionary(m => m.name);
 			if (name2market.Count == 0) {
-				return (req_totalBetCurrencyAmount, new ApiBadRequestResponse($"Market of the match is unavailable for now") { code = ErrCode.market_unavailable });
+				validationResult.response = new ApiBadRequestResponse($"Market of the match is unavailable for now") { code = ErrCode.market_unavailable };
+				return validationResult;
 			}
 
 			// Target on each market.
@@ -254,7 +260,7 @@ public class UserSportService : BaseService {
 			foreach (var requestMarket in requestBet.markets) {
 				var market = name2market.GetValueOrDefault(requestMarket.name);
 				if (market is null) {
-					return (req_totalBetCurrencyAmount, new ApiBadRequestResponse($"Not found market {requestMarket.name}") { code = ErrCode.not_found_market });
+					return validationResult.WithResponse(new ApiBadRequestResponse($"Not found market {requestMarket.name}") { code = ErrCode.not_found_market });
 				}
 
 				// Target on each odd in the market.
@@ -263,21 +269,21 @@ public class UserSportService : BaseService {
 				foreach (var requestOdd in requestMarket.odds) {
 					var odd = name2odd.GetValueOrDefault(requestOdd.name);
 					if (odd is null) {
-						return (req_totalBetCurrencyAmount, new ApiBadRequestResponse($"Not found odd {requestOdd.name}") { code = ErrCode.not_found_odd });
+						return validationResult.WithResponse(new ApiBadRequestResponse($"Not found odd {requestOdd.name}") { code = ErrCode.not_found_odd });
 					}
 					if (odd.suspend) {
-						return (req_totalBetCurrencyAmount, new ApiBadRequestResponse($"Current odd {odd.name} is unavailable for betting"));
+						return validationResult.WithResponse(new ApiBadRequestResponse($"Current odd {odd.name} is unavailable for betting"));
 					}
 					if (odd.value != requestOdd.value) {
-						return (req_totalBetCurrencyAmount, new ApiBadRequestResponse("Odd changed, please reload to try with new bet") { code = ErrCode.odd_changed });
+						return validationResult.WithResponse(new ApiBadRequestResponse("Odd changed, please reload to try with new bet") { code = ErrCode.odd_changed });
 					}
 
-					req_totalBetCurrencyAmount += requestOdd.bet_amount;
+					validationResult.totalBetCurrencyAmountOfRequest += requestOdd.bet_amount;
 				}
 			}
 		}
 
-		return (req_totalBetCurrencyAmount, null);
+		return validationResult;
 	}
 
 	private async Task<ApiResponse> _SubmitBetsToChainAndUpdateTxStatusAsync(List<SportUserBetModel> userBets, MstCurrencyModel betWithCoin) {
@@ -527,5 +533,15 @@ public class UserSportService : BaseService {
 		public Guid user_id { get; set; }
 		public int sport_id { get; set; }
 		public RequestBetViaExtWalletPayload payload { get; set; }
+	}
+
+	private class BetValidationResult {
+		internal decimal totalBetCurrencyAmountOfRequest;
+		internal ApiResponse? response = null;
+
+		public BetValidationResult WithResponse(ApiResponse response) {
+			this.response = response;
+			return this;
+		}
 	}
 }

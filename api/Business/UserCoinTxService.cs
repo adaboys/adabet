@@ -140,8 +140,8 @@ public class UserCoinTxService : BaseService {
 	}
 
 	public async Task<ApiResponse> CalcSwapCoinAmount(int src_coin, int dst_coin, decimal srcAmount) {
-		var srcCoinWeight = await this.dbContext.currencies.AsNoTracking().Where(m => m.id == src_coin).Select(m => m.weight).FirstAsync();
-		var dstCoinWeight = await this.dbContext.currencies.AsNoTracking().Where(m => m.id == dst_coin).Select(m => m.weight).FirstAsync();
+		var srcCoinWeight = await this.dbContext.currencies.Where(m => m.id == src_coin).Select(m => m.weight).FirstAsync();
+		var dstCoinWeight = await this.dbContext.currencies.Where(m => m.id == dst_coin).Select(m => m.weight).FirstAsync();
 
 		return new CalcSwapCoinAmountResponse {
 			data = new() {
@@ -171,9 +171,13 @@ public class UserCoinTxService : BaseService {
 			return new ApiBadRequestResponse("Not found user internal wallet");
 		}
 
-		var receiverAddress = payload.receiver_wallet ?? userWallet.wallet_address;
+		var receiverAddress = userWallet.wallet_address;
+		if (payload.receiver_wallet != null && payload.receiver_wallet.Length > 0) {
+			receiverAddress = payload.receiver_wallet;
+		}
 
-		//todo create cronjob to submit to chain (should check balance before add this)
+		// After save to db, cronjob will schedule submit it to chain.
+		var srcCoinAmount = payload.amount;
 		this.dbContext.coinTxs.Attach(new() {
 			action_type = CoinTxModelConst.ActionType.Swap,
 			tx_status = CoinTxModelConst.TxStatus.RequestSubmitToChain,
@@ -186,15 +190,18 @@ public class UserCoinTxService : BaseService {
 			receiver_address = receiverAddress, // Can receive at external wallet
 			fee_payer_address = userWallet.wallet_address, // User need pay the fee
 
-			forward_currency_id = payload.src_coin,
-			forward_currency_amount = payload.amount,
+			// Conversion equation: src_coin * src_weight = dst_coin * dst_weight
+			// Seller ---> dst_coin ---> Buyer
+			forward_currency_id = payload.dst_coin,
+			forward_currency_amount = srcCoinAmount * srcCoin.weight / dstCoin.weight,
 
-			backward_currency_id = payload.dst_coin,
-			backward_currency_amount = payload.amount * dstCoin.weight / srcCoin.weight
+			// Buyer ---> src_coin ---> Seller
+			backward_currency_id = payload.src_coin,
+			backward_currency_amount = srcCoinAmount
 		});
 
 		await this.dbContext.SaveChangesAsync();
 
-		return new ApiSuccessResponse("Pls wait a while until we submit to chain");
+		return new ApiSuccessResponse("Your swap order will be scheduled to submit to chain soon");
 	}
 }

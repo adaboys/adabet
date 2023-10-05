@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using RedLockNet;
 using Tool.Compet.Core;
 using Tool.Compet.EntityFrameworkCore;
+using Tool.Compet.Json;
 
 /// Raw query with interpolated: https://docs.microsoft.com/en-us/ef/core/querying/raw-sql
 public class UserService : BaseService {
@@ -96,37 +97,6 @@ public class UserService : BaseService {
 				vip_level = 1,
 				cur_vip_point = 100,
 				next_vip_point = 200,
-			}
-		};
-	}
-
-	public async Task<ApiResponse> GetUserBalance(Guid userId) {
-		var query =
-			from _user in this.dbContext.users
-			join _wallet in this.dbContext.userWallets on _user.id equals _wallet.user_id
-
-			where _user.id == userId && _wallet.wallet_type == UserWalletModelConst.WalletType.Internal
-
-			select new {
-				_wallet_address = _wallet.wallet_address,
-			}
-		;
-		var result = await query.FirstOrDefaultAsync();
-		if (result is null) {
-			return new ApiBadRequestResponse("No user/wallet");
-		}
-
-		// Query balance from internal wallet
-		var ada_balance = 0m;
-
-		var assetsResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(result._wallet_address);
-		if (assetsResponse.succeed) {
-			ada_balance = CardanoHelper.CalcTotalAdaFromAssets(assetsResponse.data.assets);
-		}
-
-		return new GetUserBalanceResponse {
-			data = new() {
-				ada_balance = ada_balance,
 			}
 		};
 	}
@@ -329,16 +299,20 @@ public class UserService : BaseService {
 
 			join _wallet in this.dbContext.userWallets on _user.id equals _wallet.user_id
 
+			where _wallet.wallet_type == UserWalletModelConst.WalletType.Internal
+
 			select new GetUserListResponse.User {
 				id = _user.id,
 				name = _user.name,
 				player = _user.player_name,
 				role = (int)_user.role,
-				wallet = _wallet.wallet_address,
 				status = (int)_user.status,
 				login_locked_until = _user.login_locked_until,
 				created_at = _user.created_at,
 				last_login = _user.last_login_at,
+
+				wallet_address = _wallet.wallet_address,
+				wallet_balance = _wallet.balance == null ? null : DkJsons.ToObj<List<GetUserListResponse.UserWalletBalance>>(_wallet.balance),
 			}
 		;
 
@@ -365,20 +339,20 @@ public class UserService : BaseService {
 			query = query.Where(m =>
 				(m.name != null && m.name.Contains(keyword)) ||
 				m.player.Contains(keyword) ||
-				m.wallet.Contains(keyword)
+				m.wallet_address.Contains(keyword)
 			);
 		}
 
 		var pagedResult = await query.AsNoTracking().PaginateDk(pagePos, pageSize);
-		var users = pagedResult.items;
+		var result = pagedResult.items;
 
-		foreach (var user in users) {
-			var balanceResponse = await this.cardanoNodeRepo.GetMergedAssetsAsync(user.wallet);
-			if (balanceResponse.succeed) {
-				user.balance.Add(new() {
-					coin = MstCurrencyModelConst.NAME_ADA,
-					amount = CardanoHelper.CalcTotalAdaFromAssets(balanceResponse.data.assets)
-				});
+		// Response coin name
+		var coins = await this.dbContext.currencies.AsNoTracking().Select(m => new { m.id, m.name }).ToDictionaryAsync(m => m.id);
+		foreach (var item in result) {
+			if (item.wallet_balance != null) {
+				foreach (var balance in item.wallet_balance) {
+					balance.coin_name = coins[balance.coin_id].name;
+				}
 			}
 		}
 
@@ -387,7 +361,7 @@ public class UserService : BaseService {
 				page_pos = pagedResult.pagePos,
 				page_count = pagedResult.pageCount,
 				total_item_count = pagedResult.totalItemCount,
-				users = users
+				users = result
 			}
 		};
 	}

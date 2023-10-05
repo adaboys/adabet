@@ -9,7 +9,7 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class SendRewardToWinnerJob : BaseJob {
+public class SendRewardToWinnerJob : BaseJob<DecideUserBetResultJob> {
 	private const string JOB_NAME = nameof(SendRewardToWinnerJob);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
@@ -21,18 +21,17 @@ public class SendRewardToWinnerJob : BaseJob {
 		);
 	}
 
-	private readonly ILogger<SendRewardToWinnerJob> logger;
 	private readonly CardanoNodeRepo cardanoNodeRepo;
 	private readonly SystemDao systemDao;
 
 	public SendRewardToWinnerJob(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<SendRewardToWinnerJob> logger,
+		ILogger<DecideUserBetResultJob> logger,
+		MailComponent mailComponent,
 		CardanoNodeRepo cardanoNodeRepo,
 		SystemDao systemDao
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
 		this.cardanoNodeRepo = cardanoNodeRepo;
 		this.systemDao = systemDao;
 	}

@@ -31,7 +31,6 @@ public class CurrencyService : BaseService {
 
 				id = m.id,
 				name = m.name,
-				limit_bet = Random.Shared.Next(800, 1000), //todo impl it
 			})
 			.ToArrayAsync()
 		;

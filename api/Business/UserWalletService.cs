@@ -186,7 +186,8 @@ public class UserWalletService : BaseService {
 					item.coins.Add(new() {
 						id = coin.id,
 						name = coin.name,
-						amount = CardanoHelper.CalcCoinAmountFromAssets(coin, assetsResponse.data.assets)
+						amount = CardanoHelper.CalcCoinAmountFromAssets(coin, assetsResponse.data.assets),
+						decimals = coin.decimals,
 					});
 				}
 			}
@@ -233,7 +234,8 @@ public class UserWalletService : BaseService {
 					item.coins.Add(new() {
 						id = coin.id,
 						name = coin.name,
-						amount = CardanoHelper.CalcCoinAmountFromAssets(coin, assetsResponse.data.assets)
+						amount = CardanoHelper.CalcCoinAmountFromAssets(coin, assetsResponse.data.assets),
+						decimals = coin.decimals
 					});
 				}
 			}

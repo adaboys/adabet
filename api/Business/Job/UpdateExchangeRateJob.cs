@@ -10,7 +10,7 @@ using Tool.Compet.Core;
 /// Update exchange rate from world to our system.
 /// Coin API: Free 100 daily requests.
 [DisallowConcurrentExecution]
-public class UpdateExchangeRateJob : BaseJob {
+public class UpdateExchangeRateJob : BaseJob<UpdateExchangeRateJob> {
 	private const string JOB_NAME = nameof(UpdateExchangeRateJob);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig) {
@@ -23,7 +23,6 @@ public class UpdateExchangeRateJob : BaseJob {
 		// );
 	}
 
-	private readonly ILogger<UpdateExchangeRateJob> logger;
 	private readonly ExchangeRateRepo exchangeRateRepo;
 
 	public UpdateExchangeRateJob(
@@ -31,8 +30,7 @@ public class UpdateExchangeRateJob : BaseJob {
 		IOptionsSnapshot<AppSetting> snapshot,
 		ILogger<UpdateExchangeRateJob> logger,
 		ExchangeRateRepo exchangeRateRepo
-	) : base(dbContext, snapshot) {
-		this.logger = logger;
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger) {
 		this.exchangeRateRepo = exchangeRateRepo;
 	}
 

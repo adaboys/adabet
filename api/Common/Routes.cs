@@ -43,7 +43,6 @@ public partial class Routes {
 
 	/// [Sport]
 	public const string sports = "sports"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
-	public const string sport_league_quick_links = "sport/{sport_id}/league/quick_links"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_matches_live = "sport/{sport_id}/matches/live"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_matches_upcoming = "sport/{sport_id}/matches/upcoming"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
 	public const string sport_matches_highlight = "sport/{sport_id}/matches/highlight"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 5}}
@@ -69,4 +68,8 @@ public partial class Routes {
 	public const string all_tx_history = "coin/tx/all_history"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 40}}
 	public const string coin_swap_calc_amount = "coin/swap/calc_amount"; // {"methods":["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}, "cache": {"timeout": 30}}
 	public const string coin_swap = "coin/swap"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+
+	/// [NewUserRegisterEvent]
+	public const string event_register = "event/{event_name}/register"; // {"methods": ["POST"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
+	public const string event_applicants = "event/{event_name}/applicants"; // {"methods": ["GET"], "rate_limit": {"period": 1.0, "period_timespan": 2.0, "limit": 5}}
 }
