@@ -9,11 +9,11 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class UpdateOdds_Live_PingPongJob_Betsapi : Base_UpdateOdds_PingPongJob_Betsapi<UpdateOdds_Live_PingPongJob_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateOdds_Live_PingPongJob_Betsapi);
+public class UpdateOdds_PingPongJob_Betsapi : BaseJob<UpdateOdds_PingPongJob_Betsapi> {
+	private const string JOB_NAME = nameof(UpdateOdds_PingPongJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateOdds_Live_PingPongJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<UpdateOdds_PingPongJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
@@ -24,19 +24,22 @@ public class UpdateOdds_Live_PingPongJob_Betsapi : Base_UpdateOdds_PingPongJob_B
 		);
 	}
 
-	public UpdateOdds_Live_PingPongJob_Betsapi(
+	protected readonly BetsapiRepo betsapiRepo;
+
+	public UpdateOdds_PingPongJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateOdds_Live_PingPongJob_Betsapi> logger,
+		ILogger<UpdateOdds_PingPongJob_Betsapi> logger,
 		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
+		this.betsapiRepo = betsapiRepo;
 	}
 
 	/// It consumes at most 300 requests.
 	public override async Task Run(IJobExecutionContext context) {
 		// We prior to matches that has long time from previous updated
-		var query =
+		var queryLiveMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
@@ -51,41 +54,10 @@ public class UpdateOdds_Live_PingPongJob_Betsapi : Base_UpdateOdds_PingPongJob_B
 				_match
 			}
 		;
-		var sysMatches = await query.Select(m => m._match).Take(300).ToArrayAsync();
+		var liveMatches = await queryLiveMatches.Select(m => m._match).Take(300).ToArrayAsync();
 
-		await this.UpdateMatchOddsAsync(sysMatches);
-	}
-}
-
-/// Upcoming
-[DisallowConcurrentExecution]
-public class UpdateOdds_Upcoming_PingPongJob_Betsapi : Base_UpdateOdds_PingPongJob_Betsapi<UpdateOdds_Upcoming_PingPongJob_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateOdds_Upcoming_PingPongJob_Betsapi);
-
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateOdds_Upcoming_PingPongJob_Betsapi>(trigger => trigger
-			.WithIdentity(JOB_NAME)
-			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /2 * * * ?" : // Should at 30s
-				"0 /5 * * * ?"
-			)
-			.WithDescription(JOB_NAME)
-		);
-	}
-
-	public UpdateOdds_Upcoming_PingPongJob_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateOdds_Upcoming_PingPongJob_Betsapi> logger,
-		MailComponent mailComponent,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
-	}
-
-	/// It consumes at most 30 requests.
-	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get upcoming matches
+		var queryUpcomingMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
@@ -100,27 +72,18 @@ public class UpdateOdds_Upcoming_PingPongJob_Betsapi : Base_UpdateOdds_PingPongJ
 				_match
 			}
 		;
-		var sysMatches = await query.Select(m => m._match).Take(30).ToArrayAsync();
+		var upcomingMatches = await queryUpcomingMatches.Select(m => m._match).Take(30).ToArrayAsync();
 
-		await this.UpdateMatchOddsAsync(sysMatches);
-	}
-}
+		// Merge matches and sync
+		var sysMatches = new List<SportMatchModel>(100);
+		sysMatches.AddRange(liveMatches);
+		sysMatches.AddRange(upcomingMatches);
 
-public abstract class Base_UpdateOdds_PingPongJob_Betsapi<T> : BaseJob<T> where T : class {
-	protected readonly BetsapiRepo betsapiRepo;
-
-	public Base_UpdateOdds_PingPongJob_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<T> logger,
-		MailComponent mailComponent,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
-		this.betsapiRepo = betsapiRepo;
+		await this._UpdateMatchOddsAsync(sysMatches);
 	}
 
-	protected async Task UpdateMatchOddsAsync(SportMatchModel[] sysMatches) {
-		if (sysMatches.Length == 0) {
+	protected async Task _UpdateMatchOddsAsync(List<SportMatchModel> sysMatches) {
+		if (sysMatches.Count == 0) {
 			return;
 		}
 

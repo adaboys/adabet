@@ -184,7 +184,7 @@ public class BetsapiData_TennisMatchDetail {
 	public class Result {
 		public long id { get; set; }
 		public string sport_id { get; set; }
-		public string time { get; set; }
+		public long time { get; set; }
 		public int time_status { get; set; }
 		public League league { get; set; }
 		public Home home { get; set; }
@@ -385,5 +385,186 @@ public class BetsapiData_PingPongMatchDetail {
 		public string country { get; set; }
 		public object capacity { get; set; }
 		public object googlecoords { get; set; }
+	}
+}
+
+public class BetsapiData_BasketballMatchDetail {
+	public int success { get; set; }
+	public List<Result> results { get; set; }
+
+	[JsonIgnore]
+	public bool succeed => this.success == 1;
+	[JsonIgnore]
+	public bool failed => this.success != 1;
+
+	public class _Score {
+		public string home { get; set; }
+		public string away { get; set; }
+	}
+
+	public class Away {
+		public string id { get; set; }
+		public string name { get; set; }
+		public string image_id { get; set; }
+		public string cc { get; set; }
+	}
+
+	public class Extra {
+		public string numberofperiods { get; set; }
+		public string periodlength { get; set; }
+		public int length { get; set; }
+	}
+
+	public class Home {
+		public string id { get; set; }
+		public string name { get; set; }
+		public string image_id { get; set; }
+		public string cc { get; set; }
+	}
+
+	public class League {
+		public string id { get; set; }
+		public string name { get; set; }
+		public string cc { get; set; }
+	}
+
+	public class OAway {
+		public string id { get; set; }
+		public string name { get; set; }
+		public string image_id { get; set; }
+		public object cc { get; set; }
+	}
+
+	public class OHome {
+		public string id { get; set; }
+		public string name { get; set; }
+		public string image_id { get; set; }
+		public object cc { get; set; }
+	}
+
+	public class Result {
+		public long id { get; set; }
+		public string sport_id { get; set; }
+		public long time { get; set; }
+		public int time_status { get; set; }
+		public League league { get; set; }
+		public Home home { get; set; }
+		public OHome o_home { get; set; }
+		public Away away { get; set; }
+		public OAway o_away { get; set; }
+		public string ss { get; set; }
+		public Scores scores { get; set; }
+		public Stats stats { get; set; }
+		public Extra extra { get; set; }
+		public int has_lineup { get; set; }
+		public string inplay_created_at { get; set; }
+		public string inplay_updated_at { get; set; }
+		public string confirmed_at { get; set; }
+		public string bet365_id { get; set; }
+	}
+
+	public class Scores {
+		[JsonPropertyName("1")]
+		public _Score? _1 { get; set; }
+
+		[JsonPropertyName("2")]
+		public _Score? _2 { get; set; }
+
+		[JsonPropertyName("3")]
+		public _Score? _3 { get; set; }
+
+		[JsonPropertyName("4")]
+		public _Score? _4 { get; set; }
+
+		[JsonPropertyName("5")]
+		public _Score? _5 { get; set; }
+
+		[JsonPropertyName("7")]
+		public _Score? _7 { get; set; }
+	}
+
+	public class Stats {
+		[JsonPropertyName("2points")]
+		public List<string> _2points { get; set; }
+
+		[JsonPropertyName("3points")]
+		public List<string> _3points { get; set; }
+		public List<string> fouls { get; set; }
+		public List<string> free_throws { get; set; }
+		public List<string> free_throws_rate { get; set; }
+		public List<string> time_outs { get; set; }
+	}
+}
+
+public class BetsapiData_VolleyballMatchDetail {
+	public int success { get; set; }
+	public List<Result> results { get; set; }
+
+	[JsonIgnore]
+	public bool succeed => this.success == 1;
+	[JsonIgnore]
+	public bool failed => this.success != 1;
+
+	public class _Score {
+		public string home { get; set; }
+		public string away { get; set; }
+	}
+
+	public class Away {
+		public string id { get; set; }
+		public string name { get; set; }
+		public string image_id { get; set; }
+		public string cc { get; set; }
+	}
+
+	public class Event {
+		public string id { get; set; }
+		public string text { get; set; }
+	}
+
+	public class Home {
+		public string id { get; set; }
+		public string name { get; set; }
+		public object image_id { get; set; }
+		public object cc { get; set; }
+	}
+
+	public class League {
+		public string id { get; set; }
+		public string name { get; set; }
+		public string cc { get; set; }
+	}
+
+	public class Result {
+		public long id { get; set; }
+		public string sport_id { get; set; }
+		public long time { get; set; }
+		public int time_status { get; set; }
+		public League league { get; set; }
+		public Home home { get; set; }
+		public Away away { get; set; }
+		public string ss { get; set; }
+		public Scores scores { get; set; }
+		public Stats stats { get; set; }
+		public List<Event> events { get; set; }
+		public string inplay_created_at { get; set; }
+		public string inplay_updated_at { get; set; }
+		public string bet365_id { get; set; }
+	}
+
+	public class Scores {
+		[JsonPropertyName("1")]
+		public _Score _1 { get; set; }
+
+		[JsonPropertyName("2")]
+		public _Score _2 { get; set; }
+
+		[JsonPropertyName("3")]
+		public _Score _3 { get; set; }
+	}
+
+	public class Stats {
+		public List<string> points_won_on_serve { get; set; }
+		public List<string> longest_streak { get; set; }
 	}
 }

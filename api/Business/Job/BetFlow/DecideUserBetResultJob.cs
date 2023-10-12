@@ -264,8 +264,8 @@ public class DecideUserBetResultJob : BaseJob<DecideUserBetResultJob> {
 
 	private class SelectResult {
 		internal SportMatchModelConst.TimeStatus match_status;
-		internal short cur_play_time;
-		internal short fulltime_seconds;
+		internal int cur_play_time;
+		internal int fulltime_seconds;
 		internal short home_score;
 		internal short away_score;
 		internal SportUserBetModel ubet;

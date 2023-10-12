@@ -10,11 +10,11 @@ using Tool.Compet.Json;
 using Tool.Compet.Log;
 
 [DisallowConcurrentExecution]
-public class UpdateTennisMatchStatus_LiveJob_Betsapi : Base_UpdateTennisMatchStatusJob_Betsapi<UpdateTennisMatchStatus_LiveJob_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateTennisMatchStatus_LiveJob_Betsapi);
+public class UpdateStatus_VolleyballJob_Betsapi : BaseJob<UpdateStatus_VolleyballJob_Betsapi> {
+	private const string JOB_NAME = nameof(UpdateStatus_VolleyballJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateTennisMatchStatus_LiveJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<UpdateStatus_VolleyballJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
@@ -25,23 +25,27 @@ public class UpdateTennisMatchStatus_LiveJob_Betsapi : Base_UpdateTennisMatchSta
 		);
 	}
 
-	public UpdateTennisMatchStatus_LiveJob_Betsapi(
+	protected readonly BetsapiRepo betsapiRepo;
+
+	public UpdateStatus_VolleyballJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateTennisMatchStatus_LiveJob_Betsapi> logger,
+		ILogger<UpdateStatus_VolleyballJob_Betsapi> logger,
 		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot, logger, mailComponent: mailComponent, betsapiRepo) {
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
+		this.betsapiRepo = betsapiRepo;
 	}
 
 	/// It consumes at most 30 requests.
 	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get live matches
+		var queryLiveMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
 
-			where _league.sport_id == MstSportModelConst.Id_Tennis
+			where _league.sport_id == MstSportModelConst.Id_Volleyball
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
 
 			// We prior to matches that has long time from previous updated
@@ -51,45 +55,15 @@ public class UpdateTennisMatchStatus_LiveJob_Betsapi : Base_UpdateTennisMatchSta
 				_match
 			}
 		;
-		var reqSysMatches = await query.Select(m => m._match).Take(300).ToArrayAsync();
+		var liveMatches = await queryLiveMatches.Select(m => m._match).Take(300).ToArrayAsync();
 
-		await this.UpdateMatchesInfoPerTenAsync(reqSysMatches);
-	}
-}
-
-[DisallowConcurrentExecution]
-public class UpdateTennisMatchStatus_TmpPendingJob_Betsapi : Base_UpdateTennisMatchStatusJob_Betsapi<UpdateTennisMatchStatus_TmpPendingJob_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateTennisMatchStatus_TmpPendingJob_Betsapi);
-
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateTennisMatchStatus_TmpPendingJob_Betsapi>(trigger => trigger
-			.WithIdentity(JOB_NAME)
-			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /1 * * * ?" : // Should at 30s
-				"0 /5 * * * ?"
-			)
-			.WithDescription(JOB_NAME)
-		);
-	}
-
-	public UpdateTennisMatchStatus_TmpPendingJob_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateTennisMatchStatus_TmpPendingJob_Betsapi> logger,
-		MailComponent mailComponent,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
-	}
-
-	/// It consumes at most 10 requests.
-	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get coming soon matches
+		var queryPendingMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
 
-			where _league.sport_id == MstSportModelConst.Id_Tennis
+			where _league.sport_id == MstSportModelConst.Id_Volleyball
 			where SportMatchModelConst.TmpPendingMatchStatusList.Contains(_match.status)
 
 			// We prior to matches that has long time from previous updated
@@ -99,45 +73,15 @@ public class UpdateTennisMatchStatus_TmpPendingJob_Betsapi : Base_UpdateTennisMa
 				_match
 			}
 		;
-		var comingSoonMatches = await query.Select(m => m._match).Take(100).ToArrayAsync();
+		var pendingMatches = await queryPendingMatches.Select(m => m._match).Take(100).ToArrayAsync();
 
-		await this.UpdateMatchesInfoPerTenAsync(comingSoonMatches);
-	}
-}
-
-[DisallowConcurrentExecution]
-public class UpdateTennisMatchStatus_UpcomingJob_Betsapi : Base_UpdateTennisMatchStatusJob_Betsapi<UpdateTennisMatchStatus_UpcomingJob_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateTennisMatchStatus_UpcomingJob_Betsapi);
-
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateTennisMatchStatus_UpcomingJob_Betsapi>(trigger => trigger
-			.WithIdentity(JOB_NAME)
-			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /2 * * * ?" : // Should at 30s
-				"0 /5 * * * ?"
-			)
-			.WithDescription(JOB_NAME)
-		);
-	}
-
-	public UpdateTennisMatchStatus_UpcomingJob_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateTennisMatchStatus_UpcomingJob_Betsapi> logger,
-		MailComponent mailComponent,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
-	}
-
-	/// It consumes at most 10 requests.
-	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get upcoming matches
+		var queryUpcomingMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
 
-			where _league.sport_id == MstSportModelConst.Id_Tennis
+			where _league.sport_id == MstSportModelConst.Id_Volleyball
 			where _match.status == SportMatchModelConst.TimeStatus.Upcoming
 
 			// 開始時間が先の試合のステータスを先に更新する
@@ -147,27 +91,19 @@ public class UpdateTennisMatchStatus_UpcomingJob_Betsapi : Base_UpdateTennisMatc
 				_match
 			}
 		;
-		var reqSysMatches = await query.Select(m => m._match).Take(100).ToArrayAsync();
+		var upcomingMatches = await queryUpcomingMatches.Select(m => m._match).Take(100).ToArrayAsync();
 
-		await this.UpdateMatchesInfoPerTenAsync(reqSysMatches);
-	}
-}
+		// Merge matches and sync
+		var sysMatches = new List<SportMatchModel>(100);
+		sysMatches.AddRange(liveMatches);
+		sysMatches.AddRange(pendingMatches);
+		sysMatches.AddRange(upcomingMatches);
 
-public abstract class Base_UpdateTennisMatchStatusJob_Betsapi<T> : BaseJob<T> where T : class {
-	protected readonly BetsapiRepo betsapiRepo;
-
-	public Base_UpdateTennisMatchStatusJob_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<T> logger,
-		MailComponent mailComponent,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
-		this.betsapiRepo = betsapiRepo;
+		await this._UpdateMatchesInfoPerTenAsync(sysMatches);
 	}
 
-	protected async Task UpdateMatchesInfoPerTenAsync(SportMatchModel[] reqSysMatches) {
-		if (reqSysMatches.Count() == 0) {
+	protected async Task _UpdateMatchesInfoPerTenAsync(List<SportMatchModel> sysMatches) {
+		if (sysMatches.Count == 0) {
 			return;
 		}
 
@@ -179,7 +115,7 @@ public abstract class Base_UpdateTennisMatchStatusJob_Betsapi<T> : BaseJob<T> wh
 		// Use LinQ will deferrer (lazy) start task. If we call ToArray() or ToList() on deferredTasks,
 		// it causes tasks be executed immediately.
 		// Ref: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-scenarios
-		var deferredTasks = reqSysMatches.Chunk(10).Select(m => _UpdateMatchStatusAsync(m));
+		var deferredTasks = sysMatches.Chunk(10).Select(m => _UpdateMatchStatusAsync(m));
 
 		// Run tasks parallel.
 		// Each task maybe run at different thread, we need take care of concurency when interact with dbContext !
@@ -192,7 +128,7 @@ public abstract class Base_UpdateTennisMatchStatusJob_Betsapi<T> : BaseJob<T> wh
 	private async Task _UpdateMatchStatusAsync(SportMatchModel[] sysMatches) {
 		// Take distinct since matches in system maybe match with a match in betsapi.
 		var reqMatchIds = sysMatches.Select(m => m.ref_betsapi_match_id).Distinct().ToArray();
-		var apiResult = await this.betsapiRepo.FetchMatchDetail<BetsapiData_TennisMatchDetail>(reqMatchIds);
+		var apiResult = await this.betsapiRepo.FetchMatchDetail<BetsapiData_VolleyballMatchDetail>(reqMatchIds);
 
 		if (apiResult is null || apiResult.failed) {
 			this.logger.ErrorDk(this, "API failed, result: {@data}", apiResult);
@@ -223,9 +159,8 @@ public abstract class Base_UpdateTennisMatchStatusJob_Betsapi<T> : BaseJob<T> wh
 			// Update status
 			sysMatch.status = SportMatchModelConst.ConvertStatusFromBetsapi(apiMatch.time_status);
 
-			// Current point (point will make score when touch to 40 or Ace) in each set
-			sysMatch.points = apiMatch.points;
-			sysMatch.playing_indicator = apiMatch.playing_indicator;
+			// Update timer
+			sysMatch.timer = ((int)DateTimeOffset.FromUnixTimeSeconds(apiMatch.time).UtcDateTime.Subtract(sysMatch.start_at).TotalSeconds);
 
 			// Current score (last of ss), for eg,. "7-6,5-7,2-3"
 			if (apiMatch.ss != null) {
@@ -242,7 +177,7 @@ public abstract class Base_UpdateTennisMatchStatusJob_Betsapi<T> : BaseJob<T> wh
 			}
 
 			// Scores up to now
-			// For Tennis, scores upToNow is same with ss.
+			// For Volleyball, scores upToNow is same with ss.
 			sysMatch.scores = apiMatch.ss;
 		}
 	}

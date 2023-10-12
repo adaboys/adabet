@@ -9,11 +9,11 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class UpdateSoccerOdds_LiveJob_Betsapi : Base_UpdateSoccerOddsJob_Betsapi<UpdateSoccerOdds_LiveJob_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateSoccerOdds_LiveJob_Betsapi);
+public class UpdateOdds_SoccerJob_Betsapi : BaseJob<UpdateOdds_SoccerJob_Betsapi> {
+	private const string JOB_NAME = nameof(UpdateOdds_SoccerJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateSoccerOdds_LiveJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<UpdateOdds_SoccerJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
@@ -24,18 +24,22 @@ public class UpdateSoccerOdds_LiveJob_Betsapi : Base_UpdateSoccerOddsJob_Betsapi
 		);
 	}
 
-	public UpdateSoccerOdds_LiveJob_Betsapi(
+	private readonly BetsapiRepo betsapiRepo;
+
+	public UpdateOdds_SoccerJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateSoccerOdds_LiveJob_Betsapi> logger,
+		ILogger<UpdateOdds_SoccerJob_Betsapi> logger,
 		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
+		this.betsapiRepo = betsapiRepo;
 	}
 
 	/// It consumes at most 300 requests.
 	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get live matches
+		var queryLiveMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
@@ -51,41 +55,10 @@ public class UpdateSoccerOdds_LiveJob_Betsapi : Base_UpdateSoccerOddsJob_Betsapi
 				_match
 			}
 		;
-		var sysMatches = await query.Select(m => m._match).Take(300).ToArrayAsync();
+		var liveMatches = await queryLiveMatches.Select(m => m._match).Take(300).ToArrayAsync();
 
-		await this.UpdateMatchOddsAsync(sysMatches);
-	}
-}
-
-/// Upcoming
-[DisallowConcurrentExecution]
-public class UpdateSoccerOdds_UpcomingJob_Betsapi : Base_UpdateSoccerOddsJob_Betsapi<UpdateSoccerOdds_UpcomingJob_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateSoccerOdds_UpcomingJob_Betsapi);
-
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateSoccerOdds_UpcomingJob_Betsapi>(trigger => trigger
-			.WithIdentity(JOB_NAME)
-			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /2 * * * ?" : // Should at 30s
-				"0 /5 * * * ?"
-			)
-			.WithDescription(JOB_NAME)
-		);
-	}
-
-	public UpdateSoccerOdds_UpcomingJob_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateSoccerOdds_UpcomingJob_Betsapi> logger,
-		MailComponent mailComponent,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
-	}
-
-	/// It consumes at most 30 requests.
-	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get upcoming matches
+		var queryUpcomingMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
@@ -101,27 +74,18 @@ public class UpdateSoccerOdds_UpcomingJob_Betsapi : Base_UpdateSoccerOddsJob_Bet
 				_match
 			}
 		;
-		var sysMatches = await query.Select(m => m._match).Take(30).ToArrayAsync();
+		var upcomingMatches = await queryUpcomingMatches.Select(m => m._match).Take(30).ToArrayAsync();
 
-		await this.UpdateMatchOddsAsync(sysMatches);
-	}
-}
+		// Merge matches and sync
+		var sysMatches = new List<SportMatchModel>(100);
+		sysMatches.AddRange(liveMatches);
+		sysMatches.AddRange(upcomingMatches);
 
-public abstract class Base_UpdateSoccerOddsJob_Betsapi<T> : BaseJob<T> where T : class {
-	protected readonly BetsapiRepo betsapiRepo;
-
-	public Base_UpdateSoccerOddsJob_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<T> logger,
-		MailComponent mailComponent,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
-		this.betsapiRepo = betsapiRepo;
+		await this._UpdateMatchOddsAsync(sysMatches);
 	}
 
-	protected async Task UpdateMatchOddsAsync(SportMatchModel[] sysMatches) {
-		if (sysMatches.Length == 0) {
+	protected async Task _UpdateMatchOddsAsync(List<SportMatchModel> sysMatches) {
+		if (sysMatches.Count == 0) {
 			return;
 		}
 

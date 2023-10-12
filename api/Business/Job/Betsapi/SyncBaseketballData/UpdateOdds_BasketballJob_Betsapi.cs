@@ -9,11 +9,11 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class UpdateOdds_TennisJob_Betsapi : BaseJob<UpdateOdds_TennisJob_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateOdds_TennisJob_Betsapi);
+public class UpdateOdds_BasketballJob_Betsapi : BaseJob<UpdateOdds_BasketballJob_Betsapi> {
+	private const string JOB_NAME = nameof(UpdateOdds_BasketballJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateOdds_TennisJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<UpdateOdds_BasketballJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
@@ -26,10 +26,10 @@ public class UpdateOdds_TennisJob_Betsapi : BaseJob<UpdateOdds_TennisJob_Betsapi
 
 	protected readonly BetsapiRepo betsapiRepo;
 
-	public UpdateOdds_TennisJob_Betsapi(
+	public UpdateOdds_BasketballJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateOdds_TennisJob_Betsapi> logger,
+		ILogger<UpdateOdds_BasketballJob_Betsapi> logger,
 		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
 	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
@@ -44,7 +44,7 @@ public class UpdateOdds_TennisJob_Betsapi : BaseJob<UpdateOdds_TennisJob_Betsapi
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
 
-			where _league.sport_id == MstSportModelConst.Id_Tennis
+			where _league.sport_id == MstSportModelConst.Id_Basketball
 			where _match.status == SportMatchModelConst.TimeStatus.InPlay
 
 			// We prior to matches that has long time from previous updated
@@ -62,7 +62,7 @@ public class UpdateOdds_TennisJob_Betsapi : BaseJob<UpdateOdds_TennisJob_Betsapi
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
 
-			where _league.sport_id == MstSportModelConst.Id_Tennis
+			where _league.sport_id == MstSportModelConst.Id_Basketball
 			where _match.status == SportMatchModelConst.TimeStatus.Upcoming
 
 			// We prior to matches that has long time from previous updated
@@ -100,9 +100,9 @@ public class UpdateOdds_TennisJob_Betsapi : BaseJob<UpdateOdds_TennisJob_Betsapi
 	}
 
 	private async Task _UpdateMatchOddAsync(SportMatchModel sysMatch) {
-		var apiResult = await this.betsapiRepo.FetchMatchOddsSummary<Betsapi_TennisOddsSummaryData>(sysMatch.ref_betsapi_match_id);
+		var apiResult = await this.betsapiRepo.FetchMatchOddsSummary<Betsapi_BasketballOddsSummaryData>(sysMatch.ref_betsapi_match_id);
 		if (apiResult is null || apiResult.failed) {
-			this.logger.ErrorDk(this, $"Fetch tennis match odds failed", $"sysMatchId: {sysMatch.id}, apiResult: {apiResult}");
+			this.logger.ErrorDk(this, $"Fetch Basketball match odds failed", $"sysMatchId: {sysMatch.id}, apiResult: {apiResult}");
 
 			// Try remap match id
 			await BetsapiHelper.RemapMatchIdAsync(sysMatch: sysMatch, betsapiRepo: this.betsapiRepo, logger: logger, caller: this);
@@ -126,14 +126,14 @@ public class UpdateOdds_TennisJob_Betsapi : BaseJob<UpdateOdds_TennisJob_Betsapi
 	/// See https://betsapi.com/docs/events/odds.html to get better odd-supported providers.
 	private void _UpdateOdd_MainFullTime(
 		Dictionary<string, Market> name2market,
-		Betsapi_TennisOddsSummaryData apiResult
+		Betsapi_BasketballOddsSummaryData apiResult
 	) {
 		var homeOdd = AppConst.ODD_VALUE_INFINITY;
 		var awayOdd = AppConst.ODD_VALUE_INFINITY;
 		var bookmaker = apiResult.results;
 
 		// Bookmaker at top will result to higher reliable odd and time.
-		var odd_365 = bookmaker.Bet365?.odds?.end?._13_1 ?? bookmaker.Bet365?.odds?.kickoff?._13_1 ?? bookmaker.Bet365?.odds?.start?._13_1;
+		var odd_365 = bookmaker.Bet365?.odds?.end?._18_1 ?? bookmaker.Bet365?.odds?.kickoff?._18_1 ?? bookmaker.Bet365?.odds?.start?._18_1;
 		if (odd_365 != null) {
 			if (odd_365.home_od != null) {
 				homeOdd = Math.Min(homeOdd, odd_365.home_od.ParseDecimalDk());
@@ -143,13 +143,13 @@ public class UpdateOdds_TennisJob_Betsapi : BaseJob<UpdateOdds_TennisJob_Betsapi
 			}
 		}
 
-		var odd_bwin = bookmaker.BWin?.odds?.end?._13_1 ?? bookmaker.BWin?.odds?.kickoff?._13_1 ?? bookmaker.BWin?.odds?.start?._13_1;
-		if (odd_bwin != null) {
-			if (odd_bwin.home_od != null) {
-				homeOdd = Math.Min(homeOdd, odd_bwin.home_od.ParseDecimalDk());
+		var odd_betAtHome = bookmaker.BetAtHome?.odds?.end?._18_1 ?? bookmaker.BetAtHome?.odds?.kickoff?._18_1 ?? bookmaker.BetAtHome?.odds?.start?._18_1;
+		if (odd_betAtHome != null) {
+			if (odd_betAtHome.home_od != null) {
+				homeOdd = Math.Min(homeOdd, odd_betAtHome.home_od.ParseDecimalDk());
 			}
-			if (odd_bwin.away_od != null) {
-				awayOdd = Math.Min(awayOdd, odd_bwin.away_od.ParseDecimalDk());
+			if (odd_betAtHome.away_od != null) {
+				awayOdd = Math.Min(awayOdd, odd_betAtHome.away_od.ParseDecimalDk());
 			}
 		}
 

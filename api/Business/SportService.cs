@@ -86,8 +86,6 @@ public class SportService : BaseService {
 				country = _country.name,
 				league = _league.name,
 
-				is_esport = _match.is_esport,
-
 				team1 = _team1.name,
 				team2 = _team2.name,
 
@@ -160,8 +158,6 @@ public class SportService : BaseService {
 
 				country = _country.name,
 				league = _league.name,
-
-				is_esport = _match.is_esport,
 
 				team1 = _team1.name,
 				team2 = _team2.name,
@@ -239,8 +235,6 @@ public class SportService : BaseService {
 				country = _country.name,
 				league = _league.name,
 
-				is_esport = _match.is_esport,
-
 				team1 = _team1.name,
 				team2 = _team2.name,
 
@@ -302,8 +296,6 @@ public class SportService : BaseService {
 
 				country = _country.name,
 				league = _league.name,
-
-				is_esport = _match.is_esport,
 
 				team1 = _team1.name,
 				team2 = _team2.name,

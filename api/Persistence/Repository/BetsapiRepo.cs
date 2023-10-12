@@ -108,11 +108,7 @@ public class BetsapiRepo : BaseRepo {
 
 	/// Some match does not image but the api still response empty image.
 	/// If the image size < 1.2 KB, then we consider it is empty.
-	public async Task<string?> CalcTeamImageId(string? image_id) {
-		if (image_id is null) {
-			return null;
-		}
-
+	public async Task<string?> CalcTeamImageId(string image_id) {
 		var imageBytes = await this.FetchTeamImage(image_id);
 		if (imageBytes == null || imageBytes.Length < 1200) {
 			return null;

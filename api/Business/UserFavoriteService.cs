@@ -91,8 +91,6 @@ public class UserFavoriteService : BaseService {
 				country = _country.name,
 				league = _league.name,
 
-				is_esport = _match.is_esport,
-
 				status = (int)_match.status,
 
 				team1 = _team1.name,

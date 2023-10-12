@@ -9,11 +9,11 @@ using Tool.Compet.Core;
 using Tool.Compet.Json;
 
 [DisallowConcurrentExecution]
-public class FetchMatches_Live_PingPongJob_Betsapi : BaseFetchMatches_PingPongJob_Betsapi<FetchMatches_Live_PingPongJob_Betsapi> {
-	private const string JOB_NAME = nameof(FetchMatches_Live_PingPongJob_Betsapi);
+public class FetchLiveMatches_PingPongJob_Betsapi : BaseFetchMatches_PingPongJob_Betsapi<FetchLiveMatches_PingPongJob_Betsapi> {
+	private const string JOB_NAME = nameof(FetchLiveMatches_PingPongJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<FetchMatches_Live_PingPongJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<FetchLiveMatches_PingPongJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
@@ -24,10 +24,10 @@ public class FetchMatches_Live_PingPongJob_Betsapi : BaseFetchMatches_PingPongJo
 		);
 	}
 
-	public FetchMatches_Live_PingPongJob_Betsapi(
+	public FetchLiveMatches_PingPongJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<FetchMatches_Live_PingPongJob_Betsapi> logger,
+		ILogger<FetchLiveMatches_PingPongJob_Betsapi> logger,
 		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
 	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
@@ -86,11 +86,11 @@ public class FetchMatches_Live_PingPongJob_Betsapi : BaseFetchMatches_PingPongJo
 }
 
 [DisallowConcurrentExecution]
-public class FetchMatches_Upcoming_PingPongJob_Betsapi : BaseFetchMatches_PingPongJob_Betsapi<FetchMatches_Upcoming_PingPongJob_Betsapi> {
-	private const string JOB_NAME = nameof(FetchMatches_Upcoming_PingPongJob_Betsapi);
+public class FetchUpcomingMatches_PingPongJob_Betsapi : BaseFetchMatches_PingPongJob_Betsapi<FetchUpcomingMatches_PingPongJob_Betsapi> {
+	private const string JOB_NAME = nameof(FetchUpcomingMatches_PingPongJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<FetchMatches_Upcoming_PingPongJob_Betsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<FetchUpcomingMatches_PingPongJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule("0 0 3 /1 * ?") // Every day
@@ -98,10 +98,10 @@ public class FetchMatches_Upcoming_PingPongJob_Betsapi : BaseFetchMatches_PingPo
 		);
 	}
 
-	public FetchMatches_Upcoming_PingPongJob_Betsapi(
+	public FetchUpcomingMatches_PingPongJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<FetchMatches_Upcoming_PingPongJob_Betsapi> logger,
+		ILogger<FetchUpcomingMatches_PingPongJob_Betsapi> logger,
 		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
 	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent, betsapiRepo: betsapiRepo) {
@@ -198,7 +198,7 @@ public abstract class BaseFetchMatches_PingPongJob_Betsapi<T> : BaseJob<T> where
 
 		// Save home team to get id
 		if (homeTeam is null) {
-			var image_id = apiMatch.home.image_id == 0 ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id.ToString());
+			var image_id = apiMatch.home.image_id == 0 ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id + string.Empty);
 
 			homeTeam = new() {
 				name = apiMatch.home.name,
@@ -212,7 +212,7 @@ public abstract class BaseFetchMatches_PingPongJob_Betsapi<T> : BaseJob<T> where
 
 		// Save away team to get id
 		if (awayTeam is null) {
-			var image_id = apiMatch.away.image_id == 0 ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id.ToString());
+			var image_id = apiMatch.away.image_id == 0 ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id + string.Empty);
 
 			awayTeam = new() {
 				name = apiMatch.away.name,

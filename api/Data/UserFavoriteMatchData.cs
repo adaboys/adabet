@@ -37,9 +37,6 @@ public class GetListOfFavoriteMatchResponse : ApiSuccessResponse {
 		[JsonPropertyName(name: "league")]
 		public string league { get; set; }
 
-		[JsonPropertyName(name: "esport")]
-		public bool is_esport { get; set; }
-
 		[JsonPropertyName(name: "s1")]
 		public int score1 { get; set; }
 
@@ -70,15 +67,15 @@ public class GetListOfFavoriteMatchResponse : ApiSuccessResponse {
 
 	public class Timer {
 		[JsonPropertyName(name: "t")]
-		public short time { get; set; }
+		public int time { get; set; }
 
 		[JsonPropertyName(name: "tt")]
-		public short total_timer { get; set; }
+		public int total_timer { get; set; }
 
 		[JsonPropertyName(name: "b")]
 		public bool is_break { get; set; }
 
 		[JsonPropertyName(name: "i")]
-		public short injury_time { get; set; }
+		public int injury_time { get; set; }
 	}
 }

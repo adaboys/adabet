@@ -42,8 +42,7 @@ public abstract class BaseJob<T> : IJob where T : class {
 
 				this.logger.ErrorDk(this, $"[{this.appSetting.environment}] Exception ocurred at {methodName} with Message: {exceptionMsg}, Trace: {e.StackTrace}");
 
-				// Only send mail at production
-				if (this.mailComponent != null && this.appSetting.environment == AppSetting.ENV_PRODUCTION) {
+				if (this.mailComponent != null) {
 					await this.mailComponent.ReportToMeAsync(
 						$"[{this.appSetting.environment}] Exception ocurred at {methodName}",
 						$"Message: {exceptionMsg}, Trace: {e.StackTrace}"

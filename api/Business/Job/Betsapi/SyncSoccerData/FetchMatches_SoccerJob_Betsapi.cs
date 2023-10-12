@@ -206,7 +206,7 @@ public abstract class Base_FetchSoccerMatchesJob_Betsapi<T> : BaseJob<T> where T
 
 		// Save home team and Get id
 		if (homeTeam is null) {
-			var image_id = await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id);
+			var image_id = apiMatch.home.image_id is null ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.home.image_id);
 
 			homeTeam = new() {
 				name = apiMatch.home.name,
@@ -220,7 +220,7 @@ public abstract class Base_FetchSoccerMatchesJob_Betsapi<T> : BaseJob<T> where T
 
 		// Save away team and Get id
 		if (awayTeam is null) {
-			var image_id = await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id);
+			var image_id = apiMatch.away.image_id is null ? null : await this.betsapiRepo.CalcTeamImageId(apiMatch.away.image_id);
 
 			awayTeam = new() {
 				name = apiMatch.away.name,
@@ -240,6 +240,8 @@ public abstract class Base_FetchSoccerMatchesJob_Betsapi<T> : BaseJob<T> where T
 
 			status = timeStatus,
 			start_at = DateTimeOffset.FromUnixTimeSeconds(apiMatch.time).UtcDateTime,
+			// Default is 90m for soccer. We can set it later.
+			total_timer = 5400,
 
 			ref_betsapi_match_id = apiMatch.id,
 			ref_betsapi_home_team_id = apiMatch.home.id,
@@ -248,8 +250,6 @@ public abstract class Base_FetchSoccerMatchesJob_Betsapi<T> : BaseJob<T> where T
 		// Mark if the match is esoccer (Esoccer Battle - 8 mins play).
 		// And calculate total timer for esoccer.
 		if (sport_id == MstSportModelConst.Id_Esoccer) {
-			targetMatch.is_esport = true;
-
 			var name2time = apiMatch.league.name.Split('-');
 			if (name2time.Length >= 2) {
 				var times = name2time.Last().Trim().Split(' ');

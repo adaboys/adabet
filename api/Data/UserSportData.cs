@@ -143,7 +143,7 @@ public class Sport_GetBetHistoriesResponse : ApiSuccessResponse {
 		public int status { get; set; }
 
 		[JsonPropertyName(name: "timer")]
-		public short timer { get; set; }
+		public int timer { get; set; }
 
 		[JsonPropertyName(name: "ticket")]
 		public long ticket { get; set; }

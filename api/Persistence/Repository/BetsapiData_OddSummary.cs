@@ -296,7 +296,6 @@ public class Betsapi_TennisOddsSummaryData {
 	[JsonIgnore]
 	public bool failed => this.success != 1;
 
-	// Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
 	public class _131 {
 		public string id { get; set; }
 		public string home_od { get; set; }
@@ -524,5 +523,257 @@ public class Betsapi_PingPongOddsSummaryData {
 
 		[JsonPropertyName("92_3")]
 		public _923 _92_3 { get; set; }
+	}
+}
+
+public class Betsapi_BasketballOddsSummaryData {
+	public int success { get; set; }
+	public Results results { get; set; }
+
+	[JsonIgnore]
+	public bool succeed => this.success == 1;
+	[JsonIgnore]
+	public bool failed => this.success != 1;
+
+	public class _181 {
+		public string id { get; set; }
+		public string home_od { get; set; }
+		public string away_od { get; set; }
+		public object ss { get; set; }
+		public object time_str { get; set; }
+		public string add_time { get; set; }
+	}
+
+	public class _182 {
+		public string id { get; set; }
+		public string home_od { get; set; }
+		public string handicap { get; set; }
+		public string away_od { get; set; }
+		public object ss { get; set; }
+		public object time_str { get; set; }
+		public string add_time { get; set; }
+	}
+
+	public class _183 {
+		public string id { get; set; }
+		public string over_od { get; set; }
+		public string handicap { get; set; }
+		public string under_od { get; set; }
+		public object ss { get; set; }
+		public object time_str { get; set; }
+		public string add_time { get; set; }
+	}
+
+	public class _1XBet {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class Bet365 {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class BetAtHome {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class End {
+		[JsonPropertyName("18_2")]
+		public _182 _18_2 { get; set; }
+
+		[JsonPropertyName("18_3")]
+		public _183 _18_3 { get; set; }
+
+		[JsonPropertyName("18_1")]
+		public _181 _18_1 { get; set; }
+	}
+
+	public class Kickoff {
+		[JsonPropertyName("18_2")]
+		public _182 _18_2 { get; set; }
+
+		[JsonPropertyName("18_3")]
+		public _183 _18_3 { get; set; }
+
+		[JsonPropertyName("18_1")]
+		public _181 _18_1 { get; set; }
+	}
+
+	public class Odds {
+		public Start start { get; set; }
+		public Kickoff kickoff { get; set; }
+		public End end { get; set; }
+	}
+
+	public class OddsUpdate {
+		[JsonPropertyName("18_1")]
+		public int _18_1 { get; set; }
+
+		[JsonPropertyName("18_2")]
+		public int _18_2 { get; set; }
+
+		[JsonPropertyName("18_3")]
+		public int _18_3 { get; set; }
+
+		[JsonPropertyName("18_4")]
+		public int _18_4 { get; set; }
+
+		[JsonPropertyName("18_5")]
+		public int _18_5 { get; set; }
+
+		[JsonPropertyName("18_6")]
+		public int _18_6 { get; set; }
+
+		[JsonPropertyName("18_7")]
+		public int _18_7 { get; set; }
+
+		[JsonPropertyName("18_8")]
+		public int _18_8 { get; set; }
+
+		[JsonPropertyName("18_9")]
+		public int _18_9 { get; set; }
+	}
+
+	public class Results {
+		public Bet365 Bet365 { get; set; }
+		public BetAtHome BetAtHome { get; set; }
+
+		[JsonPropertyName("1XBet")]
+		public _1XBet _1XBet { get; set; }
+	}
+
+	public class Start {
+		[JsonPropertyName("18_2")]
+		public _182 _18_2 { get; set; }
+
+		[JsonPropertyName("18_3")]
+		public _183 _18_3 { get; set; }
+
+		[JsonPropertyName("18_1")]
+		public _181 _18_1 { get; set; }
+	}
+}
+
+public class Betsapi_VolleyballOddsSummaryData {
+	public int success { get; set; }
+	public Results results { get; set; }
+
+	[JsonIgnore]
+	public bool succeed => this.success == 1;
+	[JsonIgnore]
+	public bool failed => this.success != 1;
+
+	public class _1XBet {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class _911 {
+		public string id { get; set; }
+		public string home_od { get; set; }
+		public string away_od { get; set; }
+		public object ss { get; set; }
+		public string add_time { get; set; }
+	}
+
+	public class _912 {
+		public string id { get; set; }
+		public string home_od { get; set; }
+		public string handicap { get; set; }
+		public string away_od { get; set; }
+		public object ss { get; set; }
+		public string add_time { get; set; }
+	}
+
+	public class _913 {
+		public string id { get; set; }
+		public string over_od { get; set; }
+		public string handicap { get; set; }
+		public string under_od { get; set; }
+		public object ss { get; set; }
+		public string add_time { get; set; }
+	}
+
+	public class Bet365 {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class Betsson {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class DafaBet {
+		public int matching_dir { get; set; }
+		public OddsUpdate odds_update { get; set; }
+		public Odds odds { get; set; }
+	}
+
+	public class End {
+		[JsonPropertyName("91_1")]
+		public _911 _91_1 { get; set; }
+
+		[JsonPropertyName("91_2")]
+		public _912 _91_2 { get; set; }
+
+		[JsonPropertyName("91_3")]
+		public _913 _91_3 { get; set; }
+	}
+
+	public class Kickoff {
+		[JsonPropertyName("91_1")]
+		public _911 _91_1 { get; set; }
+
+		[JsonPropertyName("91_2")]
+		public _912 _91_2 { get; set; }
+
+		[JsonPropertyName("91_3")]
+		public _913 _91_3 { get; set; }
+	}
+
+	public class Odds {
+		public Start start { get; set; }
+		public Kickoff kickoff { get; set; }
+		public End end { get; set; }
+	}
+
+	public class OddsUpdate {
+		[JsonPropertyName("91_1")]
+		public int _91_1 { get; set; }
+
+		[JsonPropertyName("91_2")]
+		public int _91_2 { get; set; }
+
+		[JsonPropertyName("91_3")]
+		public int _91_3 { get; set; }
+	}
+
+	public class Results {
+		public Bet365 Bet365 { get; set; }
+		public Betsson Betsson { get; set; }
+		public DafaBet DafaBet { get; set; }
+
+		[JsonPropertyName("1XBet")]
+		public _1XBet _1XBet { get; set; }
+	}
+
+	public class Start {
+		[JsonPropertyName("91_1")]
+		public _911 _91_1 { get; set; }
+
+		[JsonPropertyName("91_2")]
+		public _912 _91_2 { get; set; }
+
+		[JsonPropertyName("91_3")]
+		public _913 _91_3 { get; set; }
 	}
 }

@@ -10,11 +10,11 @@ using Tool.Compet.Json;
 using Tool.Compet.Log;
 
 [DisallowConcurrentExecution]
-public class UpdateMatchStatus_LiveJob_PingPongBetsapi : Base_UpdateMatchStatus_PingPongJob_Betsapi<UpdateMatchStatus_LiveJob_PingPongBetsapi> {
-	private const string JOB_NAME = nameof(UpdateMatchStatus_LiveJob_PingPongBetsapi);
+public class UpdateStatus_PingPongJob_Betsapi : BaseJob<UpdateStatus_PingPongJob_Betsapi> {
+	private const string JOB_NAME = nameof(UpdateStatus_PingPongJob_Betsapi);
 
 	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateMatchStatus_LiveJob_PingPongBetsapi>(trigger => trigger
+		quartzConfig.ScheduleJob<UpdateStatus_PingPongJob_Betsapi>(trigger => trigger
 			.WithIdentity(JOB_NAME)
 			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
 			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
@@ -25,17 +25,22 @@ public class UpdateMatchStatus_LiveJob_PingPongBetsapi : Base_UpdateMatchStatus_
 		);
 	}
 
-	public UpdateMatchStatus_LiveJob_PingPongBetsapi(
+	protected readonly BetsapiRepo betsapiRepo;
+
+	public UpdateStatus_PingPongJob_Betsapi(
 		AppDbContext dbContext,
 		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateMatchStatus_LiveJob_PingPongBetsapi> logger,
+		ILogger<UpdateStatus_PingPongJob_Betsapi> logger,
+		MailComponent mailComponent,
 		BetsapiRepo betsapiRepo
-	) : base(dbContext, snapshot, logger, betsapiRepo) {
+	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, mailComponent: mailComponent) {
+		this.betsapiRepo = betsapiRepo;
 	}
 
 	/// It consumes at most 30 requests.
 	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get live matches
+		var queryLiveMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
@@ -50,39 +55,10 @@ public class UpdateMatchStatus_LiveJob_PingPongBetsapi : Base_UpdateMatchStatus_
 				_match
 			}
 		;
-		var reqSysMatches = await query.Select(m => m._match).Take(300).ToArrayAsync();
+		var liveMatches = await queryLiveMatches.Select(m => m._match).Take(300).ToArrayAsync();
 
-		await this.UpdateMatchesInfoPerTenAsync(reqSysMatches);
-	}
-}
-
-[DisallowConcurrentExecution]
-public class UpdateMatchStatus_TmpPendingJob_PingPongBetsapi : Base_UpdateMatchStatus_PingPongJob_Betsapi<UpdateMatchStatus_TmpPendingJob_PingPongBetsapi> {
-	private const string JOB_NAME = nameof(UpdateMatchStatus_TmpPendingJob_PingPongBetsapi);
-
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateMatchStatus_TmpPendingJob_PingPongBetsapi>(trigger => trigger
-			.WithIdentity(JOB_NAME)
-			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /1 * * * ?" : // Should at 30s
-				"0 /5 * * * ?"
-			)
-			.WithDescription(JOB_NAME)
-		);
-	}
-
-	public UpdateMatchStatus_TmpPendingJob_PingPongBetsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateMatchStatus_TmpPendingJob_PingPongBetsapi> logger,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, betsapiRepo: betsapiRepo) {
-	}
-
-	/// It consumes at most 10 requests.
-	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get pending matches
+		var queryPendingMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
@@ -97,39 +73,10 @@ public class UpdateMatchStatus_TmpPendingJob_PingPongBetsapi : Base_UpdateMatchS
 				_match
 			}
 		;
-		var comingSoonMatches = await query.Select(m => m._match).Take(100).ToArrayAsync();
+		var pendingMatches = await queryPendingMatches.Select(m => m._match).Take(100).ToArrayAsync();
 
-		await this.UpdateMatchesInfoPerTenAsync(comingSoonMatches);
-	}
-}
-
-[DisallowConcurrentExecution]
-public class UpdateMatchStatus_UpcomingJob_PingPong_Betsapi : Base_UpdateMatchStatus_PingPongJob_Betsapi<UpdateMatchStatus_UpcomingJob_PingPong_Betsapi> {
-	private const string JOB_NAME = nameof(UpdateMatchStatus_UpcomingJob_PingPong_Betsapi);
-
-	internal static void Register(IServiceCollectionQuartzConfigurator quartzConfig, AppSetting appSetting) {
-		quartzConfig.ScheduleJob<UpdateMatchStatus_UpcomingJob_PingPong_Betsapi>(trigger => trigger
-			.WithIdentity(JOB_NAME)
-			.StartAt(DateBuilder.EvenSecondDate(DateTimeOffset.UtcNow.AddSeconds(10))) // delay
-			.WithCronSchedule(appSetting.environment == AppSetting.ENV_PRODUCTION ?
-				"0 /2 * * * ?" : // Should at 30s
-				"0 /5 * * * ?"
-			)
-			.WithDescription(JOB_NAME)
-		);
-	}
-
-	public UpdateMatchStatus_UpcomingJob_PingPong_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<UpdateMatchStatus_UpcomingJob_PingPong_Betsapi> logger,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger, betsapiRepo: betsapiRepo) {
-	}
-
-	/// It consumes at most 10 requests.
-	public override async Task Run(IJobExecutionContext context) {
-		var query =
+		// Get upcoming matches
+		var queryUpcomingMatches =
 			from _match in this.dbContext.sportMatches
 
 			join _league in this.dbContext.sportLeagues on _match.league_id equals _league.id
@@ -144,26 +91,19 @@ public class UpdateMatchStatus_UpcomingJob_PingPong_Betsapi : Base_UpdateMatchSt
 				_match
 			}
 		;
-		var reqSysMatches = await query.Select(m => m._match).Take(100).ToArrayAsync();
+		var upcomingMatches = await queryUpcomingMatches.Select(m => m._match).Take(100).ToArrayAsync();
 
-		await this.UpdateMatchesInfoPerTenAsync(reqSysMatches);
-	}
-}
+		// Merge matches and sync
+		var sysMatches = new List<SportMatchModel>(100);
+		sysMatches.AddRange(liveMatches);
+		sysMatches.AddRange(pendingMatches);
+		sysMatches.AddRange(upcomingMatches);
 
-public abstract class Base_UpdateMatchStatus_PingPongJob_Betsapi<T> : BaseJob<T> where T : class {
-	protected readonly BetsapiRepo betsapiRepo;
-
-	public Base_UpdateMatchStatus_PingPongJob_Betsapi(
-		AppDbContext dbContext,
-		IOptionsSnapshot<AppSetting> snapshot,
-		ILogger<T> logger,
-		BetsapiRepo betsapiRepo
-	) : base(dbContext: dbContext, snapshot: snapshot, logger: logger) {
-		this.betsapiRepo = betsapiRepo;
+		await this._UpdateMatchesInfoPerTenAsync(sysMatches);
 	}
 
-	protected async Task UpdateMatchesInfoPerTenAsync(SportMatchModel[] reqSysMatches) {
-		if (reqSysMatches.Count() == 0) {
+	protected async Task _UpdateMatchesInfoPerTenAsync(List<SportMatchModel> sysMatches) {
+		if (sysMatches.Count == 0) {
 			return;
 		}
 
@@ -175,7 +115,7 @@ public abstract class Base_UpdateMatchStatus_PingPongJob_Betsapi<T> : BaseJob<T>
 		// Use LinQ will deferrer (lazy) start task. If we call ToArray() or ToList() on deferredTasks,
 		// it causes tasks be executed immediately.
 		// Ref: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-scenarios
-		var deferredTasks = reqSysMatches.Chunk(10).Select(m => _UpdateMatchStatusAsync(m));
+		var deferredTasks = sysMatches.Chunk(10).Select(m => _UpdateMatchStatusAsync(m));
 
 		// Run tasks parallel.
 		// Each task maybe run at different thread, we need take care of concurency when interact with dbContext !
@@ -219,15 +159,19 @@ public abstract class Base_UpdateMatchStatus_PingPongJob_Betsapi<T> : BaseJob<T>
 			// Update status
 			sysMatch.status = SportMatchModelConst.ConvertStatusFromBetsapi(apiMatch.time_status);
 
+			// Update timer
+			sysMatch.timer = ((int)DateTimeOffset.FromUnixTimeSeconds(apiMatch.time).UtcDateTime.Subtract(sysMatch.start_at).TotalSeconds);
+
 			// Current score, for eg,. "7-6"
 			if (apiMatch.ss != null) {
-				// Current score
 				var scores = (apiMatch.ss ?? string.Empty).Split(',');
+
 				if (scores.Length > 0) {
-					var curScores = scores[scores.Length - 1].Split('-');
-					if (curScores.Length == 2) {
-						sysMatch.home_score = curScores[0].ParseShortDk();
-						sysMatch.away_score = curScores[1].ParseShortDk();
+					var curScore = scores[scores.Length - 1].Split('-');
+
+					if (curScore.Length == 2) {
+						sysMatch.home_score = curScore[0].ParseShortDk();
+						sysMatch.away_score = curScore[1].ParseShortDk();
 					}
 				}
 			}

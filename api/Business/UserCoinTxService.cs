@@ -45,13 +45,16 @@ public class UserCoinTxService : BaseService {
 				created_at = _tx.created_at,
 				updated_at = _tx.updated_at,
 
+				// User receive fw coin
 				sender_address = _tx.seller_address,
-				send_coin = _tx.forward_currency_id,
-				send_amount = _tx.forward_currency_amount,
+				receive_coin = _tx.forward_currency_id,
+				receive_amount = _tx.forward_currency_amount,
 
+				// User send bw coin
 				receiver_address = _tx.receiver_address,
-				receive_coin = _tx.backward_currency_id,
-				receive_amount = _tx.backward_currency_amount,
+				send_coin = _tx.backward_currency_id,
+				send_amount = _tx.backward_currency_amount,
+
 				attach_ada_amount = _tx.attach_ada_amount,
 
 				status = (int)_tx.tx_status,
